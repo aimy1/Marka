@@ -1,0 +1,11 @@
+package: marka
+version: 1.0.2
+architecture: amd64
+maintainer: Antigravity <aimy1@github.com>
+section: utils
+priority: optional
+homepage: https://github.com/aimy1/Marka
+description: Marka - The modern workspace for Markdown.
+depends: [libgtk-3-0, libx11-6, libglib2.0-0]
+icon: debian/gui/marka.png
+desktop: debian/gui/marka.desktop

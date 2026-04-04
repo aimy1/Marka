@@ -64,6 +64,15 @@ jobs:
             "Marka-Installer-macOS.dmg" \
             "build/macos/Build/Products/Release/Marka.app"
 
+      - name: Build Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          flutter build linux --release
+          dart pub global activate flutter_to_debian
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          flutter_to_debian
+          mv debian/packages/*.deb Marka-Installer-Ubuntu.deb
+
       - name: ZIP Linux Artifact
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -77,6 +86,7 @@ jobs:
           path: |
             Marka-Installer-*.msix
             Marka-Installer-*.dmg
+            Marka-Installer-*.deb
             Marka-Linux-Bundle.zip
 
   release:
