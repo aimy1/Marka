@@ -49,13 +49,18 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
+  msix: ^3.16.2
   flutter_lints: ^6.0.0
+
+msix_config:
+  display_name: Marka
+  publisher_display_name: Antigravity
+  publisher: CN=Antigravity
+  identity_name: io.antigravity.marka
+  msix_version: 1.0.1.0
+  logo_path: markd.logo.jpg
+  capabilities: internetClient, internetClientServer, privateNetworkClientServer
+  install_certificate: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

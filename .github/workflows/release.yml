@@ -42,34 +42,42 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: flutter build macos --release
 
-      - name: Build Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: flutter build linux --release
-
-      - name: ZIP Windows Artifacts
+      - name: Build Windows Installer
         if: matrix.os == 'windows-latest'
         run: |
-          cd build\windows\x64\runner\Release
-          7z a ..\..\..\..\Marka-Windows.zip *
+          flutter pub run msix:create --version 1.0.1.0
+          move build\windows\x64\runner\Release\*.msix Marka-Installer-Windows.msix
         shell: cmd
 
-      - name: ZIP macOS Artifact
+      - name: Build macOS Installer
         if: matrix.os == 'macos-latest'
         run: |
-          cd build/macos/Build/Products/Release
-          zip -r ../../../../Marka-macOS.zip Marka.app
+          brew install create-dmg
+          create-dmg \
+            --volname "Marka Installer" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "Marka.app" 200 190 \
+            --hide-extension "Marka.app" \
+            --app-drop-link 600 185 \
+            "Marka-Installer-macOS.dmg" \
+            "build/macos/Build/Products/Release/Marka.app"
 
       - name: ZIP Linux Artifact
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd build/linux/x64/release/bundle
-          zip -r ../../../../Marka-Linux.zip *
+          zip -r ../../../../Marka-Linux-Bundle.zip *
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-build
-          path: Marka-*.zip
+          name: ${{ matrix.os }}-installers
+          path: |
+            Marka-Installer-*.msix
+            Marka-Installer-*.dmg
+            Marka-Linux-Bundle.zip
 
   release:
     name: Create GitHub Release
