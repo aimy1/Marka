@@ -45,9 +45,8 @@ jobs:
       - name: Build Windows Installer
         if: matrix.os == 'windows-latest'
         run: |
-          flutter pub run msix:create --version 1.0.1.0
-          move build\windows\x64\runner\Release\*.msix Marka-Installer-Windows.msix
-        shell: cmd
+          flutter pub run msix:create
+          powershell -Command "Move-Item -Path (Get-ChildItem -Path build\windows -Filter *.msix -Recurse | Select-Object -First 1).FullName -Destination Marka-Installer-Windows.msix"
 
       - name: Build macOS Installer
         if: matrix.os == 'macos-latest'
@@ -64,7 +63,7 @@ jobs:
             "Marka-Installer-macOS.dmg" \
             "build/macos/Build/Products/Release/Marka.app"
 
-      - name: Build Linux
+      - name: Build Linux Installer
         if: matrix.os == 'ubuntu-latest'
         run: |
           flutter build linux --release
@@ -72,12 +71,6 @@ jobs:
           export PATH="$PATH":"$HOME/.pub-cache/bin"
           flutter_to_debian
           mv debian/packages/*.deb Marka-Installer-Ubuntu.deb
-
-      - name: ZIP Linux Artifact
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          cd build/linux/x64/release/bundle
-          zip -r ../../../../Marka-Linux-Bundle.zip *
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -87,7 +80,6 @@ jobs:
             Marka-Installer-*.msix
             Marka-Installer-*.dmg
             Marka-Installer-*.deb
-            Marka-Linux-Bundle.zip
 
   release:
     name: Create GitHub Release
@@ -101,11 +93,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: artifacts/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

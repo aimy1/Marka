@@ -6,6 +6,6 @@ section: utils
 priority: optional
 homepage: https://github.com/aimy1/Marka
 description: Marka - The modern workspace for Markdown.
-depends: [libgtk-3-0, libx11-6, libglib2.0-0]
+depends: [libgtk-3-0, libx11-6, libglib2.0-0, liblzma5]
 icon: debian/gui/marka.png
 desktop: debian/gui/marka.desktop
