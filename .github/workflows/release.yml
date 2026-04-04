@@ -3,6 +3,8 @@ name: Marka Release Package
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -44,23 +46,46 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: flutter build linux --release
 
-      - name: Upload Artifacts (Windows)
+      - name: ZIP Windows Artifacts
         if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Marka-Windows
-          path: build/windows/x64/runner/Release
+        run: |
+          cd build\windows\x64\runner\Release
+          7z a ..\..\..\..\Marka-Windows.zip *
+        shell: cmd
 
-      - name: Upload Artifacts (macOS)
+      - name: ZIP macOS Artifact
         if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Marka-macOS
-          path: build/macos/Build/Products/Release/Marka.app
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r ../../../../Marka-macOS.zip Marka.app
 
-      - name: Upload Artifacts (Linux)
+      - name: ZIP Linux Artifact
         if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd build/linux/x64/release/bundle
+          zip -r ../../../../Marka-Linux.zip *
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Marka-Linux
-          path: build/linux/x64/release/bundle
+          name: ${{ matrix.os }}-build
+          path: Marka-*.zip
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
