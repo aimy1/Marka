@@ -42,6 +42,11 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: flutter build macos --release
 
+      - name: Download Inno Setup ChineseSimplified.isl
+        if: matrix.os == 'windows-latest'
+        run: |
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/ChineseSimplified.isl" -OutFile "windows\runner\ChineseSimplified.isl"
+
       - name: Build Windows x64 Installer
         if: matrix.os == 'windows-latest'
         run: |
