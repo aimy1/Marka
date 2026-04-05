@@ -27,18 +27,23 @@ void main() async {
     });
   }
 
+  // Initialize AdaptiveTheme with persistence
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => MarkdownProvider()),
       ],
-      child: const MyApp(),
+      child: MyApp(savedThemeMode: savedThemeMode),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AdaptiveThemeMode? savedThemeMode;
+
+  const MyApp({super.key, this.savedThemeMode});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +64,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF1E1E2E),
         dividerColor: Colors.white.withOpacity(0.05),
       ),
-      initial: AdaptiveThemeMode.light,
+      initial: savedThemeMode ?? AdaptiveThemeMode.light,
       builder: (theme, darkTheme) => MaterialApp(
         title: 'Marka',
         theme: theme,

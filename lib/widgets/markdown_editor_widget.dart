@@ -18,6 +18,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   late TextEditingController _controller;
   late ScrollController _scrollController;
   late ScrollController _lineNumbersController;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
@@ -26,17 +27,91 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     _controller = MarkdownTextEditingController(provider: provider);
     _scrollController = ScrollController();
     _lineNumbersController = ScrollController();
+    _focusNode = FocusNode();
     
     _scrollController.addListener(_onScroll);
     provider.addListener(_onProviderChange);
+    
+    // Add the listener separately so we can remove it during sync
+    _controller.addListener(_onControllerChange);
+    
+    // Auto-focus on init or file switch
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  int _lastActiveTabIndex = -1;
+  bool _isUpdatingProgrammatically = false;
+
+  void _onControllerChange() {
+    if (_isUpdatingProgrammatically) return;
+    
+    final provider = Provider.of<MarkdownProvider>(context, listen: false);
+    if (_controller.text != provider.content) {
+      provider.updateContent(_controller.text);
+    }
+    provider.updateSelection(_controller.selection.start, _controller.selection.end);
   }
 
   void _onProviderChange() {
     final provider = Provider.of<MarkdownProvider>(context, listen: false);
+    final session = provider.activeSession;
+    
+    if (session == null) return;
+
+    // Detect if we switched segments (sessions)
+    bool sessionChanged = _lastActiveTabIndex != provider.activeTabIndex;
+    bool contentOutOfSync = _controller.text != session.content;
+    
+    if (sessionChanged || contentOutOfSync) {
+      _lastActiveTabIndex = provider.activeTabIndex;
+      
+      // Temporarily remove listener to avoid sync loop
+      _controller.removeListener(_onControllerChange);
+      
+      final oldSelection = _controller.selection;
+      final newSelection = (sessionChanged || !oldSelection.isValid) 
+          ? TextSelection.collapsed(offset: 0)
+          : oldSelection;
+
+      _controller.value = TextEditingValue(
+        text: session.content,
+        selection: newSelection,
+      );
+      
+      // Re-add listener after value is set
+      _controller.addListener(_onControllerChange);
+
+      // Sync scroll for new sessions
+      if (sessionChanged && _scrollController.hasClients) {
+        _scrollController.jumpTo(0); // Reset scroll to top for new file
+      } else if (_scrollController.hasClients) {
+        // Subtle sync if needed
+        final max = _scrollController.position.maxScrollExtent;
+        if (max > 0) {
+          final target = session.scrollPercentage * max;
+          if ((_scrollController.offset - target).abs() > 50) {
+            _scrollController.jumpTo(target);
+          }
+        }
+      }
+      
+      // Re-focus whenever significant change occurs (especially after file picker)
+      debugPrint('Syncing MarkdownEditorWidget: ${session.name}, content length: ${session.content.length}');
+      
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_focusNode.hasFocus) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
+
     if (provider.requestSelectionOffset != null) {
       final offset = provider.requestSelectionOffset!;
       _controller.selection = TextSelection.collapsed(offset: offset);
       provider.consumeSelectionRequest();
+      _focusNode.requestFocus();
     }
   }
 
@@ -58,6 +133,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     _controller.dispose();
     _scrollController.dispose();
     _lineNumbersController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -71,73 +147,67 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Line Numbers Gutter
-        RepaintBoundary(
-          child: Container(
-            width: 50,
-            padding: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
-              border: Border(
-                right: BorderSide(
-                  color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-                  width: 1,
-                ),
+        // Interactive Line Numbers
+        Container(
+          width: 45,
+          padding: const EdgeInsets.only(top: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
+            border: Border(
+              right: BorderSide(
+                color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
+                width: 1,
               ),
             ),
-            child: ListView.builder(
-              controller: _lineNumbersController,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: lineCount,
-              itemBuilder: (context, index) {
-                return SizedBox(
+          ),
+          child: ListView.builder(
+            controller: _lineNumbersController,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: lineCount,
+            itemBuilder: (context, index) => Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _moveToLine(index),
+                child: SizedBox(
                   height: 24,
-                  child: Text(
-                    '${index + 1}',
-                    style: GoogleFonts.jetBrainsMono(
-                      fontSize: 12,
-                      color: isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ),
         ),
         // Editor
         Expanded(
-          child: RepaintBoundary(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
-              child: CallbackShortcuts(
-                bindings: <ShortcutActivator, VoidCallback>{
-                  // Smart Bulleting (Enter)
-                  const SingleActivator(LogicalKeyboardKey.enter): () => _handleEnter(),
-                  // Auto-pairing
-                  const SingleActivator(LogicalKeyboardKey.bracketLeft): () => _handleAutoPair('[', ']'),
-                  const SingleActivator(LogicalKeyboardKey.parenthesisLeft): () => _handleAutoPair('(', ')'),
-                  const SingleActivator(LogicalKeyboardKey.quote): () => _handleAutoPair('"', '"'),
-                  const SingleActivator(LogicalKeyboardKey.quoteSingle): () => _handleAutoPair("'", "'"),
-                },
-                child: TextField(
-                  controller: _controller,
-                  scrollController: _scrollController,
-                  maxLines: null,
-                  expands: true,
-                  onChanged: (val) => setState(() {}),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Start writing...',
-                    hintStyle: TextStyle(color: Colors.grey),
-                  ),
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: provider.fontSize,
-                    height: 1.6,
-                    color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-                  ),
-                ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
+            child: TextField(
+              controller: _controller,
+              scrollController: _scrollController,
+              focusNode: _focusNode,
+              maxLines: null,
+              expands: true,
+              autofocus: true,
+              onTap: () {
+                _focusNode.requestFocus();
+              },
+              cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Start writing...',
+              ),
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: provider.fontSize,
+                height: 1.5,
+                color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
               ),
             ),
           ),
@@ -146,23 +216,39 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     );
   }
 
+  void _moveToLine(int lineIndex) {
+    final text = _controller.text;
+    final lines = text.split('\n');
+    if (lineIndex < 0 || lineIndex >= lines.length) return;
+    
+    int offset = 0;
+    for (int i = 0; i < lineIndex; i++) {
+       offset += lines[i].length + 1; // +1 for newline
+    }
+    
+    // Safety check for offset
+    final finalOffset = offset.clamp(0, text.length);
+    
+    _controller.selection = TextSelection.collapsed(offset: finalOffset);
+    _focusNode.requestFocus();
+    
+    // On Web, explicitly request focus and update provider
+    final provider = Provider.of<MarkdownProvider>(context, listen: false);
+    provider.updateSelection(finalOffset, finalOffset);
+  }
+
   void _handleEnter() {
     final text = _controller.text;
     final selection = _controller.selection;
-    
-    // Safety check for empty or invalid selection
     if (selection.start < 0) return;
 
     final lines = text.substring(0, selection.start).split('\n');
     final currentLine = lines.isNotEmpty ? lines.last : '';
 
     String prefix = '';
-    // Bullet list detection
     if (currentLine.trimLeft().startsWith('- ')) {
       prefix = '- ';
-    } 
-    // Numbered list detection
-    else if (RegExp(r'^\s*\d+\.\s+').hasMatch(currentLine)) {
+    } else if (RegExp(r'^\s*\d+\.\s+').hasMatch(currentLine)) {
       final match = RegExp(r'^\s*(\d+)\.\s+').firstMatch(currentLine);
       if (match != null) {
         final num = int.parse(match.group(1)!) + 1;
@@ -177,7 +263,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         selection: TextSelection.collapsed(offset: selection.start + 1 + prefix.length),
       );
     } else {
-      // If current line only contains the prefix, clear it (standard IDE behavior)
       if (prefix.isNotEmpty && currentLine.trim() == prefix.trim()) {
          final startOfLine = selection.start - currentLine.length;
          final newText = text.replaceRange(startOfLine, selection.start, '');
@@ -188,7 +273,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
          return;
       }
       
-      // Default enter behavior
       final newText = text.replaceRange(selection.start, selection.end, '\n');
       _controller.value = TextEditingValue(
         text: newText,
@@ -217,12 +301,6 @@ class MarkdownTextEditingController extends TextEditingController {
 
   MarkdownTextEditingController({required this.provider}) {
     text = provider.content;
-    addListener(() {
-      if (text != provider.content) {
-        provider.updateContent(text);
-      }
-      provider.updateSelection(selection.start, selection.end);
-    });
   }
 
   @override
@@ -231,59 +309,6 @@ class MarkdownTextEditingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Catppuccin Mocha (Dark) / Latte (Light) themed highlighting
-    final Map<String, TextStyle> catppuccinTheme = isDark ? {
-      'root': const TextStyle(color: Color(0xFFCDD6F4)),
-      'section': const TextStyle(color: Color(0xFFCBA6F7), fontWeight: FontWeight.bold), // Mauve
-      'strong': const TextStyle(color: Color(0xFFFAB387), fontWeight: FontWeight.bold), // Peach
-      'emphasis': const TextStyle(color: Color(0xFFFAB387), fontStyle: FontStyle.italic),
-      'string': const TextStyle(color: Color(0xFFA6DA95)), // Green
-      'bullet': const TextStyle(color: Color(0xFFF5C2E7)), // Pink
-      'code': const TextStyle(color: Color(0xFF94E2D5), backgroundColor: Color(0xFF313244)), // Teal
-      'link': const TextStyle(color: Color(0xFF89B4FA), decoration: TextDecoration.underline), // Blue
-      'quote': const TextStyle(color: Color(0xFF9399B2), fontStyle: FontStyle.italic),
-      'comment': const TextStyle(color: Color(0xFF585B70)),
-      'meta': const TextStyle(color: Color(0xFFF5E0DC)), // Rosewater
-      'keyword': const TextStyle(color: Color(0xFFCBA6F7)),
-    } : {
-      'root': const TextStyle(color: Color(0xFF4C4F69)),
-      'section': const TextStyle(color: Color(0xFF7287FD), fontWeight: FontWeight.bold),
-      'strong': const TextStyle(color: Color(0xFFFE640B), fontWeight: FontWeight.bold),
-      'emphasis': const TextStyle(color: Color(0xFFFE640B), fontStyle: FontStyle.italic),
-      'string': const TextStyle(color: Color(0xFF40A02B)),
-      'bullet': const TextStyle(color: Color(0xFFEA76CB)),
-      'code': const TextStyle(color: Color(0xFF179299), backgroundColor: Color(0xFFDCE0E8)),
-      'link': const TextStyle(color: Color(0xFF1E66F5), decoration: TextDecoration.underline),
-      'quote': const TextStyle(color: Color(0xFF7C7F93), fontStyle: FontStyle.italic),
-      'comment': const TextStyle(color: Color(0xFF9CA0B0)),
-    };
-
-    final nodes = highlight.parse(text, language: 'markdown').nodes ?? [];
-
-    return TextSpan(
-      style: style,
-      children: _buildNodes(nodes, catppuccinTheme, style),
-    );
-  }
-
-  List<TextSpan> _buildNodes(List<Node> nodes, Map<String, TextStyle> theme, TextStyle? baseStyle) {
-    List<TextSpan> spans = [];
-    for (var node in nodes) {
-      if (node.value != null) {
-        spans.add(TextSpan(
-          text: node.value,
-          style: (theme[node.className] ?? theme['root'] ?? baseStyle)?.copyWith(
-            fontFamily: GoogleFonts.jetBrainsMono().fontFamily,
-          ),
-        ));
-      } else if (node.children != null) {
-        spans.add(TextSpan(
-          children: _buildNodes(node.children!, theme, theme[node.className] ?? baseStyle),
-        ));
-      }
-    }
-    return spans;
+    return TextSpan(text: text, style: style);
   }
 }

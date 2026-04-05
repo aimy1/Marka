@@ -44,7 +44,12 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
 
   @override
   void dispose() {
-    Provider.of<MarkdownProvider>(context, listen: false).removeListener(_onProviderChange);
+    try {
+      final provider = Provider.of<MarkdownProvider>(context, listen: false);
+      provider.removeListener(_onProviderChange);
+    } catch (e) {
+      // 忽略已销毁widget的错误
+    }
     _scrollController.dispose();
     super.dispose();
   }
@@ -67,7 +72,7 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
             'code': CodeElementBuilder(isDark: isDark),
             'blockquote': BlockquoteElementBuilder(isDark: isDark),
           },
-          imageDirectory: 'C:\\',
+          imageDirectory: context.select((MarkdownProvider p) => p.currentFileDirectory),
           styleSheet: MarkdownStyleSheet(
             h1: GoogleFonts.inter(
               fontSize: 32,

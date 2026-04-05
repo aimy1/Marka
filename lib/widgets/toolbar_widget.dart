@@ -47,6 +47,12 @@ class ToolbarWidget extends StatelessWidget {
             'Toggle Split', 
             () => provider.toggleSplitScreen(),
           ),
+          _toolbarButton(
+            context, 
+            provider.isWrapped ? Icons.wrap_text_rounded : Icons.format_align_left_rounded, 
+            'Toggle Wrap', 
+            () => provider.toggleWrap(),
+          ),
           const Spacer(),
           // Theme Toggle
           Tooltip(

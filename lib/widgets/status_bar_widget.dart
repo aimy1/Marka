@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
+import '../utils/path_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StatusBarWidget extends StatelessWidget {
@@ -40,7 +41,7 @@ class StatusBarWidget extends StatelessWidget {
           _statusBarItem(context, '$charCount Chars', Icons.text_fields_rounded, isDark),
           const Spacer(),
           Text(
-            provider.currentFilePath ?? 'Untitled.md',
+            provider.activeSession?.path?.split(getPathSeparator()).last ?? provider.activeSession?.name ?? 'Untitled.md',
             style: GoogleFonts.inter(
               fontSize: 11,
               fontWeight: FontWeight.w400,

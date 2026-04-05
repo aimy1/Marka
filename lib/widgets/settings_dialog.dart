@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
@@ -59,6 +60,18 @@ class SettingsDialog extends StatelessWidget {
               Switch(
                 value: provider.autoSave,
                 onChanged: (_) => provider.toggleAutoSave(),
+                activeColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5),
+              ),
+            ),
+            
+            const Divider(),
+            
+            // Theme
+            _buildSettingRow(
+              'Theme',
+              Switch(
+                value: isDark,
+                onChanged: (_) => AdaptiveTheme.of(context).toggleThemeMode(),
                 activeColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5),
               ),
             ),
