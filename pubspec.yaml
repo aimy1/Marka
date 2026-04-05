@@ -72,7 +72,7 @@ flutter_to_debian:
   priority: optional
   homepage: https://github.com/aimy1/Marka
   description: Marka - The modern workspace for Markdown.
-  depends: [libgtk-3-0t64, libx11-6, libglib2.0-0t64, liblzma5, libkeybinder-3.0-0, libayatana-appindicator3-1, libstdc++6]
+  depends: [libgtk-3-0, libx11-6, libglib2.0-0, liblzma5, libkeybinder-3.0-0, libayatana-appindicator3-1, libstdc++6]
   icon: debian/gui/marka.png
   desktop: debian/gui/marka.desktop
 
