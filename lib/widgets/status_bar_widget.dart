@@ -102,7 +102,7 @@ class StatusBarWidget extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.jetbrainsMono(
+          style: GoogleFonts.jetBrainsMono(
             fontSize: 10.5,
             fontWeight: color != null ? FontWeight.w700 : FontWeight.w500,
             color: color ?? defaultTextColor,

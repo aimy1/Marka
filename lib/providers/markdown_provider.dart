@@ -58,6 +58,8 @@ class MarkdownProvider with ChangeNotifier {
   int get cursorLine => _cursorLine;
   int get cursorColumn => _cursorColumn;
   int get selectionLength => _selectionLength;
+  int get selectionStart => activeSession?.selectionStart ?? 0;
+  int get selectionEnd => activeSession?.selectionEnd ?? 0;
 
   int? _requestSelectionOffset;
   int? get requestSelectionOffset => _requestSelectionOffset;
