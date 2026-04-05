@@ -16,7 +16,7 @@ class SidebarWidget extends StatelessWidget {
     return Container(
       width: 260,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF181825) : const Color(0xFFE6E9EF),
+        color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
         border: Border(
           right: BorderSide(
             color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
@@ -29,89 +29,40 @@ class SidebarWidget extends StatelessWidget {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        'markd.logo.jpg',
-                        width: 32,
-                        height: 32,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(Icons.auto_awesome_mosaic_rounded, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5), size: 24),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Marka',
-                      style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.0,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                if (provider.workspacePath != null)
-                  IconButton(
-                    icon: const Icon(Icons.add_rounded, size: 20),
-                    onPressed: () => _showCreateFileDialog(context, provider),
-                    tooltip: 'New File',
-                    color: isDark ? Colors.white38 : Colors.black38,
-                  ),
+                Icon(Icons.folder_copy_rounded, size: 18, color: isDark ? Colors.white38 : Colors.black45),
+                const SizedBox(width: 12),
+                Icon(Icons.description_outlined, size: 18, color: isDark ? Colors.white38 : Colors.black45),
+                const Spacer(),
+                Icon(Icons.chevron_left_rounded, size: 20, color: isDark ? Colors.white38 : Colors.black45),
               ],
             ),
           ),
-          const SizedBox(height: 8),
           
-          // Workspace Section
-          if (provider.workspacePath == null)
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  Text(
-                    'No workspace loaded',
-                    style: TextStyle(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () => provider.loadWorkspace(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-                      foregroundColor: isDark ? Colors.white : Colors.black87,
-                      elevation: 0,
-                    ),
-                    child: const Text('Open Folder'),
-                  ),
-                ],
-              ),
-            )
-          else ...[
-            _buildSectionHeader(context, 'WORKSPACE', isDark),
-            Expanded(
-              child: ListView.builder(
-                itemCount: provider.workspaceFiles.length,
-                itemBuilder: (context, index) {
-                  final file = provider.workspaceFiles[index];
-                  final fileName = file.path.split(Platform.pathSeparator).last;
-                  final isSelected = provider.currentFilePath == file.path;
-                  
-                  return _buildFileItem(context, provider, file, fileName, isSelected, isDark);
-                },
-              ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                _buildCategory(context, 'Documents', Icons.arrow_drop_down_rounded, [
+                  _buildFileItem(context, provider, 'Welcome.md', const Color(0xFFCBA6F7), 'ma', true, isDark),
+                  _buildFileItem(context, provider, 'Events.md', const Color(0xFF89B4FA), 'en', false, isDark),
+                ], isDark),
+                _buildCategory(context, 'Projects', Icons.arrow_drop_down_rounded, [
+                  _buildFileItem(context, provider, 'Project_Notes.md', const Color(0xFFEED49F), 'ms', false, isDark),
+                  _buildFileItem(context, provider, 'Projects.md', const Color(0xFF94E2D5), 'pr', false, isDark),
+                  _buildFileItem(context, provider, 'Project_Notes.md', const Color(0xFFCBA6F7), 'ms', false, isDark),
+                ], isDark),
+                _buildCategory(context, 'Notes', Icons.arrow_drop_down_rounded, [
+                  _buildFileItem(context, provider, 'Project_Notes.md', const Color(0xFFF5C2E7), 'ms', false, isDark),
+                  _buildFileItem(context, provider, 'Welcome.md', const Color(0xFF94E2D5), 'ma', false, isDark),
+                ], isDark),
+              ],
             ),
-          ],
-          
-          const Divider(height: 1, indent: 24, endIndent: 24),
-          const SizedBox(height: 8),
-          
-          // Bottom Actions
+          ),
+
+          // Bottom Settings
           _buildSidebarAction(
             context,
             'Settings',
@@ -119,8 +70,89 @@ class SidebarWidget extends StatelessWidget {
             isDark,
             onTap: () => _showSettingsDialog(context, provider),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCategory(BuildContext context, String title, IconData icon, List<Widget> children, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: isDark ? Colors.white38 : Colors.black45),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white38 : Colors.black45,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Column(children: children),
+      ],
+    );
+  }
+
+  Widget _buildFileItem(BuildContext context, MarkdownProvider provider, String title, Color color, String prefix, bool isSelected, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 1.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? (isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8)) 
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    prefix,
+                    style: GoogleFonts.firaCode(
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: isSelected 
+                          ? (isDark ? Colors.white : Colors.black87)
+                          : (isDark ? Colors.white70 : Colors.black54),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -174,66 +206,6 @@ class SidebarWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFileItem(BuildContext context, MarkdownProvider provider, File file, String title, bool isSelected, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 1.0),
-      child: InkWell(
-        onTap: () => provider.openFileDirectly(file),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-          decoration: BoxDecoration(
-            color: isSelected 
-                ? (isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8)) 
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Image.asset(
-                'markd.png',
-                width: 16,
-                height: 16,
-                errorBuilder: (context, error, stackTrace) => Icon(Icons.description_outlined, size: 16, color: isSelected ? Colors.blue : null),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected 
-                        ? (isDark ? Colors.white : Colors.black87)
-                        : (isDark ? Colors.white70 : Colors.black54),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isSelected)
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, size: 14),
-                      onPressed: () => _showRenameDialog(context, provider, file),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, size: 14, color: Colors.redAccent),
-                      onPressed: () => provider.deleteFile(file),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showRenameDialog(BuildContext context, MarkdownProvider provider, File file) {
     final controller = TextEditingController(text: file.path.split(Platform.pathSeparator).last.replaceAll('.md', ''));

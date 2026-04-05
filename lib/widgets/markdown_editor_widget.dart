@@ -245,6 +245,8 @@ class MarkdownTextEditingController extends TextEditingController {
       'link': const TextStyle(color: Color(0xFF89B4FA), decoration: TextDecoration.underline), // Blue
       'quote': const TextStyle(color: Color(0xFF9399B2), fontStyle: FontStyle.italic),
       'comment': const TextStyle(color: Color(0xFF585B70)),
+      'meta': const TextStyle(color: Color(0xFFF5E0DC)), // Rosewater
+      'keyword': const TextStyle(color: Color(0xFFCBA6F7)),
     } : {
       'root': const TextStyle(color: Color(0xFF4C4F69)),
       'section': const TextStyle(color: Color(0xFF7287FD), fontWeight: FontWeight.bold),

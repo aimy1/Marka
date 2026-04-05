@@ -53,6 +53,7 @@ void main() {
 ''';
   String _previewContent = '';
   Timer? _debounceTimer;
+  Timer? _autoSaveTimer;
   String _originalContent = '';
   String _currentFilePath;
   bool _isModified = false;
@@ -61,6 +62,14 @@ void main() {
   double _scrollPercentage = 0.0;
   int _selectionStart = 0;
   int _selectionEnd = 0;
+
+  // Tab Management
+  List<File> _openFiles = [];
+  int _activeTabIndex = -1;
+
+  List<File> get openFiles => _openFiles;
+  int get activeTabIndex => _activeTabIndex;
+  File? get activeFile => _activeTabIndex != -1 ? _openFiles[_activeTabIndex] : null;
 
   // Selection update request
   int? _requestSelectionOffset;
@@ -101,6 +110,8 @@ void main() {
     if (_content != newContent) {
       _content = newContent;
       _isModified = _content != _originalContent;
+      
+      // Update the active file's content in memory if needed (though we currently read from _content)
       
       // Debounce preview update (fast)
       _debounceTimer?.cancel();
@@ -199,6 +210,15 @@ void main() {
 
   Future<void> openFileDirectly(File file) async {
     try {
+      // Check if already open
+      int existingIndex = _openFiles.indexWhere((f) => f.path == file.path);
+      if (existingIndex != -1) {
+        _activeTabIndex = existingIndex;
+      } else {
+        _openFiles.add(file);
+        _activeTabIndex = _openFiles.length - 1;
+      }
+
       _content = await file.readAsString();
       _currentFilePath = file.path;
       _originalContent = _content;
@@ -207,6 +227,28 @@ void main() {
       notifyListeners();
     } catch (e) {
       debugPrint('Error opening file directly: $e');
+    }
+  }
+
+  void closeTab(int index) {
+    if (index >= 0 && index < _openFiles.length) {
+      _openFiles.removeAt(index);
+      if (_openFiles.isEmpty) {
+        newFile();
+      } else {
+        if (_activeTabIndex >= _openFiles.length) {
+          _activeTabIndex = _openFiles.length - 1;
+        }
+        openFileDirectly(_openFiles[_activeTabIndex]);
+      }
+      notifyListeners();
+    }
+  }
+
+  void switchTab(int index) {
+    if (index >= 0 && index < _openFiles.length) {
+      _activeTabIndex = index;
+      openFileDirectly(_openFiles[index]);
     }
   }
 

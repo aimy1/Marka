@@ -65,6 +65,7 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
           extensionSet: md.ExtensionSet.gitHubFlavored,
           builders: {
             'code': CodeElementBuilder(isDark: isDark),
+            'blockquote': BlockquoteElementBuilder(isDark: isDark),
           },
           imageDirectory: 'C:\\',
           styleSheet: MarkdownStyleSheet(
@@ -97,10 +98,10 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
               fontStyle: FontStyle.italic,
             ),
             blockquoteDecoration: BoxDecoration(
-              color: isDark ? const Color(0xFF313244).withOpacity(0.3) : const Color(0xFFEFF1F5),
+              color: isDark ? const Color(0xFF313244).withOpacity(0.3) : const Color(0xFFEFF1F5).withAlpha(150),
               border: Border(
                 left: BorderSide(
-                  color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+                  color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299),
                   width: 4,
                 ),
               ),
@@ -126,23 +127,45 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
               fontWeight: FontWeight.bold,
               color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
             ),
-            tableHeadDecoration: BoxDecoration(
-              color: isDark ? const Color(0xFF313244).withOpacity(0.5) : const Color(0xFFE6E9EF),
-            ),
-            horizontalRuleDecoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-                  width: 2,
-                ),
-              ),
-            ),
             code: const TextStyle(
               fontFamily: 'monospace',
               backgroundColor: Colors.transparent,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class BlockquoteElementBuilder extends MarkdownElementBuilder {
+  final bool isDark;
+
+  BlockquoteElementBuilder({required this.isDark});
+
+  @override
+  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 12,
+            top: 0,
+            child: Icon(
+              Icons.format_quote_rounded,
+              size: 28,
+              color: (isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299)).withOpacity(0.4),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(40, 16, 16, 16),
+            child: Text(
+              element.textContent,
+              style: preferredStyle,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -248,11 +271,11 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
           color: widget.isDark ? const Color(0xFF313244).withOpacity(0.5) : const Color(0xFFDCE0E8),
           width: 1,
         ),
-        boxShadow: [
+        boxShadow: widget.isDark ? [] : [
           BoxShadow(
-            color: widget.isDark ? Colors.black45 : Colors.black12,
-            blurRadius: 30,
-            offset: const Offset(0, 15),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -278,19 +301,12 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
               children: [
                 Row(
                   children: [
-                    _dot(languageColor),
-                    const SizedBox(width: 8),
-                    _dot(const Color(0xFFEED49F).withOpacity(0.5)),
-                    const SizedBox(width: 8),
-                    _dot(const Color(0xFFA6DA95).withOpacity(0.5)),
-                    const SizedBox(width: 24),
                     Text(
-                      widget.language.isEmpty ? 'CODE' : widget.language.toUpperCase(),
+                      widget.language.isEmpty ? '#plaintext' : '#import ${widget.language}',
                       style: GoogleFonts.firaCode(
-                        fontSize: 10,
-                        letterSpacing: 1.5,
-                        color: languageColor.withOpacity(0.8),
-                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        color: const Color(0xFFA6DA95),
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -326,9 +342,9 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
                 language: widget.language.isEmpty ? 'plaintext' : widget.language,
                 theme: widget.isDark ? atomOneDarkTheme : atomOneLightTheme,
                 padding: EdgeInsets.zero,
-                textStyle: GoogleFonts.jetBrainsMono(
-                  fontSize: 13.5,
-                  height: 1.7,
+                textStyle: GoogleFonts.firaCode(
+                  fontSize: 13,
+                  height: 1.5,
                 ),
               ),
             ),
