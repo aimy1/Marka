@@ -355,10 +355,10 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
                 language: widget.language.isEmpty ? 'plaintext' : widget.language,
                 theme: widget.isDark ? atomOneDarkTheme : atomOneLightTheme,
                 padding: EdgeInsets.zero,
-                textStyle: GoogleFonts.getFont(
+                textStyle: _getSafeFont(
                   provider.fontFamily == 'Inter' ? 'JetBrains Mono' : provider.fontFamily,
-                  fontSize: provider.fontSize - 1,
-                  height: provider.lineHeight,
+                  provider.fontSize - 1,
+                  provider.lineHeight,
                 ),
               ),
             ),
@@ -366,6 +366,15 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
         ],
       ),
     );
+  }
+
+  TextStyle _getSafeFont(String family, double size, double height) {
+    try {
+      return GoogleFonts.getFont(family, fontSize: size, height: height);
+    } catch (_) {
+      // Return a safe system monospace fallback
+      return TextStyle(fontFamily: 'monospace', fontSize: size, height: height);
+    }
   }
 
   Color _getLanguageColor(String lang) {

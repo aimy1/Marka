@@ -46,7 +46,7 @@ class SettingsDialog extends StatelessWidget {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value, style: GoogleFonts.getFont(value, fontSize: 13)),
+                    child: Text(value, style: _getSafeFont(value, 13)),
                   );
                 }).toList(),
               ),
@@ -129,6 +129,14 @@ class SettingsDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  TextStyle _getSafeFont(String family, double size) {
+    try {
+      return GoogleFonts.getFont(family, fontSize: size);
+    } catch (_) {
+      return TextStyle(fontFamily: 'sans-serif', fontSize: size);
+    }
   }
 
   Widget _buildSettingRow(String label, Widget action) {
