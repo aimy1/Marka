@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
@@ -12,181 +13,300 @@ class SettingsDialog extends StatelessWidget {
     final provider = Provider.of<MarkdownProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF);
+    final glassColor = isDark ? const Color(0xFF1E1E2E).withOpacity(0.7) : const Color(0xFFFFFFFF).withOpacity(0.7);
 
     return Dialog(
-      backgroundColor: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        width: 480,
-        constraints: const BoxConstraints(maxHeight: 650),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            width: 520,
+            constraints: const BoxConstraints(maxHeight: 700),
+            decoration: BoxDecoration(
+              color: glassColor,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.tune_rounded, color: accentColor, size: 24),
-                const SizedBox(width: 12),
-                Text(
-                  provider.t('settings'),
-                  style: GoogleFonts.outfit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : Colors.black87,
+                // Premium Header
+                _buildHeader(context, provider, isDark, accentColor),
+                
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildSection(
+                          provider.t('appearance'), 
+                          accentColor,
+                          [
+                            _buildSettingRow(
+                              provider.t('language'),
+                              Icons.translate_rounded,
+                              _buildLanguageDropdown(provider, isDark),
+                              isDark
+                            ),
+                            _buildSettingRow(
+                              provider.t('theme'),
+                              Icons.palette_outlined,
+                              Switch(
+                                value: isDark,
+                                activeColor: accentColor,
+                                onChanged: (v) => AdaptiveTheme.of(context).toggleThemeMode(),
+                              ),
+                              isDark
+                            ),
+                          ],
+                          isDark
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        _buildSection(
+                          provider.t('typography'), 
+                          accentColor,
+                          [
+                            _buildSettingRow(
+                              provider.t('font_family'),
+                              Icons.font_download_outlined,
+                              _buildFontDropdown(provider, isDark),
+                              isDark
+                            ),
+                            _buildSettingRow(
+                              provider.t('font_size'),
+                              Icons.format_size_rounded,
+                              _buildSizeControls(provider, isDark),
+                              isDark
+                            ),
+                            _buildSettingRow(
+                              provider.t('line_height'),
+                              Icons.format_line_spacing_rounded,
+                              _buildLineHeightSlider(provider, accentColor),
+                              isDark
+                            ),
+                          ],
+                          isDark
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        _buildSection(
+                          provider.t('pro_features'), 
+                          accentColor,
+                          [
+                            _buildSwitchItem(provider.t('sync_scroll'), Icons.sync_rounded, provider.isSyncScroll, (v) => provider.toggleSyncScroll(), isDark, accentColor),
+                            _buildSwitchItem(provider.t('show_toolbar'), Icons.construction_rounded, provider.showToolbar, (v) => provider.toggleToolbar(), isDark, accentColor),
+                            _buildSwitchItem(provider.t('auto_save'), Icons.auto_awesome_rounded, provider.autoSave, (v) => provider.toggleAutoSave(), isDark, accentColor),
+                            _buildSwitchItem(provider.t('split_screen'), Icons.splitscreen_rounded, provider.isSplitScreen, (v) => provider.toggleSplitScreen(), isDark, accentColor),
+                            _buildSwitchItem(provider.t('word_wrap'), Icons.wrap_text_rounded, provider.isWrapped, (v) => provider.toggleWrap(), isDark, accentColor),
+                          ],
+                          isDark
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close_rounded, color: isDark ? Colors.white24 : Colors.black26),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle(provider.t('appearance'), accentColor),
-                    
-                    // Language
-                    _buildSettingItem(
-                      provider.t('language'),
-                      DropdownButton<String>(
-                        value: provider.locale,
-                        underline: const SizedBox(),
-                        dropdownColor: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
-                        onChanged: (v) => v != null ? provider.updateLocale(v) : null,
-                        items: [
-                          {'code': 'en', 'label': '🇺🇸 English'},
-                          {'code': 'zh', 'label': '🇨🇳 简体中文'},
-                        ].map((l) => DropdownMenuItem(
-                          value: l['code'],
-                          child: Text(l['label']!, style: GoogleFonts.inter(fontSize: 13)),
-                        )).toList(),
-                      ),
-                    ),
-                    
-                    // Theme Switch
-                    _buildSettingItem(
-                      provider.t('theme'),
-                      Switch(
-                        value: isDark,
-                        activeColor: accentColor,
-                        onChanged: (v) => AdaptiveTheme.of(context).toggleThemeMode(),
-                      ),
-                    ),
-
-                    const Divider(height: 32),
-                    _buildSectionTitle(provider.t('typography'), accentColor),
-
-                    // Font Family
-                    _buildSettingItem(
-                      provider.t('font_family'),
-                      DropdownButton<String>(
-                        value: provider.fontFamily,
-                        underline: const SizedBox(),
-                        dropdownColor: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
-                        onChanged: (v) => v != null ? provider.updateFontFamily(v) : null,
-                        items: ['Inter', 'Fira Code', 'JetBrains Mono']
-                            .map((f) => DropdownMenuItem(
-                          value: f,
-                          child: Text(f, style: _getSafeFont(f, 13)),
-                        )).toList(),
-                      ),
-                    ),
-
-                    // Font Size
-                    _buildSettingItem(
-                      provider.t('font_size'),
-                      Row(
-                        children: [
-                          _buildMiniBtn(Icons.remove_rounded, () => provider.updateFontSize(provider.fontSize - 1), isDark),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text('${provider.fontSize.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                          _buildMiniBtn(Icons.add_rounded, () => provider.updateFontSize(provider.fontSize + 1), isDark),
-                        ],
-                      ),
-                    ),
-
-                    // Line Height
-                    _buildSettingItem(
-                      provider.t('line_height'),
-                      SizedBox(
-                        width: 140,
-                        child: Slider(
-                          value: provider.lineHeight,
-                          min: 1.0,
-                          max: 2.5,
-                          divisions: 15,
-                          activeColor: accentColor,
-                          label: provider.lineHeight.toStringAsFixed(1),
-                          onChanged: (v) => provider.updateLineHeight(v),
-                        ),
-                      ),
-                    ),
-
-                    const Divider(height: 32),
-                    _buildSectionTitle(provider.t('pro_features'), accentColor),
-
-                    _buildSwitchTile(provider.t('sync_scroll'), provider.isSyncScroll, (v) => provider.toggleSyncScroll(), isDark, accentColor),
-                    _buildSwitchTile(provider.t('show_toolbar'), provider.showToolbar, (v) => provider.toggleToolbar(), isDark, accentColor),
-                    _buildSwitchTile(provider.t('auto_save'), provider.autoSave, (v) => provider.toggleAutoSave(), isDark, accentColor),
-                    _buildSwitchTile(provider.t('split_screen'), provider.isSplitScreen, (v) => provider.toggleSplitScreen(), isDark, accentColor),
-                    _buildSwitchTile(provider.t('word_wrap'), provider.isWrapped, (v) => provider.toggleWrap(), isDark, accentColor),
-                  ],
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 12),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        title.toUpperCase(),
-        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: color.withOpacity(0.8)),
+  Widget _buildHeader(BuildContext context, MarkdownProvider provider, bool isDark, Color accentColor) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 24, 16, 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(Icons.settings_input_component_rounded, color: accentColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            provider.t('settings'),
+            style: GoogleFonts.outfit(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : Colors.black87,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.close_rounded, color: isDark ? Colors.white24 : Colors.black26),
+            splashRadius: 20,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSettingItem(String label, Widget action) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildSection(String title, Color color, List<Widget> children, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Text(
+              title.toUpperCase(),
+              style: GoogleFonts.outfit(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.8,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+          ),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingRow(String label, IconData icon, Widget action, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: isDark ? Colors.white30 : Colors.black38),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          const Spacer(),
           action,
         ],
       ),
     );
   }
 
-  Widget _buildSwitchTile(String label, bool value, Function(bool) onChanged, bool isDark, Color accentColor) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-      title: Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: isDark ? Colors.white70 : Colors.black87)),
-      trailing: Transform.scale(
-        scale: 0.8,
-        child: Switch(
-          value: value,
-          activeColor: accentColor,
-          onChanged: onChanged,
+  Widget _buildSwitchItem(String label, IconData icon, bool value, Function(bool) onChanged, bool isDark, Color accentColor) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: isDark ? Colors.white30 : Colors.black38),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+            ),
+            Transform.scale(
+              scale: 0.8,
+              child: Switch(
+                value: value,
+                activeColor: accentColor,
+                onChanged: onChanged,
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageDropdown(MarkdownProvider provider, bool isDark) {
+    return DropdownButton<String>(
+      value: provider.locale,
+      underline: const SizedBox(),
+      dropdownColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
+      onChanged: (v) => v != null ? provider.updateLocale(v) : null,
+      items: [
+        {'code': 'en', 'label': '🇺🇸 English'},
+        {'code': 'zh', 'label': '🇨🇳 简体中文'},
+      ].map((l) => DropdownMenuItem(
+        value: l['code'],
+        child: Text(l['label']!, style: GoogleFonts.inter(fontSize: 13)),
+      )).toList(),
+    );
+  }
+
+  Widget _buildFontDropdown(MarkdownProvider provider, bool isDark) {
+    return DropdownButton<String>(
+      value: provider.fontFamily,
+      underline: const SizedBox(),
+      dropdownColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
+      onChanged: (v) => v != null ? provider.updateFontFamily(v) : null,
+      items: ['Inter', 'Fira Code', 'JetBrains Mono', 'Roboto Mono']
+          .map((f) => DropdownMenuItem(
+        value: f,
+        child: Text(f, style: GoogleFonts.getFont(f, fontSize: 13)),
+      )).toList(),
+    );
+  }
+
+  Widget _buildSizeControls(MarkdownProvider provider, bool isDark) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildMiniBtn(Icons.remove_rounded, () => provider.updateFontSize(provider.fontSize - 1), isDark),
+        Container(
+          width: 40,
+          alignment: Alignment.center,
+          child: Text(
+            '${provider.fontSize.toInt()}',
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+        ),
+        _buildMiniBtn(Icons.add_rounded, () => provider.updateFontSize(provider.fontSize + 1), isDark),
+      ],
+    );
+  }
+
+  Widget _buildLineHeightSlider(MarkdownProvider provider, Color accentColor) {
+    return SizedBox(
+      width: 120,
+      child: Slider(
+        value: provider.lineHeight,
+        min: 1.0,
+        max: 2.5,
+        divisions: 15,
+        activeColor: accentColor,
+        onChanged: (v) => provider.updateLineHeight(v),
       ),
     );
   }
@@ -194,23 +314,15 @@ class SettingsDialog extends StatelessWidget {
   Widget _buildMiniBtn(IconData icon, VoidCallback onTap, bool isDark) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 16),
+        child: Icon(icon, size: 14, color: isDark ? Colors.white70 : Colors.black54),
       ),
     );
-  }
-
-  TextStyle _getSafeFont(String family, double size) {
-    try {
-      return GoogleFonts.getFont(family, fontSize: size);
-    } catch (_) {
-      return TextStyle(fontFamily: 'monospace', fontSize: size);
-    }
   }
 }

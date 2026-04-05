@@ -5,157 +5,115 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import '../models/doc_session.dart';
-import '../models/workspace_item.dart';
-import '../utils/path_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/doc_session.dart';
 
 class MarkdownProvider with ChangeNotifier {
-  String get pathSeparator => getPathSeparator();
+  List<DocSession> _sessions = [DocSession(name: 'Welcome.md', content: _welcomeMarkdown, originalContent: _welcomeMarkdown)];
+  int _activeTabIndex = 0;
+  String _previewContent = _welcomeMarkdown;
+  List<String> _workspacePaths = [];
+  Map<String, List<WorkspaceItem>> _workspaceFilesMap = {};
   
-  // Session Management
-  final List<DocSession> _sessions = [];
-  int _activeTabIndex = -1;
-
-  // Global Settings/State
-  bool _isSplitScreen = true;
-  bool _isWrapped = true;
+  // Settings
+  String _fontFamily = 'Inter';
   double _fontSize = 14.0;
   double _lineHeight = 1.6;
-  String _fontFamily = 'Inter';
   bool _autoSave = false;
-  String _locale = 'en'; // 'en' or 'zh'
+  bool _isSplitScreen = true;
+  bool _isWrapped = true;
   bool _showToolbar = true;
   bool _isSyncScroll = true;
-  
-  // Workspace State (Multiple Folders)
-  final List<String> _workspacePaths = [];
-  final Map<String, List<WorkspaceItem>> _workspaceFilesMap = {};
+  String _locale = 'en';
 
-  // Preview Debounce
-  String _previewContent = '';
-  Timer? _debounceTimer;
-  Timer? _autoSaveTimer;
-
-  // Selection update request
-  int? _requestSelectionOffset;
+  // NEW: Kate-style Cursor Tracking
+  int _cursorLine = 1;
+  int _cursorColumn = 1;
+  int _selectionLength = 0;
 
   MarkdownProvider() {
-    _sessions.add(DocSession(
-      name: 'Welcome.md',
-      content: _welcomeMarkdown,
-      originalContent: _welcomeMarkdown,
-    ));
-    _activeTabIndex = 0;
-    _previewContent = _welcomeMarkdown;
-    
-    Future.microtask(() => _loadPersistedSettings());
-  }
-
-  Future<void> _loadPersistedSettings() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Load Workspaces
-      final savedPaths = prefs.getStringList('workspace_paths');
-      if (savedPaths != null && savedPaths.isNotEmpty) {
-        for (var path in savedPaths) {
-          if (!_workspacePaths.contains(path)) _workspacePaths.add(path);
-        }
-        await refreshWorkspace();
-      }
-      
-      // Load Preferences
-      _locale = prefs.getString('locale') ?? 'en';
-      _isSplitScreen = prefs.getBool('isSplitScreen') ?? true;
-      _isWrapped = prefs.getBool('isWrapped') ?? true;
-      _fontSize = prefs.getDouble('fontSize') ?? 14.0;
-      _lineHeight = prefs.getDouble('lineHeight') ?? 1.6;
-      _fontFamily = prefs.getString('fontFamily') ?? 'Inter';
-      _autoSave = prefs.getBool('autoSave') ?? false;
-      _showToolbar = prefs.getBool('showToolbar') ?? true;
-      _isSyncScroll = prefs.getBool('isSyncScroll') ?? true;
-      
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error loading persisted settings: $e');
-    }
-  }
-
-  Future<void> _saveSettings() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('workspace_paths', _workspacePaths);
-      await prefs.setString('locale', _locale);
-      await prefs.setBool('isSplitScreen', _isSplitScreen);
-      await prefs.setBool('isWrapped', _isWrapped);
-      await prefs.setDouble('fontSize', _fontSize);
-      await prefs.setDouble('lineHeight', _lineHeight);
-      await prefs.setString('fontFamily', _fontFamily);
-      await prefs.setBool('autoSave', _autoSave);
-      await prefs.setBool('showToolbar', _showToolbar);
-      await prefs.setBool('isSyncScroll', _isSyncScroll);
-    } catch (e) {
-      debugPrint('Error saving settings: $e');
-    }
+    _loadSettings();
   }
 
   // Getters
   List<DocSession> get sessions => _sessions;
   int get activeTabIndex => _activeTabIndex;
-  DocSession? get activeSession => _activeTabIndex != -1 ? _sessions[_activeTabIndex] : null;
-  
+  DocSession? get activeSession => _sessions.isNotEmpty ? _sessions[_activeTabIndex] : null;
   String get content => activeSession?.content ?? '';
   String get previewContent => _previewContent;
-  String? get currentFilePath => activeSession?.path;
   bool get isModified => activeSession?.isModified ?? false;
-  bool get isSplitScreen => _isSplitScreen;
-  bool get isWrapped => _isWrapped;
-  double get fontSize => _fontSize;
-  double get lineHeight => _lineHeight;
-  String get fontFamily => _fontFamily;
-  bool get autoSave => _autoSave;
-  String get locale => _locale;
-  bool get showToolbar => _showToolbar;
-  bool get isSyncScroll => _isSyncScroll;
-  
   List<String> get workspacePaths => _workspacePaths;
   Map<String, List<WorkspaceItem>> get workspaceFilesMap => _workspaceFilesMap;
   
+  String get fontFamily => _fontFamily;
+  double get fontSize => _fontSize;
+  double get lineHeight => _lineHeight;
+  bool get autoSave => _autoSave;
+  bool get isSplitScreen => _isSplitScreen;
+  bool get isWrapped => _isWrapped;
+  bool get showToolbar => _showToolbar;
+  bool get isSyncScroll => _isSyncScroll;
+  String get locale => _locale;
+
+  int get cursorLine => _cursorLine;
+  int get cursorColumn => _cursorColumn;
+  int get selectionLength => _selectionLength;
+
+  int? _requestSelectionOffset;
   int? get requestSelectionOffset => _requestSelectionOffset;
-  int get selectionStart => activeSession?.selectionStart ?? 0;
-  int get selectionEnd => activeSession?.selectionEnd ?? 0;
-  double get scrollPercentage => activeSession?.scrollPercentage ?? 0.0;
 
-  String? get currentFileDirectory {
-    final path = activeSession?.path;
-    if (path == null || kIsWeb) return null;
-    return io.File(path).parent.path;
-  }
+  String get pathSeparator => io.Platform.isWindows ? '\\' : '/';
 
-  // Session Methods
+  // State Management
   void updateContent(String newContent) {
     final session = activeSession;
-    if (session != null && session.content != newContent) {
+    if (session != null) {
       session.updateContent(newContent);
-      
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 150), () {
-        if (_previewContent != session.content) {
-          _previewContent = session.content;
-          notifyListeners();
-        }
-      });
-
-      if (_autoSave && session.isModified && session.path != null) {
-        _autoSaveTimer?.cancel();
-        _autoSaveTimer = Timer(const Duration(seconds: 3), () {
-          if (session.isModified) saveFile();
-        });
-      }
-      
+      _previewContent = newContent;
+      if (_autoSave && !kIsWeb) saveFile();
       notifyListeners();
     }
+  }
+
+  void updateCursorInfo(int line, int col, int selLength) {
+    if (_cursorLine != line || _cursorColumn != col || _selectionLength != selLength) {
+      _cursorLine = line;
+      _cursorColumn = col;
+      _selectionLength = selLength;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    _fontFamily = prefs.getString('fontFamily') ?? 'Inter';
+    _fontSize = prefs.getDouble('fontSize') ?? 14.0;
+    _lineHeight = prefs.getDouble('lineHeight') ?? 1.6;
+    _autoSave = prefs.getBool('autoSave') ?? false;
+    _isSplitScreen = prefs.getBool('isSplitScreen') ?? true;
+    _isWrapped = prefs.getBool('isWrapped') ?? true;
+    _showToolbar = prefs.getBool('showToolbar') ?? true;
+    _isSyncScroll = prefs.getBool('isSyncScroll') ?? true;
+    _locale = prefs.getString('locale') ?? 'en';
+    _workspacePaths = prefs.getStringList('workspacePaths') ?? [];
+    
+    _previewContent = content;
+    await refreshWorkspace();
+    notifyListeners();
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fontFamily', _fontFamily);
+    await prefs.setDouble('fontSize', _fontSize);
+    await prefs.setDouble('lineHeight', _lineHeight);
+    await prefs.setBool('autoSave', _autoSave);
+    await prefs.setBool('isSplitScreen', _isSplitScreen);
+    await prefs.setBool('isWrapped', _isWrapped);
+    await prefs.setBool('showToolbar', _showToolbar);
+    await prefs.setBool('isSyncScroll', _isSyncScroll);
+    await prefs.setString('locale', _locale);
+    await prefs.setStringList('workspacePaths', _workspacePaths);
   }
 
   void switchTab(int index) {
@@ -167,26 +125,20 @@ class MarkdownProvider with ChangeNotifier {
   }
 
   void closeTab(int index) {
-    if (index >= 0 && index < _sessions.length) {
+    if (_sessions.length > 1) {
       _sessions.removeAt(index);
-      if (_sessions.isEmpty) {
-        newFile();
-      } else {
-        if (_activeTabIndex >= _sessions.length) {
-          _activeTabIndex = _sessions.length - 1;
-        }
-        _previewContent = _sessions[_activeTabIndex].content;
-      }
-      notifyListeners();
+      if (_activeTabIndex >= _sessions.length) _activeTabIndex = _sessions.length - 1;
+      _previewContent = _sessions[_activeTabIndex].content;
+    } else {
+      _sessions = [DocSession(name: 'Untitled.md', content: '', originalContent: '')];
+      _activeTabIndex = 0;
+      _previewContent = '';
     }
+    notifyListeners();
   }
 
   void newFile() {
-    final session = DocSession(
-      name: 'Untitled.md',
-      content: '',
-      originalContent: '',
-    );
+    final session = DocSession(name: 'Untitled.md', content: '', originalContent: '');
     _sessions.add(session);
     _activeTabIndex = _sessions.length - 1;
     _previewContent = '';
@@ -526,6 +478,8 @@ class MarkdownProvider with ChangeNotifier {
       'pro_features': 'PRO FEATURES',
       'appearance': 'APPEARANCE',
       'typography': 'TYPOGRAPHY',
+      'ln_col': 'Ln {0}, Col {1}',
+      'sel': 'Sel {0}',
     },
     'zh': {
       'settings': '设置',
@@ -577,6 +531,8 @@ class MarkdownProvider with ChangeNotifier {
       'pro_features': '专业功能',
       'appearance': '显示外观',
       'typography': '文字排版',
+      'ln_col': '行 {0}, 列 {1}',
+      'sel': '选区 {0}',
     },
   };
 
@@ -605,4 +561,10 @@ void main() {
 2. Provider
 3. Google Fonts
 ''';
+}
+
+class WorkspaceItem {
+  final String path;
+  final String name;
+  WorkspaceItem({required this.path, required this.name});
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
-import '../utils/path_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StatusBarWidget extends StatelessWidget {
@@ -16,7 +15,11 @@ class StatusBarWidget extends StatelessWidget {
     // Calculate stats
     final charCount = text.length;
     final wordCount = text.isEmpty ? 0 : text.trim().split(RegExp(r'\s+')).length;
-    final lineCount = '\n'.allMatches(text).length + 1;
+    
+    // Colors
+    final textColor = isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93);
+    final iconColor = isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2);
+    final accentColor = isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF);
 
     return Container(
       height: 28,
@@ -32,25 +35,52 @@ class StatusBarWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Editor Mode / Language
           _statusBarItem(context, 'Markdown', Icons.article_outlined, isDark),
           _divider(isDark),
-          _statusBarItem(context, '$lineCount Lines', Icons.format_list_numbered_rtl_rounded, isDark),
+          
+          // Coordinate Info (Kate Style)
+          _statusBarItem(
+            context, 
+            provider.t('ln_col').replaceAll('{0}', '${provider.cursorLine}').replaceAll('{1}', '${provider.cursorColumn}'), 
+            Icons.location_searching_rounded, 
+            isDark,
+            color: accentColor
+          ),
+          
+          // Selection Info
+          if (provider.selectionLength > 0) ...[
+            _divider(isDark),
+            _statusBarItem(
+              context, 
+              provider.t('sel').replaceAll('{0}', '${provider.selectionLength}'), 
+              Icons.select_all_rounded, 
+              isDark,
+              color: const Color(0xFFFAB387)
+            ),
+          ],
+          
           _divider(isDark),
+          
+          // Text Stats
           _statusBarItem(context, '$wordCount Words', Icons.spellcheck_rounded, isDark),
           _divider(isDark),
           _statusBarItem(context, '$charCount Chars', Icons.text_fields_rounded, isDark),
+          
           const Spacer(),
+          
+          // File Name & Save Status
           Text(
-            provider.activeSession?.path?.split(getPathSeparator()).last ?? provider.activeSession?.name ?? 'Untitled.md',
+            provider.activeSession?.name ?? 'Untitled.md',
             style: GoogleFonts.inter(
               fontSize: 11,
               fontWeight: FontWeight.w400,
-              color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93),
+              color: textColor,
             ),
           ),
           const SizedBox(width: 8),
           Icon(
-            provider.isModified ? Icons.edit_note_rounded : Icons.save_outlined,
+            provider.isModified ? Icons.pending_rounded : Icons.check_circle_outline_rounded,
             size: 14,
             color: provider.isModified ? const Color(0xFFFAB387) : const Color(0xFFA6DA95),
           ),
@@ -59,21 +89,23 @@ class StatusBarWidget extends StatelessWidget {
     );
   }
 
-  Widget _statusBarItem(BuildContext context, String label, IconData icon, bool isDark) {
+  Widget _statusBarItem(BuildContext context, String label, IconData icon, bool isDark, {Color? color}) {
+    final defaultTextColor = isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93);
+    
     return Row(
       children: [
         Icon(
           icon,
-          size: 14,
-          color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93),
+          size: 13,
+          color: color?.withOpacity(0.8) ?? (isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2)),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93),
+          style: GoogleFonts.jetbrainsMono(
+            fontSize: 10.5,
+            fontWeight: color != null ? FontWeight.w700 : FontWeight.w500,
+            color: color ?? defaultTextColor,
           ),
         ),
       ],
@@ -82,10 +114,10 @@ class StatusBarWidget extends StatelessWidget {
 
   Widget _divider(bool isDark) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12.0),
+      margin: const EdgeInsets.symmetric(horizontal: 14.0),
       height: 12,
       width: 1,
-      color: isDark ? const Color(0xFF313244) : const Color(0xFFC6D0F5),
+      color: isDark ? const Color(0xFF313244) : const Color(0xFFC6D0F5).withOpacity(0.5),
     );
   }
 }
