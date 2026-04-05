@@ -62,6 +62,19 @@ msix_config:
   capabilities: internetClient, internetClientServer, privateNetworkClientServer
   install_certificate: false
 
+flutter_to_debian:
+  package: marka
+  version: 1.0.3
+  architecture: amd64
+  maintainer: Antigravity <aimy1@github.com>
+  section: utils
+  priority: optional
+  homepage: https://github.com/aimy1/Marka
+  description: Marka - The modern workspace for Markdown.
+  depends: [libgtk-3-0, libx11-6, libglib2.0-0, liblzma5, libkeybinder-3.0-0, libayatana-appindicator3-1]
+  icon: debian/gui/marka.png
+  desktop: debian/gui/marka.desktop
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
