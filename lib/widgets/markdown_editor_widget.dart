@@ -216,7 +216,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                                   alignment: Alignment.centerRight,
                                   child: Text(
                                     '${index + 1}',
-                                    style: GoogleFonts.jetbrainsMono(
+                                    style: GoogleFonts.jetBrainsMono(
                                       fontSize: 10,
                                       height: 1.0,
                                       fontWeight: isActive ? FontWeight.w800 : FontWeight.w400,

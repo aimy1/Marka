@@ -64,6 +64,12 @@ class MarkdownProvider with ChangeNotifier {
   int? _requestSelectionOffset;
   int? get requestSelectionOffset => _requestSelectionOffset;
 
+  double get scrollPercentage => activeSession?.scrollPercentage ?? 0.0;
+  String? get currentFilePath => activeSession?.path;
+  String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
+      ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
+      : null;
+
   String get pathSeparator => io.Platform.isWindows ? '\\' : '/';
 
   // State Management
@@ -565,8 +571,4 @@ void main() {
 ''';
 }
 
-class WorkspaceItem {
-  final String path;
-  final String name;
-  WorkspaceItem({required this.path, required this.name});
-}
+
