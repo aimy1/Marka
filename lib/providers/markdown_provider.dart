@@ -422,6 +422,11 @@ class MarkdownProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateSelection(int start, int end) {
+    _requestSelectionOffset = start;
+    notifyListeners();
+  }
+
   void toggleAutoSave() {
     _autoSave = !_autoSave;
     notifyListeners();
