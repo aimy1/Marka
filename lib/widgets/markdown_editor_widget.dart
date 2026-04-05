@@ -28,6 +28,16 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     _lineNumbersController = ScrollController();
     
     _scrollController.addListener(_onScroll);
+    provider.addListener(_onProviderChange);
+  }
+
+  void _onProviderChange() {
+    final provider = Provider.of<MarkdownProvider>(context, listen: false);
+    if (provider.requestSelectionOffset != null) {
+      final offset = provider.requestSelectionOffset!;
+      _controller.selection = TextSelection.collapsed(offset: offset);
+      provider.consumeSelectionRequest();
+    }
   }
 
   void _onScroll() {

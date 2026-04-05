@@ -30,6 +30,9 @@ class _EditorPageState extends State<EditorPage> {
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => provider.saveFile(),
         const SingleActivator(LogicalKeyboardKey.keyO, control: true): () => provider.openFile(),
         const SingleActivator(LogicalKeyboardKey.keyN, control: true): () => provider.newFile(),
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true): () => provider.insertSnippet('**', '**', provider.selectionStart, provider.selectionEnd),
+        const SingleActivator(LogicalKeyboardKey.keyI, control: true): () => provider.insertSnippet('*', '*', provider.selectionStart, provider.selectionEnd),
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): () => provider.insertSnippet('[', '](url)', provider.selectionStart, provider.selectionEnd),
       },
       child: Scaffold(
         body: Stack(

@@ -62,6 +62,14 @@ void main() {
   int _selectionStart = 0;
   int _selectionEnd = 0;
 
+  // Selection update request
+  int? _requestSelectionOffset;
+  int? get requestSelectionOffset => _requestSelectionOffset;
+
+  void consumeSelectionRequest() {
+    _requestSelectionOffset = null;
+  }
+
   // Workspace & Settings
   String? _workspacePath;
   List<File> _workspaceFiles = [];
@@ -94,15 +102,22 @@ void main() {
       _content = newContent;
       _isModified = _content != _originalContent;
       
-      // Debounce preview update to reduce lag
+      // Debounce preview update (fast)
       _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 250), () {
+      _debounceTimer = Timer(const Duration(milliseconds: 150), () {
         if (_previewContent != _content) {
           _previewContent = _content;
-          if (_autoSave) saveFile();
           notifyListeners();
         }
       });
+
+      // Auto-save debounce (longer)
+      if (_autoSave && _isModified) {
+        _autoSaveTimer?.cancel();
+        _autoSaveTimer = Timer(const Duration(seconds: 3), () {
+          if (_isModified) saveFile();
+        });
+      }
       
       // Notify immediately for status bar/dirty indicators
       notifyListeners();
@@ -294,12 +309,25 @@ void main() {
   }
 
   void insertSnippet(String prefix, [String suffix = '', int? selectionStart, int? selectionEnd]) {
-    if (selectionStart != null && selectionEnd != null) {
-      final selectedText = _content.substring(selectionStart, selectionEnd);
-      final newText = _content.replaceRange(selectionStart, selectionEnd, '$prefix$selectedText$suffix');
-      updateContent(newText);
-    } else {
-      updateContent('$_content$prefix$suffix');
+    final start = selectionStart ?? _content.length;
+    final end = selectionEnd ?? _content.length;
+
+    if (start >= 0 && end >= start) {
+      final selectedText = _content.substring(start, end);
+      final newText = _content.replaceRange(start, end, '$prefix$selectedText$suffix');
+      
+      _content = newText;
+      _isModified = _content != _originalContent;
+      _previewContent = _content;
+      
+      // Request selection update
+      if (start == end) {
+        _requestSelectionOffset = start + prefix.length;
+      } else {
+        _requestSelectionOffset = start + prefix.length + selectedText.length + suffix.length;
+      }
+
+      notifyListeners();
     }
   }
 

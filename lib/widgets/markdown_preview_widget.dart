@@ -62,60 +62,78 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
           controller: _scrollController,
           data: previewContent,
           selectable: true,
+          extensionSet: md.ExtensionSet.gitHubFlavored,
           builders: {
             'code': CodeElementBuilder(isDark: isDark),
           },
           imageDirectory: 'C:\\',
           styleSheet: MarkdownStyleSheet(
-            h1: TextStyle(
+            h1: GoogleFonts.inter(
               fontSize: 32,
-              fontWeight: FontWeight.bold,
-              height: 1.6,
-              color: isDark ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
+              color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF1E66F5),
             ),
-            h2: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              height: 1.6,
-              color: isDark ? Colors.white : Colors.black87,
+            h2: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+              color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
             ),
-            h3: TextStyle(
+            h3: GoogleFonts.inter(
               fontSize: 20,
-              fontWeight: FontWeight.bold,
-              height: 1.6,
-              color: isDark ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+              color: isDark ? const Color(0xFF94E2D5) : const Color(0xFF179299),
             ),
-            p: TextStyle(
-              fontSize: 16,
-              height: 1.8,
-              color: isDark ? Colors.white70 : Colors.black54,
+            p: GoogleFonts.inter(
+              fontSize: 15,
+              height: 1.7,
+              color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
             ),
-            blockquote: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white54 : Colors.black54,
+            blockquote: GoogleFonts.inter(
+              fontSize: 15,
+              color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93),
               fontStyle: FontStyle.italic,
             ),
             blockquoteDecoration: BoxDecoration(
+              color: isDark ? const Color(0xFF313244).withOpacity(0.3) : const Color(0xFFEFF1F5),
               border: Border(
                 left: BorderSide(
-                  color: isDark ? Colors.white24 : Colors.grey[300]!,
+                  color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
                   width: 4,
                 ),
               ),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              ),
             ),
-            listBullet: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white70 : Colors.black54,
+            listBullet: GoogleFonts.inter(
+              fontSize: 15,
+              color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
             ),
-            tableBody: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white70 : Colors.black54,
+            listIndent: 24.0,
+            tableBody: GoogleFonts.inter(
+              fontSize: 14,
+              color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
+            ),
+            tableBorder: TableBorder.all(
+              color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
+              width: 1,
+            ),
+            tableHead: GoogleFonts.inter(
+              fontWeight: FontWeight.bold,
+              color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+            ),
+            tableHeadDecoration: BoxDecoration(
+              color: isDark ? const Color(0xFF313244).withOpacity(0.5) : const Color(0xFFE6E9EF),
             ),
             horizontalRuleDecoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: isDark ? Colors.white12 : Colors.grey[200]!,
-                  width: 1,
+                  color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
+                  width: 2,
                 ),
               ),
             ),
