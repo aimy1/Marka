@@ -52,13 +52,6 @@ dev_dependencies:
   msix: ^3.16.2
   flutter_lints: ^6.0.0
 
-msix_config:
-  display_name: Marka
-  publisher_display_name: Antigravity
-  publisher: CN=Antigravity
-  identity_name: io.antigravity.marka
-  msix_version: 1.0.3.0
-  logo_path: markd.logo.jpg
   capabilities: internetClient, internetClientServer, privateNetworkClientServer
   install_certificate: false
 
