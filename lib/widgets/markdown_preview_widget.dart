@@ -96,7 +96,6 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
       tableBody: GoogleFonts.inter(fontSize: 14, color: textColor),
       tableBorder: TableBorder.all(color: borderColor, width: 1),
       tableHead: GoogleFonts.inter(fontWeight: FontWeight.bold, color: accentColor),
-      tableHeadDecoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
       horizontalRuleDecoration: BoxDecoration(border: Border(top: BorderSide(color: borderColor, width: 2))),
       code: TextStyle(fontFamily: 'monospace', backgroundColor: Colors.transparent, color: isDark ? const Color(0xFFFAB387) : const Color(0xFFFE640B)),
       codeblockDecoration: BoxDecoration(
@@ -195,7 +194,7 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
                     _dot(const Color(0xFFA6DA95)), const SizedBox(width: 12),
                     Text(
                       widget.language.isEmpty ? 'CODE' : widget.language.toUpperCase(),
-                      style: GoogleFonts.firaCode(fontSize: 10, fontWeight: FontWeight.bold, color: widget.isDark ? Colors.white30 : Colors.black30),
+                      style: GoogleFonts.firaCode(fontSize: 10, fontWeight: FontWeight.bold, color: widget.isDark ? Colors.white38 : Colors.black38),
                     ),
                   ],
                 ),
@@ -203,7 +202,7 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
                   onTap: _handleCopy,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
-                    child: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, key: ValueKey(_copied), size: 16, color: _copied ? Colors.green : (widget.isDark ? Colors.white30 : Colors.black30)),
+                    child: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, key: ValueKey(_copied), size: 16, color: _copied ? Colors.green : (widget.isDark ? Colors.white38 : Colors.black38)),
                   ),
                 ),
               ],

@@ -100,7 +100,7 @@ class SidebarWidget extends StatelessWidget {
       padding: const EdgeInsets.only(left: 8),
       constraints: const BoxConstraints(),
       tooltip: tooltip,
-      hoverColor: isDark ? Colors.white10 : Colors.black10,
+      hoverColor: isDark ? Colors.white12 : Colors.black12,
       splashRadius: 16,
     );
   }
