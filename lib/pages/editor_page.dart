@@ -294,10 +294,10 @@ class _EditorPageState extends State<EditorPage> {
             ],
           ),
         ],
-        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showSettingsDialog(BuildContext context, MarkdownProvider provider) {
     showDialog(
