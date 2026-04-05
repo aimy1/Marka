@@ -13,6 +13,7 @@ import '../widgets/markdown_preview_widget.dart';
 import '../widgets/sidebar_widget.dart';
 import '../widgets/toolbar_widget.dart';
 import '../widgets/status_bar_widget.dart';
+import '../widgets/settings_dialog.dart';
 
 class EditorPage extends StatefulWidget {
   const EditorPage({super.key});
@@ -277,7 +278,6 @@ class _EditorPageState extends State<EditorPage> {
               IconButton(icon: const Icon(Icons.settings_suggest_rounded, size: 20), onPressed: () => _showSettingsDialog(context, provider)),
               const SizedBox(width: 8),
             ],
-          ),
           ),
         ],
       ),
