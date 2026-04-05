@@ -1,11 +1,11 @@
 {
-    "name": "minimal_markdown",
-    "short_name": "minimal_markdown",
+    "name": "Marka",
+    "short_name": "Marka",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Modern workspace Markdown editor.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

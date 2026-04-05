@@ -1,5 +1,5 @@
 package: marka
-version: 1.0.2
+version: 1.0.3
 architecture: amd64
 maintainer: Antigravity <aimy1@github.com>
 section: utils
