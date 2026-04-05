@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:window_manager/window_manager.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +7,6 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/markdown_provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../widgets/markdown_editor_widget.dart';
 import '../widgets/markdown_preview_widget.dart';
 

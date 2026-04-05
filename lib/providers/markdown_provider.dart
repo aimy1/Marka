@@ -47,8 +47,8 @@ class MarkdownProvider with ChangeNotifier {
     _activeTabIndex = 0;
     _previewContent = _welcomeMarkdown;
     
-    // Load persisted workspaces
-    _loadPersistedWorkspaces();
+    // Load persisted workspaces safely after construction
+    Future.microtask(() => _loadPersistedWorkspaces());
   }
 
   Future<void> _loadPersistedWorkspaces() async {
