@@ -422,6 +422,16 @@ class MarkdownProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateFontSize(double size) {
+    _fontSize = size.clamp(8, 32);
+    notifyListeners();
+  }
+
+  void updateLineHeight(double height) {
+    _lineHeight = height.clamp(1.0, 3.0);
+    notifyListeners();
+  }
+
   void updateSelection(int start, int end) {
     _requestSelectionOffset = start;
     notifyListeners();

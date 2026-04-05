@@ -37,83 +37,68 @@ class _EditorPageState extends State<EditorPage> {
       child: Scaffold(
         body: Column(
           children: [
-          // Custom Title Bar (Pill)
-          _buildCustomTitleBar(isDark),
-          
-          Expanded(
-            child: Row(
-              children: [
-                // Fluid Animated Sidebar
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  width: _showSidebar ? 260 : 0,
-                  child: ClipRect(
-                    child: OverflowBox(
-                      minWidth: 260,
-                      maxWidth: 260,
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: _showSidebar ? 1.0 : 0.0,
-                        child: const SidebarWidget(),
+            _buildCustomTitleBar(isDark),
+            Expanded(
+              child: Row(
+                children: [
+                   AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    width: _showSidebar ? 260 : 0,
+                    child: ClipRect(
+                      child: OverflowBox(
+                        minWidth: 260,
+                        maxWidth: 260,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: _showSidebar ? 1.0 : 0.0,
+                          child: const SidebarWidget(),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                
-                // Main Content Area
-                Expanded(
-                  child: Column(
-                    children: [
-                      // Tab Bar Integrated with Toolbar
-                      _buildTabBarWrapper(provider, isDark),
-                      
-                      // Editor & Preview Area
-                      Expanded(
-                        child: (provider.sessions.length == 1 && provider.sessions.first.name == 'Welcome.md' && provider.workspacePaths.isEmpty)
-                          ? _buildWelcomeScreen(context, provider, isDark)
-                          : Row(
-                              children: [
-                                // Editor Section with Floating Word Count
-                                Expanded(
-                                  child: Stack(
-                                    children: [
-                                      const MarkdownEditorWidget(),
-                                      // Floating Word Count Badge
-                                      Positioned(
-                                        bottom: 20,
-                                        right: 20,
-                                        child: _buildEditorBadge(provider),
-                                      ),
-                                    ],
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _buildTabBarWrapper(provider, isDark),
+                        Expanded(
+                          child: (provider.sessions.length == 1 && provider.sessions.first.name == 'Welcome.md' && provider.workspacePaths.isEmpty)
+                            ? _buildWelcomeScreen(context, provider, isDark)
+                            : Row(
+                                children: [
+                                  Expanded(
+                                    child: Stack(
+                                      children: [
+                                        const MarkdownEditorWidget(),
+                                        Positioned(
+                                          bottom: 20,
+                                          right: 20,
+                                          child: _buildEditorBadge(provider),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                
-                                // Split Divider
-                                if (provider.isSplitScreen)
-                                  Container(
-                                    width: 1,
-                                    color: Theme.of(context).dividerColor,
-                                  ),
-                                  
-                                // Preview Section
-                                if (provider.isSplitScreen)
-                                  const Expanded(
-                                    child: MarkdownPreviewWidget(),
-                                  ),
-                              ],
-                            ),
-                      ),
-                      
-                      // Bottom Status Bar
-                      const StatusBarWidget(),
-                    ],
+                                  if (provider.isSplitScreen)
+                                    Container(
+                                      width: 1,
+                                      color: Theme.of(context).dividerColor,
+                                    ),
+                                  if (provider.isSplitScreen)
+                                    const Expanded(
+                                      child: MarkdownPreviewWidget(),
+                                    ),
+                                ],
+                              ),
+                        ),
+                        const StatusBarWidget(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
