@@ -23,8 +23,6 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    
-    // Add scroll sync listener
     final provider = Provider.of<MarkdownProvider>(context, listen: false);
     provider.addListener(_onProviderChange);
   }
@@ -34,8 +32,6 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
     if (_scrollController.hasClients) {
       final max = _scrollController.position.maxScrollExtent;
       final target = provider.scrollPercentage * max;
-      
-      // Check difference to avoid infinite loop or jerky motion
       if ((_scrollController.offset - target).abs() > 5.0) {
         _scrollController.jumpTo(target);
       }
@@ -47,9 +43,7 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
     try {
       final provider = Provider.of<MarkdownProvider>(context, listen: false);
       provider.removeListener(_onProviderChange);
-    } catch (e) {
-      // 忽略已销毁widget的错误
-    }
+    } catch (_) {}
     _scrollController.dispose();
     super.dispose();
   }
@@ -60,7 +54,7 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       child: RepaintBoundary(
         child: Markdown(
@@ -73,71 +67,41 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
             'blockquote': BlockquoteElementBuilder(isDark: isDark),
           },
           imageDirectory: context.select((MarkdownProvider p) => p.currentFileDirectory),
-          styleSheet: MarkdownStyleSheet(
-            h1: GoogleFonts.inter(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              height: 1.4,
-              color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF1E66F5),
-            ),
-            h2: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              height: 1.4,
-              color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-            ),
-            h3: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
-              color: isDark ? const Color(0xFF94E2D5) : const Color(0xFF179299),
-            ),
-            p: GoogleFonts.inter(
-              fontSize: 15,
-              height: 1.7,
-              color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-            ),
-            blockquote: GoogleFonts.inter(
-              fontSize: 15,
-              color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93),
-              fontStyle: FontStyle.italic,
-            ),
-            blockquoteDecoration: BoxDecoration(
-              color: isDark ? const Color(0xFF313244).withOpacity(0.3) : const Color(0xFFEFF1F5).withAlpha(150),
-              border: Border(
-                left: BorderSide(
-                  color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299),
-                  width: 4,
-                ),
-              ),
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(8),
-                bottomRight: Radius.circular(8),
-              ),
-            ),
-            listBullet: GoogleFonts.inter(
-              fontSize: 15,
-              color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-            ),
-            listIndent: 24.0,
-            tableBody: GoogleFonts.inter(
-              fontSize: 14,
-              color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-            ),
-            tableBorder: TableBorder.all(
-              color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-              width: 1,
-            ),
-            tableHead: GoogleFonts.inter(
-              fontWeight: FontWeight.bold,
-              color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-            ),
-            code: const TextStyle(
-              fontFamily: 'monospace',
-              backgroundColor: Colors.transparent,
-            ),
-          ),
+          styleSheet: _buildStyleSheet(isDark),
         ),
+      ),
+    );
+  }
+
+  MarkdownStyleSheet _buildStyleSheet(bool isDark) {
+    final textColor = isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69);
+    final accentColor = isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF);
+    final borderColor = isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8);
+
+    return MarkdownStyleSheet(
+      h1: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w800, height: 1.4, color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF1E66F5)),
+      h2: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, height: 1.4, color: accentColor),
+      h3: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600, height: 1.4, color: isDark ? const Color(0xFF94E2D5) : const Color(0xFF179299)),
+      p: GoogleFonts.inter(fontSize: 15, height: 1.8, color: textColor),
+      strong: const TextStyle(fontWeight: FontWeight.bold),
+      em: const TextStyle(fontStyle: FontStyle.italic),
+      blockquote: GoogleFonts.inter(fontSize: 15, color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93), fontStyle: FontStyle.italic),
+      blockquoteDecoration: BoxDecoration(
+        color: isDark ? const Color(0xFF313244).withOpacity(0.3) : const Color(0xFFEFF1F5).withAlpha(150),
+        border: Border(left: BorderSide(color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299), width: 4)),
+        borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+      ),
+      listBullet: GoogleFonts.inter(fontSize: 15, color: accentColor),
+      listIndent: 24.0,
+      tableBody: GoogleFonts.inter(fontSize: 14, color: textColor),
+      tableBorder: TableBorder.all(color: borderColor, width: 1),
+      tableHead: GoogleFonts.inter(fontWeight: FontWeight.bold, color: accentColor),
+      tableHeadDecoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+      horizontalRuleDecoration: BoxDecoration(border: Border(top: BorderSide(color: borderColor, width: 2))),
+      code: TextStyle(fontFamily: 'monospace', backgroundColor: Colors.transparent, color: isDark ? const Color(0xFFFAB387) : const Color(0xFFFE640B)),
+      codeblockDecoration: BoxDecoration(
+        color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }
@@ -145,77 +109,42 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
 
 class BlockquoteElementBuilder extends MarkdownElementBuilder {
   final bool isDark;
-
   BlockquoteElementBuilder({required this.isDark});
 
   @override
   Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 12,
-            top: 0,
-            child: Icon(
-              Icons.format_quote_rounded,
-              size: 28,
-              color: (isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299)).withOpacity(0.4),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(40, 16, 16, 16),
-            child: Text(
-              element.textContent,
-              style: preferredStyle,
-            ),
-          ),
-        ],
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF313244).withOpacity(0.2) : const Color(0xFFEFF1F5).withOpacity(0.5),
+        borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+        border: Border(left: BorderSide(color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299), width: 4)),
       ),
+      child: Text(element.textContent, style: preferredStyle),
     );
   }
 }
 
 class CodeElementBuilder extends MarkdownElementBuilder {
   final bool isDark;
-
   CodeElementBuilder({required this.isDark});
 
   @override
   Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
     var language = '';
-
     if (element.attributes['class'] != null) {
       String lg = element.attributes['class'] as String;
       language = lg.split('-').last;
     }
-
     final String textContent = element.textContent;
-
-    // Is it a block of code (multiline)?
     if (textContent.contains('\n')) {
-      return CodeBlockWidget(
-        textContent: textContent.trim(),
-        language: language,
-        isDark: isDark,
-      );
+      return CodeBlockWidget(textContent: textContent.trim(), language: language, isDark: isDark);
     }
-
-    // Inline code
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white10 : Colors.grey[200],
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        textContent,
-        style: TextStyle(
-          fontFamily: 'monospace',
-          fontSize: 14,
-          color: isDark ? Colors.orangeAccent : Colors.deepOrange,
-        ),
-      ),
+      decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05), borderRadius: BorderRadius.circular(4)),
+      child: Text(textContent, style: TextStyle(fontFamily: 'monospace', fontSize: 13, color: isDark ? const Color(0xFFFAB387) : const Color(0xFFFE640B))),
     );
   }
 }
@@ -224,143 +153,69 @@ class CodeBlockWidget extends StatefulWidget {
   final String textContent;
   final String language;
   final bool isDark;
-
-  const CodeBlockWidget({
-    super.key,
-    required this.textContent,
-    required this.language,
-    required this.isDark,
-  });
+  const CodeBlockWidget({super.key, required this.textContent, required this.language, required this.isDark});
 
   @override
   State<CodeBlockWidget> createState() => _CodeBlockWidgetState();
 }
 
 class _CodeBlockWidgetState extends State<CodeBlockWidget> {
-  bool _isExpanded = false;
   bool _copied = false;
 
   void _handleCopy() {
     Clipboard.setData(ClipboardData(text: widget.textContent));
     setState(() => _copied = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _copied = false);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Copied to clipboard'),
-        duration: Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        width: 200,
-      ),
-    );
+    Future.delayed(const Duration(seconds: 2), () { if (mounted) setState(() => _copied = false); });
   }
 
   @override
   Widget build(BuildContext context) {
-    final languageColor = _getLanguageColor(widget.language);
-
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 24),
+      margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: widget.isDark 
-            ? [const Color(0xFF1E1E2E), const Color(0xFF181825)]
-            : [const Color(0xFFEFF1F5), const Color(0xFFE6E9EF)],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: widget.isDark ? const Color(0xFF313244).withOpacity(0.5) : const Color(0xFFDCE0E8),
-          width: 1,
-        ),
-        boxShadow: widget.isDark ? [] : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: widget.isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: widget.isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8), width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
           Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: widget.isDark ? Colors.black26 : Colors.white24,
-              border: Border(
-                bottom: BorderSide(
-                  color: widget.isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-                  width: 1,
-                ),
-              ),
-            ),
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            color: widget.isDark ? Colors.black26 : Colors.white24,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    // macOS Style Dots
-                    _dot(const Color(0xFFED8796)), // Red
-                    const SizedBox(width: 8),
-                    _dot(const Color(0xFFEED49F)), // Yellow
-                    const SizedBox(width: 8),
-                    _dot(const Color(0xFFA6DA95)), // Green
-                    const SizedBox(width: 16),
+                    _dot(const Color(0xFFED8796)), const SizedBox(width: 6),
+                    _dot(const Color(0xFFEED49F)), const SizedBox(width: 6),
+                    _dot(const Color(0xFFA6DA95)), const SizedBox(width: 12),
                     Text(
-                      widget.language.isEmpty ? 'TEXT' : widget.language.toUpperCase(),
-                      style: GoogleFonts.firaCode(
-                        fontSize: 10,
-                        letterSpacing: 1.2,
-                        color: widget.isDark ? Colors.white38 : Colors.black38,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      widget.language.isEmpty ? 'CODE' : widget.language.toUpperCase(),
+                      style: GoogleFonts.firaCode(fontSize: 10, fontWeight: FontWeight.bold, color: widget.isDark ? Colors.white30 : Colors.black30),
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    Consumer<MarkdownProvider>(
-                      builder: (context, provider, _) => _actionButton(
-                        icon: provider.isWrapped ? Icons.wrap_text_rounded : Icons.format_align_left_rounded,
-                        color: provider.isWrapped ? const Color(0xFFCBA6F7) : null,
-                        onPressed: () => provider.toggleWrap(),
-                        tooltip: 'Toggle Wrap',
-                      ),
-                    ),
-                    _actionButton(
-                      icon: _copied ? Icons.check_circle_outline_rounded : Icons.copy_all_rounded,
-                      color: _copied ? const Color(0xFF27C93F) : null,
-                      onPressed: _handleCopy,
-                      tooltip: 'Copy',
-                    ),
-                  ],
+                InkWell(
+                  onTap: _handleCopy,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, key: ValueKey(_copied), size: 16, color: _copied ? Colors.green : (widget.isDark ? Colors.white30 : Colors.black30)),
+                  ),
                 ),
               ],
             ),
           ),
-          // Code Area
-          Consumer<MarkdownProvider>(
-            builder: (context, provider, _) => SingleChildScrollView(
-              scrollDirection: provider.isWrapped ? Axis.vertical : Axis.horizontal,
-              padding: const EdgeInsets.all(24.0),
-              child: HighlightView(
-                widget.textContent,
-                language: widget.language.isEmpty ? 'plaintext' : widget.language,
-                theme: widget.isDark ? atomOneDarkTheme : atomOneLightTheme,
-                padding: EdgeInsets.zero,
-                textStyle: _getSafeFont(
-                  provider.fontFamily == 'Inter' ? 'JetBrains Mono' : provider.fontFamily,
-                  provider.fontSize - 1,
-                  provider.lineHeight,
-                ),
-              ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: HighlightView(
+              widget.textContent,
+              language: widget.language.isEmpty ? 'plaintext' : widget.language,
+              theme: widget.isDark ? atomOneDarkTheme : atomOneLightTheme,
+              textStyle: GoogleFonts.jetBrainsMono(fontSize: 13, height: 1.5),
             ),
           ),
         ],
@@ -368,50 +223,5 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
     );
   }
 
-  TextStyle _getSafeFont(String family, double size, double height) {
-    try {
-      return GoogleFonts.getFont(family, fontSize: size, height: height);
-    } catch (_) {
-      // Return a safe system monospace fallback
-      return TextStyle(fontFamily: 'monospace', fontSize: size, height: height);
-    }
-  }
-
-  Color _getLanguageColor(String lang) {
-    switch (lang.toLowerCase()) {
-      case 'dart': return const Color(0xFF00B4AB);
-      case 'flutter': return const Color(0xFF02569B);
-      case 'js':
-      case 'javascript': return const Color(0xFFF7DF1E);
-      case 'ts':
-      case 'typescript': return const Color(0xFF3178C6);
-      case 'html': return const Color(0xFFE34F26);
-      case 'css': return const Color(0xFF1572B6);
-      case 'py':
-      case 'python': return const Color(0xFF3776AB);
-      default: return const Color(0xFFED8796); // Default Mocha Red
-    }
-  }
-
-  Widget _dot(Color color) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-
-  Widget _actionButton({required IconData icon, required VoidCallback onPressed, String? tooltip, Color? color}) {
-    return Tooltip(
-      message: tooltip ?? '',
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(icon, size: 16, color: color ?? (widget.isDark ? Colors.white38 : Colors.black38)),
-        ),
-      ),
-    );
-  }
+  Widget _dot(Color color) => Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle));
 }
