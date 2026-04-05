@@ -278,16 +278,16 @@ class _EditorPageState extends State<EditorPage> {
               const SizedBox(width: 8),
             ],
           ),
+          ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showSettingsDialog(BuildContext context, MarkdownProvider provider) {
     showDialog(
       context: context,
-      builder: (context) => const SettingsDialog(),
+      builder: (context) => SettingsDialog(),
     );
   }
 
