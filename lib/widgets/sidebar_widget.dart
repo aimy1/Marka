@@ -38,7 +38,7 @@ class SidebarWidget extends StatelessWidget {
                 Icon(Icons.workspaces_outline, size: 18, color: isDark ? Colors.white38 : Colors.black45),
                 const SizedBox(width: 10),
                 Text(
-                  'WORKSPACES',
+                  provider.t('workspaces'),
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -52,14 +52,14 @@ class SidebarWidget extends StatelessWidget {
                   onPressed: () => provider.loadWorkspace(context),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  tooltip: kIsWeb ? 'Open Files (Web)' : 'Add Folder',
+                  tooltip: kIsWeb ? provider.t('open_files') : provider.t('open_folder'),
                 ),
                 IconButton(
                   icon: Icon(Icons.refresh_rounded, size: 18, color: isDark ? Colors.white38 : Colors.black45),
                   onPressed: () => provider.refreshWorkspace(),
                   padding: const EdgeInsets.only(left: 8),
                   constraints: const BoxConstraints(),
-                  tooltip: 'Refresh All',
+                  tooltip: provider.t('refresh_all'),
                 ),
               ],
             ),
@@ -102,7 +102,7 @@ class SidebarWidget extends StatelessWidget {
                             ? [
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8),
-                                  child: Text('No .md files', style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
+                                  child: Text(provider.t('no_md_files'), style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
                                 )
                               ]
                             : files.map((fileItem) {
@@ -113,15 +113,6 @@ class SidebarWidget extends StatelessWidget {
                       );
                     },
                   ),
-          ),
-
-          // Bottom Settings
-          _buildSidebarAction(
-            context,
-            'Settings',
-            Icons.settings_outlined,
-            isDark,
-            onTap: () => _showSettingsDialog(context, provider),
           ),
           const SizedBox(height: 12),
         ],
@@ -145,7 +136,7 @@ class SidebarWidget extends StatelessWidget {
             child: Text(
               kIsWeb 
                 ? 'Individual folders cannot be scanned in browsers. Select multiple files to create a virtual workspace!' 
-                : 'No Folders Open',
+                : provider.t('no_folders_open'),
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 12,
@@ -156,7 +147,7 @@ class SidebarWidget extends StatelessWidget {
           const SizedBox(height: 20),
           _buildActionButton(
             context, 
-            'Open Folder', 
+            provider.t('open_folder'), 
             Icons.create_new_folder_outlined, 
             () => provider.loadWorkspace(context), 
             isDark
@@ -175,7 +166,7 @@ class SidebarWidget extends StatelessWidget {
           onPressed: () => _showCreateFileDialog(context, provider, path),
           constraints: const BoxConstraints(),
           padding: EdgeInsets.zero,
-          tooltip: 'New File',
+          tooltip: provider.t('new_file'),
         ),
         const SizedBox(width: 4),
         Icon(Icons.chevron_right_rounded, size: 18, color: isDark ? Colors.white24 : Colors.black26),
@@ -190,8 +181,8 @@ class SidebarWidget extends StatelessWidget {
       items: [
         PopupMenuItem(
           onTap: () => provider.removeWorkspaceFolder(path),
-          child: const Row(
-            children: [Icon(Icons.folder_delete_outlined, size: 18, color: Colors.red), SizedBox(width: 12), Text('Remove Folder', style: TextStyle(color: Colors.red))],
+          child: Row(
+            children: [Icon(Icons.folder_delete_outlined, size: 18, color: Colors.red), SizedBox(width: 12), Text(provider.t('remove_folder'), style: const TextStyle(color: Colors.red))],
           ),
         ),
       ],
@@ -281,14 +272,14 @@ class SidebarWidget extends StatelessWidget {
       items: [
         PopupMenuItem(
           onTap: () => Future.delayed(Duration.zero, () => _showRenameDialog(context, provider, item)),
-          child: const Row(
-            children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 12), Text('Rename')],
+          child: Row(
+            children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 12), Text(provider.t('rename'))],
           ),
         ),
         PopupMenuItem(
           onTap: () => provider.deleteFile(item.path),
-          child: const Row(
-            children: [Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red), SizedBox(width: 12), Text('Delete', style: TextStyle(color: Colors.red))],
+          child: Row(
+            children: [Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red), SizedBox(width: 12), Text(provider.t('delete'), style: const TextStyle(color: Colors.red))],
           ),
         ),
       ],
@@ -302,15 +293,15 @@ class SidebarWidget extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text('New File in ${folderPath.split(getPathSeparator()).last}', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
+        title: Text('${provider.t('new_file_dialog_title')} ${folderPath.split(getPathSeparator()).last}', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: 'filename (without .md)', border: OutlineInputBorder()),
+          decoration: InputDecoration(hintText: 'filename (without .md)', border: const OutlineInputBorder()),
           autofocus: true,
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(provider.t('cancel'))),
           ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
@@ -318,7 +309,7 @@ class SidebarWidget extends StatelessWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Create'),
+            child: Text(provider.t('create')),
           ),
         ],
       ),
@@ -334,10 +325,10 @@ class SidebarWidget extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text('Rename File', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
+        title: Text(provider.t('rename_dialog_title'), style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
         content: TextField(controller: controller, autofocus: true, style: GoogleFonts.inter(fontSize: 13), decoration: const InputDecoration(border: OutlineInputBorder())),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(provider.t('cancel'))),
           ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
@@ -345,42 +336,9 @@ class SidebarWidget extends StatelessWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Rename'),
+            child: Text(provider.t('rename')),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showSettingsDialog(BuildContext context, MarkdownProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) => const SettingsDialog(),
-    );
-  }
-
-  Widget _buildSidebarAction(BuildContext context, String title, IconData icon, bool isDark, {required VoidCallback onTap}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: isDark ? Colors.white38 : Colors.black45),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

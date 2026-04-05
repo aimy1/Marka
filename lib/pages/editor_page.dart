@@ -271,11 +271,23 @@ class _EditorPageState extends State<EditorPage> {
                   color: provider.isModified ? const Color(0xFFCBA6F7) : null
                 ), 
                 onPressed: () => provider.saveFile(),
-                tooltip: 'Save (Ctrl+S)',
+                tooltip: provider.t('save_tooltip'),
               ),
-              IconButton(icon: const Icon(Icons.add_rounded, size: 20), onPressed: () => provider.newFile()),
-              IconButton(icon: const Icon(Icons.splitscreen_rounded, size: 20), onPressed: () => provider.toggleSplitScreen()),
-              IconButton(icon: const Icon(Icons.settings_suggest_rounded, size: 20), onPressed: () => _showSettingsDialog(context, provider)),
+              IconButton(
+                icon: const Icon(Icons.add_rounded, size: 20), 
+                onPressed: () => provider.newFile(),
+                tooltip: provider.t('new_file_tooltip'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.splitscreen_rounded, size: 20), 
+                onPressed: () => provider.toggleSplitScreen(),
+                tooltip: provider.t('split_tooltip'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings_suggest_rounded, size: 20), 
+                onPressed: () => _showSettingsDialog(context, provider),
+                tooltip: provider.t('settings_tooltip'),
+              ),
               const SizedBox(width: 8),
             ],
           ),
@@ -344,7 +356,7 @@ class _EditorPageState extends State<EditorPage> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Welcome to Marka',
+            provider.t('welcome_title'),
             style: GoogleFonts.inter(
               fontSize: 28,
               fontWeight: FontWeight.w800,
@@ -353,67 +365,71 @@ class _EditorPageState extends State<EditorPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Open a folder to start managing your Markdown project.',
+            provider.t('welcome_desc'),
             style: GoogleFonts.inter(
               fontSize: 14,
               color: isDark ? Colors.white38 : Colors.black45,
             ),
           ),
           const SizedBox(height: 48),
-          ElevatedButton.icon(
-            onPressed: () => provider.loadWorkspace(context),
-            icon: const Icon(Icons.create_new_folder_outlined),
-            label: const Text('Open Folder'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              backgroundColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-              foregroundColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-              textStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16),
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextButton.icon(
-            onPressed: () => provider.openFile(),
-            icon: const Icon(Icons.file_open_outlined, size: 18),
-            label: const Text('Open Files'),
-            style: TextButton.styleFrom(
-              foregroundColor: isDark ? Colors.white70 : Colors.black87,
-            ),
+          _buildBigButton(
+            context,
+            provider.t('open_folder'),
+            Icons.create_new_folder_outlined,
+            () => provider.loadWorkspace(context),
+            isDark,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEditorBadge(MarkdownProvider provider) {
-    final wordCount = provider.content.isEmpty ? 0 : provider.content.trim().split(RegExp(r'\s+')).length;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 300),
-      opacity: provider.content.isNotEmpty ? 0.8 : 0.0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF313244) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Text(
-          '$wordCount Words',
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5),
+  Widget _buildBigButton(BuildContext context, String label, IconData icon, VoidCallback onTap, bool isDark) {
+    return Material(
+      color: isDark ? const Color(0xFFCBA6F7).withOpacity(0.1) : const Color(0xFF1E66F5).withOpacity(0.1),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5),
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditorBadge(MarkdownProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final wordCount = provider.content.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E2E).withOpacity(0.8) : Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Text(
+        '$wordCount ${provider.t('words')}',
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white54 : Colors.black54,
         ),
       ),
     );

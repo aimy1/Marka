@@ -24,6 +24,7 @@ class MarkdownProvider with ChangeNotifier {
   double _lineHeight = 1.5;
   String _fontFamily = 'Inter';
   bool _autoSave = false;
+  String _locale = 'en'; // 'en' or 'zh'
   
   // Workspace State (Multiple Folders)
   final List<String> _workspacePaths = [];
@@ -49,18 +50,15 @@ class MarkdownProvider with ChangeNotifier {
     Future.microtask(() => _loadPersistedWorkspaces());
   }
 
-  Future<void> _loadPersistedWorkspaces() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedPaths = prefs.getStringList('workspace_paths');
-      if (savedPaths != null && savedPaths.isNotEmpty) {
-        for (var path in savedPaths) {
-          if (!_workspacePaths.contains(path)) {
-            _workspacePaths.add(path);
-          }
-        }
         await refreshWorkspace();
       }
+      
+      final prefs = await SharedPreferences.getInstance();
+      final savedLocale = prefs.getString('locale');
+      if (savedLocale != null) {
+        _locale = savedLocale;
+      }
+      notifyListeners();
     } catch (e) {
       debugPrint('Error loading persisted workspaces: $e');
     }
@@ -90,6 +88,7 @@ class MarkdownProvider with ChangeNotifier {
   double get lineHeight => _lineHeight;
   String get fontFamily => _fontFamily;
   bool get autoSave => _autoSave;
+  String get locale => _locale;
   
   List<String> get workspacePaths => _workspacePaths;
   Map<String, List<WorkspaceItem>> get workspaceFilesMap => _workspaceFilesMap;
@@ -443,7 +442,85 @@ class MarkdownProvider with ChangeNotifier {
       _requestSelectionOffset = start + prefix.length + (start == end ? 0 : selectedText.length + suffix.length);
       notifyListeners();
     }
+  void updateLocale(String langCode) async {
+    _locale = langCode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', langCode);
   }
+
+  String t(String key) {
+    return _translations[_locale]?[key] ?? key;
+  }
+
+  static const Map<String, Map<String, String>> _translations = {
+    'en': {
+      'settings': 'Settings',
+      'font_family': 'Font Family',
+      'font_size': 'Font Size',
+      'line_height': 'Line Height',
+      'auto_save': 'Auto Save',
+      'theme': 'Theme',
+      'language': 'Language',
+      'split_screen': 'Split Screen',
+      'word_wrap': 'Word Wrap',
+      'close': 'Close',
+      'workspaces': 'WORKSPACES',
+      'open_folder': 'Open Folder',
+      'refresh_all': 'Refresh All',
+      'new_file': 'New File',
+      'rename_dialog_title': 'Rename File',
+      'new_file_dialog_title': 'New File in',
+      'rename': 'Rename',
+      'delete': 'Delete',
+      'cancel': 'Cancel',
+      'create': 'Create',
+      'welcome_title': 'Welcome to Marka',
+      'welcome_desc': 'Open a folder to start managing your Markdown project.',
+      'open_files': 'Open Files',
+      'words': 'Words',
+      'save_tooltip': 'Save (Ctrl+S)',
+      'new_file_tooltip': 'New File',
+      'split_tooltip': 'Toggle Split Screen',
+      'settings_tooltip': 'Settings',
+      'no_folders_open': 'No Folders Open',
+      'remove_folder': 'Remove Folder',
+      'no_md_files': 'No .md files',
+    },
+    'zh': {
+      'settings': '设置',
+      'font_family': '字体',
+      'font_size': '字号',
+      'line_height': '行高',
+      'auto_save': '自动保存',
+      'theme': '主题模式',
+      'language': '软件语言',
+      'split_screen': '分屏预览',
+      'word_wrap': '自动换行',
+      'close': '关闭',
+      'workspaces': '工作空间',
+      'open_folder': '打开文件夹',
+      'refresh_all': '刷新全部',
+      'new_file': '新建文件',
+      'rename_dialog_title': '重命名文件',
+      'new_file_dialog_title': '新建文件于',
+      'rename': '重命名',
+      'delete': '删除',
+      'cancel': '取消',
+      'create': '创建',
+      'welcome_title': '欢迎使用 Marka',
+      'welcome_desc': '打开一个项目目录来启动您的 Markdown 工作流。',
+      'open_files': '打开文件',
+      'words': '字数统计',
+      'save_tooltip': '保存 (Ctrl+S)',
+      'new_file_tooltip': '新建文件',
+      'split_tooltip': '切换分屏',
+      'settings_tooltip': '设置中心',
+      'no_folders_open': '暂未打开工作目录',
+      'remove_folder': '移除目录',
+      'no_md_files': '无 Markdown 文件',
+    },
+  };
 
   static const String _welcomeMarkdown = '''
 # 🚀 Marka
