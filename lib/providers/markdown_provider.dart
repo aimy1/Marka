@@ -101,6 +101,24 @@ class MarkdownProvider with ChangeNotifier {
   int get selectionEnd => activeSession?.selectionEnd ?? 0;
   double get scrollPercentage => activeSession?.scrollPercentage ?? 0.0;
 
+  void refreshPreview() {
+    final session = activeSession;
+    if (session != null) {
+      _previewContent = session.content;
+      notifyListeners();
+    }
+  }
+
+  void toggleSplitScreen() {
+    _isSplitScreen = !_isSplitScreen;
+    notifyListeners();
+  }
+
+  void toggleWrap() {
+    _isWrapped = !_isWrapped;
+    notifyListeners();
+  }
+
   String? get currentFileDirectory {
     final path = activeSession?.path;
     if (path == null || kIsWeb) return null;
@@ -439,6 +457,31 @@ class MarkdownProvider with ChangeNotifier {
 
   void toggleAutoSave() {
     _autoSave = !_autoSave;
+    notifyListeners();
+  }
+
+  Future<void> refreshWorkspace() async {
+    _workspaceFilesMap.clear();
+    for (var path in _workspacePaths) {
+      if (kIsWeb) continue;
+      try {
+        final dir = io.Directory(path);
+        if (await dir.exists()) {
+          final List<WorkspaceItem> items = [];
+          await for (var entity in dir.list()) {
+            if (entity is io.File && (entity.path.endsWith('.md') || entity.path.endsWith('.markdown'))) {
+              items.add(WorkspaceItem(
+                path: entity.path,
+                name: entity.path.split(getPathSeparator()).last,
+              ));
+            }
+          }
+          _workspaceFilesMap[path] = items;
+        }
+      } catch (e) {
+        debugPrint('Error refreshing workspace $path: $e');
+      }
+    }
     notifyListeners();
   }
 
