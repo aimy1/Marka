@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:window_manager/window_manager.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/markdown_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../widgets/markdown_editor_widget.dart';
 import '../widgets/markdown_preview_widget.dart';
 
@@ -29,9 +31,14 @@ class _EditorPageState extends State<EditorPage> {
     final provider = Provider.of<MarkdownProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Column(
-        children: [
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => provider.saveFile(),
+        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): () => provider.saveFile(),
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
           // Custom Title Bar (Pill)
           _buildCustomTitleBar(isDark),
           
@@ -123,40 +130,45 @@ class _EditorPageState extends State<EditorPage> {
         color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
         child: Stack(
           children: [
-            // Center Branding (Pill)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.black12,
-                    width: 1,
+            // Left Positioning for Branding (Pill)
+            Positioned(
+              left: 16,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.black12,
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        'markd.logo.jpg',
-                        width: 16,
-                        height: 16,
-                        fit: BoxFit.cover,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.asset(
+                          'markd.logo.jpg',
+                          width: 16,
+                          height: 16,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Marka',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white70 : Colors.black87,
+                      const SizedBox(width: 8),
+                      Text(
+                        'Marka',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -269,20 +281,30 @@ class _EditorPageState extends State<EditorPage> {
           // Action Buttons
           Row(
             children: [
+              IconButton(
+                icon: Icon(Icons.save_outlined, 
+                  size: 20, 
+                  color: provider.isModified ? const Color(0xFFCBA6F7) : null
+                ), 
+                onPressed: () => provider.saveFile(),
+                tooltip: 'Save (Ctrl+S)',
+              ),
               IconButton(icon: const Icon(Icons.add_rounded, size: 20), onPressed: () => provider.newFile()),
               IconButton(icon: const Icon(Icons.splitscreen_rounded, size: 20), onPressed: () => provider.toggleSplitScreen()),
-              if (!kIsWeb)
-                IconButton(icon: const Icon(Icons.fullscreen_rounded, size: 20), onPressed: () => windowManager.maximize()),
-              if (!kIsWeb)
-                IconButton(icon: const Icon(Icons.minimize_rounded, size: 20), onPressed: () => windowManager.minimize()),
-              if (!kIsWeb)
-                IconButton(icon: const Icon(Icons.close_rounded, size: 20), onPressed: () => windowManager.close()),
-              IconButton(icon: const Icon(Icons.more_horiz_rounded, size: 20), onPressed: () {}),
+              IconButton(icon: const Icon(Icons.settings_suggest_rounded, size: 20), onPressed: () => _showSettingsDialog(context, provider)),
               const SizedBox(width: 8),
             ],
           ),
         ],
+        ),
       ),
+    );
+  }
+
+  void _showSettingsDialog(BuildContext context, MarkdownProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) => const SettingsDialog(),
     );
   }
 

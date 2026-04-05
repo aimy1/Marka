@@ -306,12 +306,20 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
               children: [
                 Row(
                   children: [
+                    // macOS Style Dots
+                    _dot(const Color(0xFFED8796)), // Red
+                    const SizedBox(width: 8),
+                    _dot(const Color(0xFFEED49F)), // Yellow
+                    const SizedBox(width: 8),
+                    _dot(const Color(0xFFA6DA95)), // Green
+                    const SizedBox(width: 16),
                     Text(
-                      widget.language.isEmpty ? '#plaintext' : '#import ${widget.language}',
+                      widget.language.isEmpty ? 'TEXT' : widget.language.toUpperCase(),
                       style: GoogleFonts.firaCode(
-                        fontSize: 11,
-                        color: const Color(0xFFA6DA95),
-                        fontWeight: FontWeight.w400,
+                        fontSize: 10,
+                        letterSpacing: 1.2,
+                        color: widget.isDark ? Colors.white38 : Colors.black38,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -347,9 +355,10 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> {
                 language: widget.language.isEmpty ? 'plaintext' : widget.language,
                 theme: widget.isDark ? atomOneDarkTheme : atomOneLightTheme,
                 padding: EdgeInsets.zero,
-                textStyle: GoogleFonts.firaCode(
-                  fontSize: 13,
-                  height: 1.5,
+                textStyle: GoogleFonts.getFont(
+                  provider.fontFamily == 'Inter' ? 'JetBrains Mono' : provider.fontFamily,
+                  fontSize: provider.fontSize - 1,
+                  height: provider.lineHeight,
                 ),
               ),
             ),

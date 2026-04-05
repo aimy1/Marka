@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
@@ -31,13 +32,35 @@ class SettingsDialog extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
+            // Font Family
+            _buildSettingRow(
+              'Font Family',
+              DropdownButton<String>(
+                value: provider.fontFamily,
+                underline: const SizedBox(),
+                dropdownColor: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
+                onChanged: (String? value) {
+                  if (value != null) provider.updateFontFamily(value);
+                },
+                items: ['Inter', 'Fira Code', 'JetBrains Mono']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: GoogleFonts.getFont(value, fontSize: 13)),
+                  );
+                }).toList(),
+              ),
+            ),
+            
+            const Divider(),
+
             // Font Size
             _buildSettingRow(
               'Font Size',
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.remove_rounded),
+                    icon: const Icon(Icons.remove_rounded, size: 18),
                     onPressed: () => provider.updateFontSize(provider.fontSize - 1),
                   ),
                   Text(
@@ -45,10 +68,28 @@ class SettingsDialog extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.add_rounded),
+                    icon: const Icon(Icons.add_rounded, size: 18),
                     onPressed: () => provider.updateFontSize(provider.fontSize + 1),
                   ),
                 ],
+              ),
+            ),
+            
+            const Divider(),
+
+            // Line Height
+            _buildSettingRow(
+              'Line Height',
+              SizedBox(
+                width: 120,
+                child: Slider(
+                  value: provider.lineHeight,
+                  min: 1.0,
+                  max: 2.5,
+                  divisions: 15,
+                  activeColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5),
+                  onChanged: (val) => provider.updateLineHeight(val),
+                ),
               ),
             ),
             

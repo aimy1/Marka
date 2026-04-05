@@ -160,22 +160,25 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
               ),
             ),
           ),
-          child: ListView.builder(
-            controller: _lineNumbersController,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: lineCount,
-            itemBuilder: (context, index) => Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _moveToLine(index),
-                child: SizedBox(
-                  height: 24,
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2),
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            child: ListView.builder(
+              controller: _lineNumbersController,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: lineCount,
+              itemBuilder: (context, index) => Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _moveToLine(index),
+                  child: SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2),
+                        ),
                       ),
                     ),
                   ),

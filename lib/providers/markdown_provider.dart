@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import '../models/doc_session.dart';
 import '../models/workspace_item.dart';
 import '../utils/path_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MarkdownProvider with ChangeNotifier {
   String get pathSeparator => getPathSeparator();
@@ -20,6 +21,8 @@ class MarkdownProvider with ChangeNotifier {
   bool _isSplitScreen = true;
   bool _isWrapped = true;
   double _fontSize = 14.0;
+  double _lineHeight = 1.5;
+  String _fontFamily = 'Inter';
   bool _autoSave = false;
   
   // Workspace State (Multiple Folders)
@@ -43,6 +46,35 @@ class MarkdownProvider with ChangeNotifier {
     ));
     _activeTabIndex = 0;
     _previewContent = _welcomeMarkdown;
+    
+    // Load persisted workspaces
+    _loadPersistedWorkspaces();
+  }
+
+  Future<void> _loadPersistedWorkspaces() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedPaths = prefs.getStringList('workspace_paths');
+      if (savedPaths != null && savedPaths.isNotEmpty) {
+        for (var path in savedPaths) {
+          if (!_workspacePaths.contains(path)) {
+            _workspacePaths.add(path);
+          }
+        }
+        await refreshWorkspace();
+      }
+    } catch (e) {
+      debugPrint('Error loading persisted workspaces: $e');
+    }
+  }
+
+  Future<void> _saveWorkspaces() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('workspace_paths', _workspacePaths);
+    } catch (e) {
+      debugPrint('Error saving workspaces: $e');
+    }
   }
 
   // Getters
@@ -57,6 +89,8 @@ class MarkdownProvider with ChangeNotifier {
   bool get isSplitScreen => _isSplitScreen;
   bool get isWrapped => _isWrapped;
   double get fontSize => _fontSize;
+  double get lineHeight => _lineHeight;
+  String get fontFamily => _fontFamily;
   bool get autoSave => _autoSave;
   
   List<String> get workspacePaths => _workspacePaths;
@@ -292,6 +326,7 @@ class MarkdownProvider with ChangeNotifier {
       if (selectedDirectory != null) {
         if (!_workspacePaths.contains(selectedDirectory)) {
           _workspacePaths.add(selectedDirectory);
+          await _saveWorkspaces();
           await refreshWorkspace();
         }
       }
@@ -374,6 +409,16 @@ class MarkdownProvider with ChangeNotifier {
 
   void updateFontSize(double size) {
     _fontSize = size;
+    notifyListeners();
+  }
+
+  void updateLineHeight(double height) {
+    _lineHeight = height;
+    notifyListeners();
+  }
+
+  void updateFontFamily(String family) {
+    _fontFamily = family;
     notifyListeners();
   }
 
