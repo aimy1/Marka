@@ -110,50 +110,38 @@ class _EditorPageState extends State<EditorPage> {
         if (!kIsWeb) windowManager.startDragging();
       },
       child: Container(
-        height: 48,
+        height: 60, // Increased title bar height for larger logo
         color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
         child: Stack(
           children: [
-            // Left Positioning for Branding (Pill)
+            // Left Positioning for Branding (Floating Style)
             Positioned(
-              left: 16,
+              left: 20,
               top: 0,
               bottom: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.black12,
-                      width: 1,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'markd.logo.jpg',
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.asset(
-                          'markd.logo.jpg',
-                          width: 16,
-                          height: 16,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Marka',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : Colors.black87,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  Text(
+                    'Marka',
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             

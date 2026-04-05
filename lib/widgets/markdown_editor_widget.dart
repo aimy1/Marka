@@ -37,6 +37,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   }
 
   int _lastActiveTabIndex = -1;
+  int _activeLine = 0;
   bool _isUpdatingProgrammatically = false;
 
   void _onControllerChange() {
@@ -44,6 +45,13 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     final provider = Provider.of<MarkdownProvider>(context, listen: false);
     if (_controller.text != provider.content) provider.updateContent(_controller.text);
     provider.updateSelection(_controller.selection.start, _controller.selection.end);
+    
+    final text = _controller.text;
+    final selectionStart = _controller.selection.start;
+    if (selectionStart >= 0) {
+      final lineIdx = '\n'.allMatches(text.substring(0, selectionStart.clamp(0, text.length))).length;
+      if (_activeLine != lineIdx) setState(() => _activeLine = lineIdx);
+    }
   }
 
   void _onProviderChange() {
@@ -83,9 +91,10 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   void _onScroll() {
     if (_scrollController.hasClients && _lineNumbersController.hasClients) {
       _lineNumbersController.jumpTo(_scrollController.offset);
-      final max = _scrollController.position.maxScrollExtent;
-      if (max > 0) {
-        Provider.of<MarkdownProvider>(context, listen: false).updateScroll(_scrollController.offset / max);
+      final provider = Provider.of<MarkdownProvider>(context, listen: false);
+      if (provider.isSyncScroll) {
+        final max = _scrollController.position.maxScrollExtent;
+        if (max > 0) provider.updateScroll(_scrollController.offset / max);
       }
     }
   }
@@ -105,73 +114,93 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     final text = _controller.text;
     final lineCount = '\n'.allMatches(text).length + 1;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    const double gutterWidth = 46.0;
+    const double horizontalPadding = 20.0;
+    final double lineHeightFactor = provider.lineHeight; // Reactive line height
+    final double calculatedLineHeight = provider.fontSize * lineHeightFactor;
 
     return Column(
       children: [
-        _buildEditorToolbar(provider, isDark),
+        if (provider.showToolbar) _buildEditorToolbar(provider, isDark),
         Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              // Interactive Line Numbers
-              Container(
-                width: 45,
-                padding: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
-                  border: Border(
-                    right: BorderSide(
-                      color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: ScrollConfiguration(
-                  behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                  child: ListView.builder(
-                    controller: _lineNumbersController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: lineCount,
-                    itemBuilder: (context, index) => Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _moveToLine(index),
-                        child: SizedBox(
-                          height: 24,
-                          child: Center(
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2),
-                              ),
-                            ),
+              Positioned.fill(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: gutterWidth,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
+                        border: Border(
+                          right: BorderSide(
+                            color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                          child: ListView.builder(
+                            controller: _lineNumbersController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: lineCount,
+                            itemBuilder: (context, index) {
+                              final isActive = index == _activeLine;
+                              return SizedBox(
+                                height: calculatedLineHeight,
+                                child: Center(
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                                      color: isActive 
+                                        ? (isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF))
+                                        : (isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2)),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
                     ),
-                  ),
+                    Expanded(child: Container(color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5))),
+                  ],
                 ),
               ),
-              // Editor
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
-                  child: TextField(
-                    controller: _controller,
-                    scrollController: _scrollController,
-                    focusNode: _focusNode,
-                    maxLines: null,
-                    expands: true,
-                    autofocus: true,
-                    cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-                    decoration: const InputDecoration(border: InputBorder.none, hintText: 'Start writing...'),
-                    style: GoogleFonts.jetBrainsMono(
-                      fontSize: provider.fontSize,
-                      height: 1.6,
-                      color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-                    ),
+              Positioned.fill(
+                child: TextField(
+                  controller: _controller,
+                  scrollController: _scrollController,
+                  focusNode: _focusNode,
+                  maxLines: null,
+                  expands: true,
+                  autofocus: true,
+                  cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+                  cursorWidth: 2,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Start writing...',
+                    contentPadding: const EdgeInsets.fromLTRB(gutterWidth + horizontalPadding, 20, horizontalPadding, 20),
+                  ),
+                  strutStyle: StrutStyle(
+                    forceStrutHeight: true,
+                    height: lineHeightFactor,
+                    fontSize: provider.fontSize,
+                    fontFamily: 'JetBrains Mono',
+                  ),
+                  style: GoogleFonts.getFont(
+                    provider.fontFamily,
+                    fontSize: provider.fontSize,
+                    height: lineHeightFactor,
+                    color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
                   ),
                 ),
               ),
@@ -199,20 +228,20 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _toolBtn(Icons.format_bold_rounded, () => provider.insertSnippet('**', '**'), 'Bold'),
-            _toolBtn(Icons.format_italic_rounded, () => provider.insertSnippet('*', '*'), 'Italic'),
-            _toolBtn(Icons.title_rounded, () => provider.insertSnippet('# ', ''), 'Heading'),
-            _toolBtn(Icons.format_strikethrough_rounded, () => provider.insertSnippet('~~', '~~'), 'Strikethrough'),
+            _toolBtn(Icons.format_bold_rounded, () => provider.insertSnippet('**', '**'), provider.t('bold')),
+            _toolBtn(Icons.format_italic_rounded, () => provider.insertSnippet('*', '*'), provider.t('italic')),
+            _toolBtn(Icons.title_rounded, () => provider.insertSnippet('# ', ''), provider.t('heading')),
+            _toolBtn(Icons.format_strikethrough_rounded, () => provider.insertSnippet('~~', '~~'), provider.t('strikethrough')),
             const VerticalDivider(width: 20, indent: 8, endIndent: 8),
-            _toolBtn(Icons.format_list_bulleted_rounded, () => provider.insertSnippet('- ', ''), 'List'),
-            _toolBtn(Icons.format_list_numbered_rounded, () => provider.insertSnippet('1. ', ''), 'Numbered List'),
-            _toolBtn(Icons.check_box_outlined, () => provider.insertSnippet('- [ ] ', ''), 'Task List'),
+            _toolBtn(Icons.format_list_bulleted_rounded, () => provider.insertSnippet('- ', ''), provider.t('list')),
+            _toolBtn(Icons.format_list_numbered_rounded, () => provider.insertSnippet('1. ', ''), provider.t('numbered_list')),
+            _toolBtn(Icons.check_box_outlined, () => provider.insertSnippet('- [ ] ', ''), provider.t('task_list')),
             const VerticalDivider(width: 20, indent: 8, endIndent: 8),
-            _toolBtn(Icons.link_rounded, () => provider.insertSnippet('[', '](url)'), 'Link'),
-            _toolBtn(Icons.image_outlined, () => provider.insertSnippet('![', '](url)'), 'Image'),
-            _toolBtn(Icons.code_rounded, () => provider.insertSnippet('`', '`'), 'Inline Code'),
-            _toolBtn(Icons.terminal_rounded, () => provider.insertSnippet('```\n', '\n```'), 'Code Block'),
-            _toolBtn(Icons.format_quote_rounded, () => provider.insertSnippet('> ', ''), 'Quote'),
+            _toolBtn(Icons.link_rounded, () => provider.insertSnippet('[', '](url)'), provider.t('link')),
+            _toolBtn(Icons.image_outlined, () => provider.insertSnippet('![', '](url)'), provider.t('image')),
+            _toolBtn(Icons.code_rounded, () => provider.insertSnippet('`', '`'), provider.t('code')),
+            _toolBtn(Icons.terminal_rounded, () => provider.insertSnippet('```\n', '\n```'), provider.t('terminal')),
+            _toolBtn(Icons.format_quote_rounded, () => provider.insertSnippet('> ', ''), provider.t('quote')),
           ],
         ),
       ),
@@ -237,17 +266,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
       ),
     );
   }
-
-  void _moveToLine(int lineIndex) {
-    final text = _controller.text;
-    final lines = text.split('\n');
-    if (lineIndex < 0 || lineIndex >= lines.length) return;
-    int offset = 0;
-    for (int i = 0; i < lineIndex; i++) offset += lines[i].length + 1;
-    _controller.selection = TextSelection.collapsed(offset: offset.clamp(0, text.length));
-    _focusNode.requestFocus();
-    Provider.of<MarkdownProvider>(context, listen: false).updateSelection(_controller.selection.start, _controller.selection.end);
-  }
 }
 
 class MarkdownTextEditingController extends TextEditingController {
@@ -261,7 +279,6 @@ class MarkdownTextEditingController extends TextEditingController {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final List<TextSpan> children = [];
 
-    // Simple RegEx-based Highlighter for common MD patterns
     final patterns = {
       RegExp(r'\*\*.*?\*\*'): isDark ? const Color(0xFFF9E2AF) : const Color(0xFFDF8E1D), // Bold
       RegExp(r'\*.*?\*'): isDark ? const Color(0xFFF9E2AF) : const Color(0xFFDF8E1D), // Italic
