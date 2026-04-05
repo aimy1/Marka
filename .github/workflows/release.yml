@@ -40,11 +40,6 @@ jobs:
           flutter build windows --release
           iscc /dMyAppArch=x64 windows\runner\marka_installer.iss
 
-      - name: Build Windows ARM64 Installer
-        if: matrix.os == 'windows-latest'
-        run: |
-          flutter build windows --release --arm64
-          iscc /dMyAppArch=arm64 windows\runner\marka_installer.iss
 
       - name: Build macOS Installer
         if: matrix.os == 'macos-latest'
