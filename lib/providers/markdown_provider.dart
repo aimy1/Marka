@@ -50,10 +50,19 @@ class MarkdownProvider with ChangeNotifier {
     Future.microtask(() => _loadPersistedWorkspaces());
   }
 
+  Future<void> _loadPersistedWorkspaces() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedPaths = prefs.getStringList('workspace_paths');
+      if (savedPaths != null && savedPaths.isNotEmpty) {
+        for (var path in savedPaths) {
+          if (!_workspacePaths.contains(path)) {
+            _workspacePaths.add(path);
+          }
+        }
         await refreshWorkspace();
       }
       
-      final prefs = await SharedPreferences.getInstance();
       final savedLocale = prefs.getString('locale');
       if (savedLocale != null) {
         _locale = savedLocale;
@@ -174,8 +183,6 @@ class MarkdownProvider with ChangeNotifier {
       );
 
       if (result != null) {
-        String? virtualWebWorkspace = kIsWeb ? "Web Workspace" : null;
-        
         for (var platformFile in result.files) {
           String content = '';
           String? path;
@@ -219,16 +226,6 @@ class MarkdownProvider with ChangeNotifier {
           } else {
             _activeTabIndex = existingIndex;
             _previewContent = _sessions[existingIndex].content;
-          }
-
-          if (kIsWeb && virtualWebWorkspace != null) {
-            if (!_workspacePaths.contains(virtualWebWorkspace)) {
-              _workspacePaths.add(virtualWebWorkspace);
-            }
-            _workspaceFilesMap.putIfAbsent(virtualWebWorkspace, () => []);
-            if (!_workspaceFilesMap[virtualWebWorkspace]!.any((f) => f.path == (path ?? platformFile.name))) {
-              _workspaceFilesMap[virtualWebWorkspace]!.add(WorkspaceItem(path: path ?? "web://${platformFile.name}", name: platformFile.name));
-            }
           }
         }
         notifyListeners();
@@ -442,6 +439,8 @@ class MarkdownProvider with ChangeNotifier {
       _requestSelectionOffset = start + prefix.length + (start == end ? 0 : selectedText.length + suffix.length);
       notifyListeners();
     }
+  }
+  
   void updateLocale(String langCode) async {
     _locale = langCode;
     notifyListeners();
