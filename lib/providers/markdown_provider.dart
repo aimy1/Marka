@@ -27,13 +27,27 @@ class MarkdownProvider with ChangeNotifier {
   bool _isSyncScroll = true;
   String _locale = 'en';
 
-  // NEW: Kate-style Cursor Tracking
+  // Kate-style Cursor Tracking (Debounced)
   int _cursorLine = 1;
   int _cursorColumn = 1;
   int _selectionLength = 0;
+  Timer? _cursorTimer;
+  
+  // Search & Replace State (Throttled)
+  String _searchQuery = '';
+  List<int> _searchMatches = [];
+  int _currentMatchIndex = -1;
+  bool _showSearchOverlay = false;
+  static const int _maxSearchMatches = 5000;
 
   MarkdownProvider() {
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _cursorTimer?.cancel();
+    super.dispose();
   }
 
   // Getters
@@ -72,6 +86,12 @@ class MarkdownProvider with ChangeNotifier {
       : null;
 
   String get pathSeparator => io.Platform.isWindows ? '\\' : '/';
+  
+  // Search Getters
+  String get searchQuery => _searchQuery;
+  List<int> get searchMatches => _searchMatches;
+  int get currentMatchIndex => _currentMatchIndex;
+  bool get showSearchOverlay => _showSearchOverlay;
 
   // State Management
   void updateContent(String newContent) {
@@ -80,17 +100,96 @@ class MarkdownProvider with ChangeNotifier {
       session.updateContent(newContent);
       _previewContent = newContent;
       if (_autoSave && !kIsWeb) saveFile();
+      if (_searchQuery.isNotEmpty) _performSearch();
       notifyListeners();
     }
   }
 
+  // Debounced Cursor Info Performance Optimization
   void updateCursorInfo(int line, int col, int selLength) {
-    if (_cursorLine != line || _cursorColumn != col || _selectionLength != selLength) {
+    // Only update instantly if the change is significant (line change)
+    if (_cursorLine != line) {
       _cursorLine = line;
       _cursorColumn = col;
       _selectionLength = selLength;
       notifyListeners();
+      return;
     }
+
+    // Debounce column/selection updates to 50ms for performance in large files
+    _cursorTimer?.cancel();
+    _cursorTimer = Timer(const Duration(milliseconds: 50), () {
+      if (_cursorColumn != col || _selectionLength != selLength) {
+        _cursorColumn = col;
+        _selectionLength = selLength;
+        notifyListeners();
+      }
+    });
+  }
+
+  // Search Logic
+  void toggleSearchOverlay() {
+    _showSearchOverlay = !_showSearchOverlay;
+    if (!_showSearchOverlay) {
+      _searchQuery = '';
+      _searchMatches = [];
+      _currentMatchIndex = -1;
+    }
+    notifyListeners();
+  }
+
+  void updateSearch(String query) {
+    if (_searchQuery == query) return;
+    _searchQuery = query;
+    _performSearch();
+    notifyListeners();
+  }
+
+  void _performSearch() {
+    _searchMatches = [];
+    if (_searchQuery.isEmpty) {
+      _currentMatchIndex = -1;
+      return;
+    }
+    
+    final text = content.toLowerCase();
+    final q = _searchQuery.toLowerCase();
+    int start = 0;
+    
+    // Safety cap to prevent UI thread lock on massive search results
+    while (_searchMatches.length < _maxSearchMatches) {
+      final index = text.indexOf(q, start);
+      if (index == -1) break;
+      _searchMatches.add(index);
+      start = index + q.length;
+    }
+    
+    if (_searchMatches.isNotEmpty) {
+      _currentMatchIndex = 0;
+      _requestSelectionOffset = _searchMatches[0];
+    } else {
+      _currentMatchIndex = -1;
+    }
+  }
+
+  void findNext() {
+    if (_searchMatches.isEmpty) return;
+    _currentMatchIndex = (_currentMatchIndex + 1) % _searchMatches.length;
+    _requestSelectionOffset = _searchMatches[_currentMatchIndex];
+    notifyListeners();
+  }
+
+  void findPrev() {
+    if (_searchMatches.isEmpty) return;
+    _currentMatchIndex = (_currentMatchIndex - 1 + _searchMatches.length) % _searchMatches.length;
+    _requestSelectionOffset = _searchMatches[_currentMatchIndex];
+    notifyListeners();
+  }
+
+  void replaceAll(String replacement) {
+    if (_searchQuery.isEmpty) return;
+    final newContent = content.replaceAll(_searchQuery, replacement);
+    updateContent(newContent);
   }
 
   Future<void> _loadSettings() async {
@@ -489,6 +588,11 @@ class MarkdownProvider with ChangeNotifier {
       'typography': 'TYPOGRAPHY',
       'ln_col': 'Ln {0}, Col {1}',
       'sel': 'Sel {0}',
+      'search': 'Search...',
+      'replace': 'Replace with...',
+      'replace_all': 'Replace All',
+      'no_results': 'No Results',
+      'find': 'Find',
     },
     'zh': {
       'settings': '设置',
@@ -542,6 +646,11 @@ class MarkdownProvider with ChangeNotifier {
       'typography': '文字排版',
       'ln_col': '行 {0}, 列 {1}',
       'sel': '选区 {0}',
+      'search': '查找内容...',
+      'replace': '替换为...',
+      'replace_all': '全部替换',
+      'no_results': '无搜索结果',
+      'find': '查找',
     },
   };
 
@@ -571,5 +680,3 @@ void main() {
 3. Google Fonts
 ''';
 }
-
-
