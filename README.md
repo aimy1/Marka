@@ -9,8 +9,8 @@ Marka is a modern, high-performance Markdown IDE built with Flutter, designed fo
 ![Marka Release](https://img.shields.io/badge/Release-v3.3.4-CBA6F7?style=for-the-badge&logo=markdown)
 ![Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter)
 ---
-<img width="1731" height="1097" alt="image" src="https://github.com/user-attachments/assets/d93449a3-9bfe-41d7-afb6-179fdafc75b9" />
-<img width="1733" height="1099" alt="image" src="https://github.com/user-attachments/assets/ea7a5171-0a9e-4338-8544-245031e42b99" />
+<img width="2273" height="1206" alt="image" src="https://github.com/user-attachments/assets/211673ed-26c1-4f68-b400-d64baef3ed2d" />
+
 
 ---
 
