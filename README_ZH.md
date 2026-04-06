@@ -1,4 +1,4 @@
-# 🚀 Marka IDE (v3.3.4)
+# 🚀 Marka IDE 
 
 [English Documentation](README.md)
 
@@ -6,7 +6,7 @@
 
 Marka 是一款现代、高性能的 Markdown IDE，采用 Flutter 构建，专为对文字处理有工业级精度要求并追求禅意写作体验的作家和开发者设计。其设计灵感源自 **Kate** 编辑器的严谨布局标准与 **Catppuccin** 色彩体系的优雅美学。
 
-![Marka Release](https://img.shields.io/badge/Release-v3.3.4-CBA6F7?style=for-the-badge&logo=markdown)
+![Marka Release](https://img.shields.io/badge/Release-v3.3.6-CBA6F7?style=for-the-badge&logo=markdown)
 ![Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter)
 ---
 <img width="2273" height="1206" alt="image" src="https://github.com/user-attachments/assets/95679915-229f-4091-b26b-9a7bf94d4394" />
