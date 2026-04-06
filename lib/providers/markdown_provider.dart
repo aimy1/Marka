@@ -1,4 +1,4 @@
-import 'dart:io' as io show Directory, File, Platform;
+import 'dart:io' as io show Directory, File, Platform, Process;
 import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:async';
