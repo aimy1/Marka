@@ -5,132 +5,69 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-class SettingsDialog extends StatelessWidget {
+class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
+
+  @override
+  State<SettingsDialog> createState() => _SettingsDialogState();
+}
+
+class _SettingsDialogState extends State<SettingsDialog> {
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MarkdownProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF);
-    final glassColor = isDark ? const Color(0xFF1E1E2E).withOpacity(0.7) : const Color(0xFFFFFFFF).withOpacity(0.7);
+    final glassColor = isDark ? const Color(0xFF181825).withOpacity(0.9) : const Color(0xFFFFFFFF).withOpacity(0.9);
 
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            width: 520,
-            constraints: const BoxConstraints(maxHeight: 700),
+            width: 720,
+            height: 520,
             decoration: BoxDecoration(
               color: glassColor,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05),
-                width: 1.5,
+                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
+                  color: Colors.black45,
+                  blurRadius: 40,
+                  offset: const Offset(0, 15),
                 )
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: Row(
               children: [
-                // Premium Header
-                _buildHeader(context, provider, isDark, accentColor),
+                // ── Sidebar ──
+                _buildSidebar(provider, isDark, accentColor),
                 
+                // ── Vertical Divider ──
+                Container(width: 1, color: isDark ? Colors.white10 : Colors.black12),
+                
+                // ── Content Area ──
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildSection(
-                          provider.t('appearance'), 
-                          accentColor,
-                          [
-                            _buildSettingRow(
-                              provider.t('language'),
-                              Icons.translate_rounded,
-                              _buildLanguageDropdown(provider, isDark),
-                              isDark
-                            ),
-                            _buildSettingRow(
-                              provider.t('theme'),
-                              Icons.palette_outlined,
-                              Switch(
-                                value: isDark,
-                                activeColor: accentColor,
-                                onChanged: (v) => AdaptiveTheme.of(context).toggleThemeMode(),
-                              ),
-                              isDark
-                            ),
-                          ],
-                          isDark
+                  child: Column(
+                    children: [
+                      _buildContentHeader(provider, isDark),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(32),
+                          child: _buildContent(provider, isDark, accentColor),
                         ),
-                        
-                        const SizedBox(height: 20),
-                        _buildSection(
-                          provider.t('typography'), 
-                          accentColor,
-                          [
-                            _buildSettingRow(
-                              provider.t('font_family'),
-                              Icons.font_download_outlined,
-                              _buildFontDropdown(provider, isDark),
-                              isDark
-                            ),
-                            _buildSettingRow(
-                              provider.t('font_size'),
-                              Icons.format_size_rounded,
-                              _buildSizeControls(provider, isDark),
-                              isDark
-                            ),
-                            _buildSettingRow(
-                              provider.t('line_height'),
-                              Icons.format_line_spacing_rounded,
-                              _buildLineHeightSlider(provider, accentColor),
-                              isDark
-                            ),
-                            _buildSettingRow(
-                              provider.t('editor_padding'),
-                              Icons.horizontal_distribute_rounded,
-                              _buildPaddingSlider(provider, accentColor),
-                              isDark
-                            ),
-                          ],
-                          isDark
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        _buildSection(
-                          provider.t('pro_features'), 
-                          accentColor,
-                          [
-                            _buildSwitchItem(provider.t('sync_scroll'), Icons.sync_rounded, provider.isSyncScroll, (v) => provider.toggleSyncScroll(), isDark, accentColor),
-                            _buildSwitchItem(provider.t('show_toolbar'), Icons.construction_rounded, provider.showToolbar, (v) => provider.toggleToolbar(), isDark, accentColor),
-                            _buildSwitchItem(provider.t('auto_save'), Icons.auto_awesome_rounded, provider.autoSave, (v) => provider.toggleAutoSave(), isDark, accentColor),
-                            _buildSwitchItem(provider.t('auto_pairing'), Icons.code_rounded, provider.autoPairing, (v) => provider.toggleAutoPairing(), isDark, accentColor),
-                            _buildSettingRow(
-                              provider.t('tab_size'),
-                              Icons.keyboard_tab_rounded,
-                              _buildTabDropdown(provider, isDark),
-                              isDark
-                            ),
-                            _buildSwitchItem(provider.t('split_screen'), Icons.splitscreen_rounded, provider.isSplitScreen, (v) => provider.toggleSplitScreen(), isDark, accentColor),
-                            _buildSwitchItem(provider.t('word_wrap'), Icons.wrap_text_rounded, provider.isWrapped, (v) => provider.toggleWrap(), isDark, accentColor),
-                          ],
-                          isDark
-                        ),
-                      ],
-                    ),
+                      ),
+                      _buildFooter(context, isDark),
+                    ],
                   ),
                 ),
               ],
@@ -141,86 +78,164 @@ class SettingsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, MarkdownProvider provider, bool isDark, Color accentColor) {
+  Widget _buildSidebar(MarkdownProvider p, bool isDark, Color accentColor) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 16, 16),
-      child: Row(
+      width: 200,
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(Icons.settings_input_component_rounded, color: accentColor, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            provider.t('settings'),
-            style: GoogleFonts.outfit(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : Colors.black87,
-              letterSpacing: -0.5,
-            ),
-          ),
+          _navItem(0, p.t('general'), Icons.settings_rounded, accentColor, isDark),
+          _navItem(1, p.t('editor'), Icons.edit_note_rounded, accentColor, isDark),
+          _navItem(2, p.t('appearance'), Icons.space_dashboard_rounded, accentColor, isDark),
+          _navItem(3, p.t('advanced'), Icons.terminal_rounded, accentColor, isDark),
           const Spacer(),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.close_rounded, color: isDark ? Colors.white24 : Colors.black26),
-            splashRadius: 20,
-          ),
+          _navItem(4, 'About', Icons.info_outline_rounded, accentColor, isDark),
         ],
       ),
     );
   }
 
-  Widget _buildSection(String title, Color color, List<Widget> children, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-          width: 1,
+  Widget _navItem(int index, String label, IconData icon, Color accent, bool isDark) {
+    final isSelected = _selectedIndex == index;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: InkWell(
+        onTap: () => setState(() => _selectedIndex = index),
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? accent.withOpacity(0.12) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: isSelected ? accent : (isDark ? Colors.white38 : Colors.black38)),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? accent : (isDark ? Colors.white60 : Colors.black54),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  Widget _buildContent(MarkdownProvider p, bool isDark, Color accentColor) {
+    switch (_selectedIndex) {
+      case 0: // General
+        return Column(
+          children: [
+            _sectionTitle(p.t('general')),
+            _buildLanguageDropdown(p, isDark),
+            _settingTile(p.t('theme'), Icons.palette_outlined, isDark, Switch(
+              value: isDark,
+              activeColor: accentColor,
+              onChanged: (v) => AdaptiveTheme.of(context).toggleThemeMode(),
+            )),
+            _settingTile(p.t('auto_save'), Icons.auto_awesome_rounded, isDark, Switch(
+              value: p.autoSave,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleAutoSave(),
+            )),
+          ],
+        );
+      case 1: // Editor
+        return Column(
+          children: [
+            _sectionTitle(p.t('editor')),
+            _buildFontDropdown(p, isDark),
+            _settingTile(p.t('font_size'), Icons.format_size_rounded, isDark, _buildSizeControls(p, isDark)),
+            _settingTile(p.t('line_height'), Icons.format_line_spacing_rounded, isDark, _buildLineHeightSlider(p, accentColor)),
+            _settingTile('Display Line Numbers', Icons.format_list_numbered_rounded, isDark, Switch(
+              value: p.showLineNumbers,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleLineNumbers(),
+            )),
+            _settingTile('Highlight Active Line', Icons.highlight_alt_rounded, isDark, Switch(
+              value: p.highlightActiveLine,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleHighlightActiveLine(),
+            )),
+          ],
+        );
+      case 2: // Appearance
+        return Column(
+          children: [
+            _sectionTitle(p.t('appearance')),
+            _settingTile(p.t('editor_padding'), Icons.horizontal_distribute_rounded, isDark, _buildPaddingSlider(p, accentColor)),
+            _settingTile(p.t('word_wrap'), Icons.wrap_text_rounded, isDark, Switch(
+              value: p.isWrapped,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleWrap(),
+            )),
+            _settingTile(p.t('split_screen'), Icons.splitscreen_rounded, isDark, Switch(
+              value: p.isSplitScreen,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleSplitScreen(),
+            )),
+            _settingTile(p.t('show_toolbar'), Icons.construction_rounded, isDark, Switch(
+              value: p.showToolbar,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleToolbar(),
+            )),
+          ],
+        );
+      case 3: // Advanced
+        return Column(
+          children: [
+            _sectionTitle(p.t('advanced')),
+            _settingTile(p.t('tab_size'), Icons.keyboard_tab_rounded, isDark, _buildTabDropdown(p, isDark)),
+            _settingTile(p.t('auto_pairing'), Icons.code_rounded, isDark, Switch(
+              value: p.autoPairing,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleAutoPairing(),
+            )),
+            _settingTile(p.t('sync_scroll'), Icons.sync_rounded, isDark, Switch(
+              value: p.isSyncScroll,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleSyncScroll(),
+            )),
+            _settingTile('Smooth Scrolling', Icons.mouse_rounded, isDark, Switch(
+              value: p.smoothScrolling,
+              activeColor: accentColor,
+              onChanged: (v) => p.toggleSmoothScrolling(),
+            )),
+          ],
+        );
+      default:
+        return const Center(child: Text('Marka IDE v3.3.5\nBuilt for Industrial Writing'));
+    }
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Text(
-              title.toUpperCase(),
-              style: GoogleFonts.outfit(
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.8,
-                color: color.withOpacity(0.8),
-              ),
-            ),
-          ),
-          ...children,
+          Text(title.toUpperCase(), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+          const SizedBox(width: 16),
+          const Expanded(child: Divider()),
         ],
       ),
     );
   }
 
-  Widget _buildSettingRow(String label, IconData icon, Widget action, bool isDark) {
+  Widget _settingTile(String label, IconData icon, bool isDark, Widget action) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: isDark ? Colors.white30 : Colors.black38),
-          const SizedBox(width: 12),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isDark ? Colors.white70 : Colors.black87,
-            ),
-          ),
+          Icon(icon, size: 18, color: isDark ? Colors.white24 : Colors.black26),
+          const SizedBox(width: 16),
+          Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: isDark ? Colors.white70 : Colors.black87)),
           const Spacer(),
           action,
         ],
@@ -228,42 +243,37 @@ class SettingsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitchItem(String label, IconData icon, bool value, Function(bool) onChanged, bool isDark, Color accentColor) {
-    return InkWell(
-      onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: isDark ? Colors.white30 : Colors.black38),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
-              ),
-            ),
-            Transform.scale(
-              scale: 0.8,
-              child: Switch(
-                value: value,
-                activeColor: accentColor,
-                onChanged: onChanged,
-              ),
-            ),
-          ],
-        ),
+  Widget _buildContentHeader(MarkdownProvider p, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(32, 24, 24, 16),
+      child: Row(
+        children: [
+          Text(['General', 'Editor', 'Interface', 'Advanced', 'About'][_selectedIndex], 
+            style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black)),
+          const Spacer(),
+          IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded, size: 20)),
+        ],
       ),
     );
   }
 
+  Widget _buildFooter(BuildContext context, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black12))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+  }
+
+  // ── Existing Dropdowns & Sliders (Migrated) ──
+
   Widget _buildLanguageDropdown(MarkdownProvider provider, bool isDark) {
-    return DropdownButton<String>(
+    return _settingTile(provider.t('language'), Icons.translate_rounded, isDark, DropdownButton<String>(
       value: provider.locale,
       underline: const SizedBox(),
       dropdownColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
@@ -275,11 +285,11 @@ class SettingsDialog extends StatelessWidget {
         value: l['code'],
         child: Text(l['label']!, style: GoogleFonts.inter(fontSize: 13)),
       )).toList(),
-    );
+    ));
   }
 
   Widget _buildFontDropdown(MarkdownProvider provider, bool isDark) {
-    return DropdownButton<String>(
+    return _settingTile(provider.t('font_family'), Icons.font_download_outlined, isDark, DropdownButton<String>(
       value: provider.fontFamily,
       underline: const SizedBox(),
       dropdownColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
@@ -289,80 +299,40 @@ class SettingsDialog extends StatelessWidget {
         value: f,
         child: Text(f, style: GoogleFonts.getFont(f, fontSize: 13)),
       )).toList(),
-    );
+    ));
   }
 
   Widget _buildSizeControls(MarkdownProvider provider, bool isDark) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildMiniBtn(Icons.remove_rounded, () => provider.updateFontSize(provider.fontSize - 1), isDark),
-        Container(
-          width: 40,
-          alignment: Alignment.center,
-          child: Text(
-            '${provider.fontSize.toInt()}',
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
-          ),
-        ),
-        _buildMiniBtn(Icons.add_rounded, () => provider.updateFontSize(provider.fontSize + 1), isDark),
+        _miniBtn(Icons.remove_rounded, () => provider.updateFontSize(provider.fontSize - 1), isDark),
+        const SizedBox(width: 8),
+        Text('${provider.fontSize.toInt()}', style: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.bold, fontSize: 13)),
+        const SizedBox(width: 8),
+        _miniBtn(Icons.add_rounded, () => provider.updateFontSize(provider.fontSize + 1), isDark),
       ],
     );
   }
 
-  Widget _buildLineHeightSlider(MarkdownProvider provider, Color accentColor) {
-    return SizedBox(
-      width: 120,
-      child: Slider(
-        value: provider.lineHeight,
-        min: 1.0,
-        max: 2.5,
-        divisions: 15,
-        activeColor: accentColor,
-        onChanged: (v) => provider.updateLineHeight(v),
-      ),
-    );
+  Widget _buildLineHeightSlider(MarkdownProvider p, Color accent) {
+    return SizedBox(width: 100, child: Slider(value: p.lineHeight, min: 1.0, max: 2.5, divisions: 15, activeColor: accent, onChanged: (v) => p.updateLineHeight(v)));
   }
 
-  Widget _buildPaddingSlider(MarkdownProvider provider, Color accentColor) {
-    return SizedBox(
-      width: 120,
-      child: Slider(
-        value: provider.editorPadding,
-        min: 16.0,
-        max: 96.0,
-        divisions: 20,
-        activeColor: accentColor,
-        onChanged: (v) => provider.updateEditorPadding(v),
-      ),
-    );
+  Widget _buildPaddingSlider(MarkdownProvider p, Color accent) {
+    return SizedBox(width: 100, child: Slider(value: p.editorPadding, min: 16.0, max: 96.0, divisions: 20, activeColor: accent, onChanged: (v) => p.updateEditorPadding(v)));
   }
 
-  Widget _buildTabDropdown(MarkdownProvider provider, bool isDark) {
+  Widget _buildTabDropdown(MarkdownProvider p, bool isDark) {
     return DropdownButton<int>(
-      value: provider.tabSize,
+      value: p.tabSize,
       underline: const SizedBox(),
-      dropdownColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
-      onChanged: (v) => v != null ? provider.updateTabSize(v) : null,
-      items: [2, 4].map((s) => DropdownMenuItem(
-        value: s,
-        child: Text('$s Spaces', style: GoogleFonts.inter(fontSize: 13)),
-      )).toList(),
+      onChanged: (v) => v != null ? p.updateTabSize(v) : null,
+      items: [2, 4].map((s) => DropdownMenuItem(value: s, child: Text('$s Spaces', style: GoogleFonts.inter(fontSize: 13)))).toList(),
     );
   }
 
-  Widget _buildMiniBtn(IconData icon, VoidCallback onTap, bool isDark) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, size: 14, color: isDark ? Colors.white70 : Colors.black54),
-      ),
-    );
+  Widget _miniBtn(IconData icon, VoidCallback tap, bool isDark) {
+    return InkWell(onTap: tap, borderRadius: BorderRadius.circular(6), child: Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05), borderRadius: BorderRadius.circular(6)), child: Icon(icon, size: 14)));
   }
 }

@@ -536,7 +536,7 @@ class _VersionBadge extends StatelessWidget {
         border: Border.all(color: accentColor.withOpacity(0.2)),
       ),
       child: Text(
-        'v3.3.3',
+        'v3.3.4',
         style: GoogleFonts.inter(
           fontSize: 10,
           fontWeight: FontWeight.w900,

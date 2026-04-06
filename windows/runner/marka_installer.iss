@@ -1,6 +1,6 @@
 ; Inno Setup Script for Marka
 #define MyAppName "Marka"
-#define MyAppVersion "1.0.3"
+#define MyAppVersion "3.3.4"
 #define MyAppPublisher "Antigravity"
 #define MyAppURL "https://github.com/aimy1/Marka"
 #define MyAppExeName "marka.exe"

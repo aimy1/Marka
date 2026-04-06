@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/markdown_provider.dart';
 import 'search_overlay_widget.dart';
 import 'editor/editor_controller.dart';
+import 'editor/editor_gutter.dart';
 
 /// Marka v2.6.3 - Selection Interaction Fix
 /// Removed experimental gesture listeners that blocked mouse selection.
@@ -173,42 +174,67 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (provider.showLineNumbers)
+                            MarkaEditorGutter(
+                              scrollController: _scrollController, 
+                              lineCount: provider.content.split('\n').length, 
+                              fontSize: provider.fontSize, 
+                              lineHeight: provider.lineHeight
+                            ),
                           Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              undoController: _undoController,
-                              scrollController: _scrollController,
-                              focusNode: _focusNode,
-                              maxLines: null,
-                              expands: true,
-                              cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-                              cursorWidth: 1.2,
-                              textAlignVertical: TextAlignVertical.top,
-                              selectionControls: desktopTextSelectionControls,
-                               onChanged: (text) {
-                                _handleAutoPairing(text);
-                              },
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.transparent, 
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: provider.editorPadding, 
-                                  vertical: provider.lineHeight * 16
+                            child: Stack(
+                              children: [
+                                if (provider.highlightActiveLine)
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: _ActiveLinePainter(
+                                        cursorLine: provider.cursorLine,
+                                        fontSize: provider.fontSize,
+                                        lineHeight: provider.lineHeight,
+                                        scrollController: _scrollController,
+                                        accentColor: isDark ? const Color(0xFFCBA6F7).withOpacity(0.05) : const Color(0xFF8839EF).withOpacity(0.05),
+                                        padding: provider.lineHeight * 16,
+                                        leftPadding: provider.editorPadding,
+                                      ),
+                                    ),
+                                  ),
+                                TextField(
+                                  controller: _controller,
+                                  undoController: _undoController,
+                                  scrollController: _scrollController,
+                                  focusNode: _focusNode,
+                                  maxLines: null,
+                                  expands: true,
+                                  cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+                                  cursorWidth: 1.2,
+                                  textAlignVertical: TextAlignVertical.top,
+                                  selectionControls: desktopTextSelectionControls,
+                                   onChanged: (text) {
+                                    _handleAutoPairing(text);
+                                  },
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.transparent, 
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: provider.editorPadding, 
+                                      vertical: provider.lineHeight * 16
+                                    ),
+                                  ),
+                                  strutStyle: StrutStyle(
+                                    forceStrutHeight: true,
+                                    height: provider.lineHeight,
+                                    fontSize: provider.fontSize,
+                                  ),
+                                  style: GoogleFonts.getFont(
+                                    provider.fontFamily,
+                                    fontSize: provider.fontSize,
+                                    height: provider.lineHeight,
+                                    letterSpacing: 0,
+                                    color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
+                                  ),
                                 ),
-                              ),
-                              strutStyle: StrutStyle(
-                                forceStrutHeight: true,
-                                height: provider.lineHeight,
-                                fontSize: provider.fontSize,
-                              ),
-                              style: GoogleFonts.getFont(
-                                provider.fontFamily,
-                                fontSize: provider.fontSize,
-                                height: provider.lineHeight,
-                                letterSpacing: 0,
-                                color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-                              ),
+                              ],
                             ),
                           ),
                         ],
@@ -482,15 +508,47 @@ class _SnippetAction extends Action<Intent> {
   @override Object? invoke(Intent i) { p.insertSnippet(prefix, suffix); return null; }
 }
 
-/// Marka v2.9.1 Productivity Intents
-class _FormatBoldIntent extends Intent { const _FormatBoldIntent(); }
-class _FormatItalicIntent extends Intent { const _FormatItalicIntent(); }
-class _FormatLinkIntent extends Intent { const _FormatLinkIntent(); }
-class _FormatImageIntent extends Intent { const _FormatImageIntent(); }
-class _FormatStrikethroughIntent extends Intent { const _FormatStrikethroughIntent(); }
-class _FormatQuoteIntent extends Intent { const _FormatQuoteIntent(); }
-class _FormatInlineCodeIntent extends Intent { const _FormatInlineCodeIntent(); }
-class _FormatCodeBlockIntent extends Intent { const _FormatCodeBlockIntent(); }
-class _FormatH1Intent extends Intent { const _FormatH1Intent(); }
-class _FormatH2Intent extends Intent { const _FormatH2Intent(); }
-class _FormatH3Intent extends Intent { const _FormatH3Intent(); }
+class _ActiveLinePainter extends CustomPainter {
+  final int cursorLine;
+  final double fontSize;
+  final double lineHeight;
+  final ScrollController scrollController;
+  final Color accentColor;
+  final double padding;
+  final double leftPadding;
+
+  _ActiveLinePainter({
+    required this.cursorLine,
+    required this.fontSize,
+    required this.lineHeight,
+    required this.scrollController,
+    required this.accentColor,
+    required this.padding,
+    required this.leftPadding,
+  }) : super(repaint: scrollController);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (cursorLine < 1) return;
+    
+    final paint = Paint()..color = accentColor;
+    final rowHeight = fontSize * lineHeight;
+    final top = (cursorLine - 1) * rowHeight + padding - scrollController.offset;
+    
+    // Only draw if visible
+    if (top + rowHeight > 0 && top < size.height) {
+      canvas.drawRect(Rect.fromLTWH(0, top, size.width, rowHeight), paint);
+      
+      // Industrial highlight border (left)
+      final borderPaint = Paint()..color = accentColor.withOpacity(0.5);
+      canvas.drawRect(Rect.fromLTWH(0, top, 4, rowHeight), borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ActiveLinePainter old) => 
+    old.cursorLine != cursorLine || 
+    old.fontSize != fontSize || 
+    old.lineHeight != lineHeight ||
+    old.scrollController.offset != scrollController.offset;
+}

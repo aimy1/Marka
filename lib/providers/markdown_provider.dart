@@ -10,7 +10,7 @@ import '../models/doc_session.dart';
 import '../models/workspace_item.dart';
 
 class MarkdownProvider with ChangeNotifier {
-  List<DocSession> _sessions = [DocSession(name: 'Welcome.md', content: _welcomeMarkdown, originalContent: _welcomeMarkdown)];
+  List<DocSession> _sessions = [];
   int _activeTabIndex = 0;
   String _previewContent = _welcomeMarkdown;
   List<String> _workspacePaths = [];
@@ -29,6 +29,9 @@ class MarkdownProvider with ChangeNotifier {
   int _tabSize = 2;
   double _editorPadding = 32.0;
   String _locale = 'en';
+  bool _showLineNumbers = true;
+  bool _highlightActiveLine = true;
+  bool _smoothScrolling = true;
 
   // Kate-style Cursor Tracking (Debounced)
   int _cursorLine = 1;
@@ -75,6 +78,9 @@ class MarkdownProvider with ChangeNotifier {
   int get tabSize => _tabSize;
   double get editorPadding => _editorPadding;
   String get locale => _locale;
+  bool get showLineNumbers => _showLineNumbers;
+  bool get highlightActiveLine => _highlightActiveLine;
+  bool get smoothScrolling => _smoothScrolling;
 
   int get cursorLine => _cursorLine;
   int get cursorColumn => _cursorColumn;
@@ -99,6 +105,9 @@ class MarkdownProvider with ChangeNotifier {
   void updateEditorPadding(double v) { _editorPadding = v.clamp(16, 96); _saveSettings(); notifyListeners(); }
   void toggleAutoPairing() { _autoPairing = !_autoPairing; _saveSettings(); notifyListeners(); }
   void updateTabSize(int v) { _tabSize = v == 4 ? 4 : 2; _saveSettings(); notifyListeners(); }
+  void toggleLineNumbers() { _showLineNumbers = !_showLineNumbers; _saveSettings(); notifyListeners(); }
+  void toggleHighlightActiveLine() { _highlightActiveLine = !_highlightActiveLine; _saveSettings(); notifyListeners(); }
+  void toggleSmoothScrolling() { _smoothScrolling = !_smoothScrolling; _saveSettings(); notifyListeners(); }
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
       : null;
@@ -158,10 +167,12 @@ class MarkdownProvider with ChangeNotifier {
   void toggleSearchOverlay() {
     _showSearchOverlay = !_showSearchOverlay;
     if (!_showSearchOverlay) {
-      _searchQuery = '';
-      _replaceQuery = '';
+      // Clear matches when closing, but keep the query for persistence
       _searchMatches = [];
       _currentMatchIndex = -1;
+      _saveSettings(); // Save the query state
+    } else {
+      if (_searchQuery.isNotEmpty) _performSearch(jump: false);
     }
     notifyListeners();
   }
@@ -169,11 +180,11 @@ class MarkdownProvider with ChangeNotifier {
   void updateSearch(String query) {
     if (_searchQuery == query) return;
     _searchQuery = query;
-    _performSearch();
+    _performSearch(jump: false);
     notifyListeners();
   }
 
-  void _performSearch() {
+  void _performSearch({bool jump = false}) {
     _searchMatches = [];
     if (_searchQuery.isEmpty) {
       _currentMatchIndex = -1;
@@ -195,8 +206,14 @@ class MarkdownProvider with ChangeNotifier {
     }
     
     if (_searchMatches.isNotEmpty) {
-      _currentMatchIndex = 0;
-      _requestSelectionOffset = _searchMatches[0];
+      // Logic: If we are jumping, go to the first match. 
+      // If not, just update the match count but stay where we are.
+      if (_currentMatchIndex < 0 || _currentMatchIndex >= _searchMatches.length) {
+         _currentMatchIndex = 0;
+      }
+      if (jump) {
+        _requestSelectionOffset = _searchMatches[_currentMatchIndex];
+      }
     } else {
       _currentMatchIndex = -1;
     }
@@ -253,28 +270,36 @@ class MarkdownProvider with ChangeNotifier {
     _editorPadding = prefs.getDouble('editorPadding') ?? 32.0;
     _locale = prefs.getString('locale') ?? 'en';
     _workspacePaths = prefs.getStringList('workspacePaths') ?? [];
+    _showLineNumbers = prefs.getBool('showLineNumbers') ?? true;
+    _highlightActiveLine = prefs.getBool('highlightActiveLine') ?? true;
+    _smoothScrolling = prefs.getBool('smoothScrolling') ?? true;
+    _searchQuery = prefs.getString('searchQuery') ?? '';
+    _replaceQuery = prefs.getString('replaceQuery') ?? '';
     
     _previewContent = content;
     await refreshWorkspace();
     
-    // Auto-init for new professional users
+    // Auto-init for new professional users (v3.3.4)
     if (!kIsWeb && _workspacePaths.isEmpty) {
-      await initProWorkspace();
+      await initWorkspace();
+    } else if (_sessions.isEmpty) {
+      _sessions = [DocSession(name: 'Welcome.md', content: _welcomeMarkdown, originalContent: _welcomeMarkdown)];
     }
     notifyListeners();
   }
 
-  Future<void> initProWorkspace() async {
+  Future<void> initWorkspace() async {
     if (kIsWeb) return;
     try {
       final root = io.Directory.current.path;
       final workspacePath = '$root${pathSeparator}Marka_Workspace';
       final dir = io.Directory(workspacePath);
+      final welcomeFilePath = '$workspacePath${pathSeparator}Welcome.md';
       
       if (!await dir.exists()) {
         await dir.create(recursive: true);
-        final welcomeFile = io.File('$workspacePath${pathSeparator}Welcome_Pro.md');
-        await welcomeFile.writeAsString(_proWelcomeMarkdown);
+        final welcomeFile = io.File(welcomeFilePath);
+        await welcomeFile.writeAsString(_welcomeMarkdown);
       }
 
       if (!_workspacePaths.contains(workspacePath)) {
@@ -282,8 +307,11 @@ class MarkdownProvider with ChangeNotifier {
         await _saveSettings();
         await refreshWorkspace();
       }
+
+      // Automatically open the Welcome.md file for a great first impression
+      await openFileDirectly(welcomeFilePath);
     } catch (e) {
-      debugPrint('Error initializing Pro Workspace: $e');
+      debugPrint('Error initializing Workspace: $e');
     }
   }
 
@@ -302,6 +330,11 @@ class MarkdownProvider with ChangeNotifier {
     await prefs.setDouble('editorPadding', _editorPadding);
     await prefs.setString('locale', _locale);
     await prefs.setStringList('workspacePaths', _workspacePaths);
+    await prefs.setBool('showLineNumbers', _showLineNumbers);
+    await prefs.setBool('highlightActiveLine', _highlightActiveLine);
+    await prefs.setBool('smoothScrolling', _smoothScrolling);
+    await prefs.setString('searchQuery', _searchQuery);
+    await prefs.setString('replaceQuery', _replaceQuery);
   }
 
   void switchTab(int index) {
@@ -737,53 +770,7 @@ class MarkdownProvider with ChangeNotifier {
     },
   };
 
-  static const String _proWelcomeMarkdown = r'''---
-title: Marka 专业版功能教程 (v2.9.0)
-date: 2026-04-06
-categories: [IDE, 生产力]
-tags: [快捷键, 工业化, 写作]
----
 
-# 🎓 Marka 指尖流：工业级快捷键教程
-
-欢迎来到您的物理工作区！Marka 2.9.0 引入了一套工业标准的“物理行操作”指令，让您能够像重构代码一样重构您的文章。
-
-## 1. 物理行位移 (Line Manipulation)
-
-无需剪切粘贴，直接通过物理按键平移内容层级：
-- **向上移动行**: `Alt + ↑` (向上箭头)
-- **向下移动行**: `Alt + ↓` (向下箭头)
-- **下方克隆行**: `Shift + Alt + ↓` (快速复制当前段落)
-
-## 2. 段落结构化重构 (Editor Precision)
-
-- **切换注释**: `Ctrl + /` (自动包裹 `<!-- -->` 标签)
-- **强制删除行**: `Ctrl + Shift + K` (物理移除所在行)
-- **智能缩进**: `Tab` (增加缩进) / `Shift + Tab` (减少缩进)
-
-## 3. 搜索与替换大师 (Pro Search)
-
-- **全局查找**: `Ctrl + F`
-- **正则模式**: 点击搜索框侧边的 `.*` 切换。
-- **批量替换**: 展开搜索框下方的箭头，输入替换文本，点击 `Replace All`。
-
----
-
-### 🏋️ 快捷键竞技场 (Interactive Playground)
-
-*在这里，您可以直接尝试按下 **Alt + ↑** 将下方两行诗句的位置互换：*
-
-- 鹅，鹅，鹅，
-- 曲项向天歌。
-
-*或者尝试按下 **Ctrl + /** 对下面的文本进行语义注释：*
-
-<!-- 这是您的第一条专业注释 -->
-这是一行即将被您隐藏的文字。
-
----
-Markdown 设计之美，尽在 Marka。
-''';
 
   static const String _welcomeMarkdown = r'''---
 title: 🚀 Marka IDE: 您的专业创作空间
