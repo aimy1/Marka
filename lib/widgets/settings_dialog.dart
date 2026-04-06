@@ -66,7 +66,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
                           child: _buildContent(provider, isDark, accentColor),
                         ),
                       ),
-                      _buildFooter(context, isDark),
+                      _buildFooter(context, isDark, provider),
+
                     ],
                   ),
                 ),
@@ -213,7 +214,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
     }
   }
 
-
   Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
@@ -254,10 +254,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
         ],
       ),
     );
-
   }
 
-  Widget _buildFooter(BuildContext context, bool isDark) {
+  Widget _buildFooter(BuildContext context, bool isDark, MarkdownProvider provider) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black12))),
@@ -267,9 +266,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           TextButton(onPressed: () => Navigator.pop(context), child: Text(provider.t('close'), style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
         ],
       ),
-
     );
-
   }
 
   // ── Existing Dropdowns & Sliders (Migrated) ──
