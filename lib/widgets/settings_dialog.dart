@@ -298,7 +298,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   // ── Existing Dropdowns & Sliders (Migrated) ──
-  #define MyAppPublisher "Asniya"
 
   Widget _buildLanguageDropdown(MarkdownProvider provider, bool isDark) {
     return _settingTile(provider.t('language'), Icons.translate_rounded, isDark, DropdownButton<String>(
