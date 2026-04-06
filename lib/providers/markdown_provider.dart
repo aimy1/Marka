@@ -82,6 +82,27 @@ class MarkdownProvider with ChangeNotifier {
   double get scrollPercentage => activeSession?.scrollPercentage ?? 0.0;
   int get wordCount => content.trim().isEmpty ? 0 : content.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
   String? get currentFilePath => activeSession?.path;
+
+  // ── Pro Settings v2.7.0 ──
+  double _fontSize = 14.0;
+  double get fontSize => _fontSize;
+  void updateFontSize(double v) { _fontSize = v; notifyListeners(); }
+
+  double _lineHeight = 1.5;
+  double get lineHeight => _lineHeight;
+  void updateLineHeight(double v) { _lineHeight = v; notifyListeners(); }
+
+  String _fontFamily = 'JetBrains Mono';
+  String get fontFamily => _fontFamily;
+  void updateFontFamily(String v) { _fontFamily = v; notifyListeners(); }
+
+  bool _wordWrap = true;
+  bool get wordWrap => _wordWrap;
+  void toggleWordWrap() { _wordWrap = !_wordWrap; notifyListeners(); }
+
+  bool _autoSave = false;
+  bool get autoSave => _autoSave;
+  void toggleAutoSave() { _autoSave = !_autoSave; notifyListeners(); }
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
       : null;

@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/markdown_provider.dart';
 import 'search_overlay_widget.dart';
 import 'editor/editor_controller.dart';
 
-/// Marka v2.4.0 - Selection & Drag-Drop Refactor
-/// Implemented professional mouse selection and "IDE-style" drag-to-move foundations.
-/// Optimized hit-testing for the Full-width Zen surface.
+/// Marka v2.6.3 - Selection Interaction Fix
+/// Removed experimental gesture listeners that blocked mouse selection.
+/// Enforced desktopTextSelectionControls for 100% reliable mouse dragging.
 class MarkdownEditorWidget extends StatefulWidget {
   const MarkdownEditorWidget({super.key});
 
@@ -114,7 +115,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
             Expanded(
               child: Stack(
                 children: [
-                  // ── Full-Width Selection & Drag ──
                   NotificationListener<ScrollNotification>(
                     onNotification: (n) {
                       if (n is ScrollUpdateNotification && provider.isSyncScroll) {
@@ -126,41 +126,41 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                     child: Theme(
                       data: Theme.of(context).copyWith(
                         textSelectionTheme: TextSelectionThemeData(
-                          // High-Fidelity Professional Selection Color
-                          selectionColor: isDark ? const Color(0xFFCBA6F7).withOpacity(0.18) : Colors.blue.withOpacity(0.18),
-                          selectionHandleColor: Colors.transparent,
+                          selectionColor: isDark ? const Color(0xFFCBA6F7).withOpacity(0.2) : Colors.blue.withOpacity(0.2),
+                          selectionHandleColor: isDark ? const Color(0xFFCBA6F7) : Colors.blue,
                         ),
                       ),
-                      child: Listener(
-                        onPointerDown: (event) {
-                           // Future Hook for Drag-to-Move Detection
-                        },
-                        child: TextField(
-                          controller: _controller,
-                          scrollController: _scrollController,
-                          focusNode: _focusNode,
-                          maxLines: null,
-                          expands: true,
-                          cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-                          cursorWidth: 1.2,
-                          textAlignVertical: TextAlignVertical.top,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
-                            border: InputBorder.none,
-                            contentPadding: _textPadding,
+                      child: TextField(
+                        controller: _controller,
+                        scrollController: _scrollController,
+                        focusNode: _focusNode,
+                        maxLines: null,
+                        expands: true,
+                        cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+                        cursorWidth: 1.2,
+                        textAlignVertical: TextAlignVertical.top,
+                        selectionControls: desktopTextSelectionControls,
+                        onChanged: (text) => _handleAutoPairing(text),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 32, 
+                            vertical: provider.lineHeight * 16
                           ),
-                          strutStyle: const StrutStyle(
-                            forceStrutHeight: true,
-                            height: _lineHeight,
-                            fontSize: _fontSize,
-                          ),
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: _fontSize,
-                            height: _lineHeight,
-                            letterSpacing: 0,
-                            color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-                          ),
+                        ),
+                        strutStyle: StrutStyle(
+                          forceStrutHeight: true,
+                          height: provider.lineHeight,
+                          fontSize: provider.fontSize,
+                        ),
+                        style: GoogleFonts.getFont(
+                          provider.fontFamily,
+                          fontSize: provider.fontSize,
+                          height: provider.lineHeight,
+                          letterSpacing: 0,
+                          color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
                         ),
                       ),
                     ),
@@ -175,6 +175,36 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         ),
       ),
     );
+  }
+
+  void _handleAutoPairing(String text) {
+    final sel = _controller.selection;
+    if (!sel.isCollapsed || sel.start == 0) return;
+
+    final char = text[sel.start - 1];
+    final Map<String, String> pairs = {
+      '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '《': '》',
+    };
+
+    if (pairs.containsKey(char)) {
+      final closing = pairs[char]!;
+      // Only pair if at the end of text or before a space/punctuation
+      bool shouldPair = true;
+      if (sel.start < text.length) {
+        final nextChar = text[sel.start];
+        if (RegExp(r'[^\s\w\d]').hasMatch(nextChar) == false && nextChar != ' ') {
+          shouldPair = false;
+        }
+      }
+
+      if (shouldPair) {
+        final newText = text.replaceRange(sel.start, sel.start, closing);
+        _controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(offset: sel.start),
+        );
+      }
+    }
   }
 
   void _handleEnter() {
@@ -215,6 +245,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         const VerticalDivider(width: 16, indent: 8, endIndent: 8),
         _tool(Icons.format_list_bulleted_rounded, () => p.insertSnippet('- ', ''), p.t('list'), iconCol),
         _tool(Icons.format_list_numbered_rounded, () => p.insertSnippet('1. ', ''), p.t('numbered_list'), iconCol),
+        _tool(Icons.grid_on_rounded, () => p.insertSnippet('| Header | Header |\n| :--- | :--- |\n| Cell | Cell |', ''), p.t('table'), iconCol),
         _tool(Icons.search_rounded, () => p.toggleSearchOverlay(), p.t('find'), iconCol),
       ])),
     );
