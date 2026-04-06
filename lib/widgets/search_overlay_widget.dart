@@ -82,7 +82,7 @@ class _SearchOverlayWidgetState extends State<SearchOverlayWidget> {
                   if (widget.provider.searchMatches.isNotEmpty)
                     Text(
                       '${widget.provider.currentMatchIndex + 1} / ${widget.provider.searchMatches.length}',
-                      style: GoogleFonts.jetbrainsMono(fontSize: 11, color: accentColor, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.jetBrainsMono(fontSize: 11, color: accentColor, fontWeight: FontWeight.bold),
                     ),
                    const SizedBox(width: 8),
                   _btn(Icons.keyboard_arrow_up_rounded, widget.provider.findPrev, isDark),
