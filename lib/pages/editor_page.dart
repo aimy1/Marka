@@ -298,95 +298,6 @@ class _EditorPageState extends State<EditorPage> {
       onClose: onClose,
     );
   }
-}
-
-class _AnimatedTab extends StatefulWidget {
-  final String name;
-  final bool isSelected;
-  final bool isDark;
-  final VoidCallback onTap;
-  final VoidCallback onClose;
-
-  const _AnimatedTab({
-    required this.name,
-    required this.isSelected,
-    required this.isDark,
-    required this.onTap,
-    required this.onClose,
-  });
-
-  @override
-  State<_AnimatedTab> createState() => _AnimatedTabState();
-}
-
-class _AnimatedTabState extends State<_AnimatedTab> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final accentColor = widget.isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5);
-    
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.only(top: 6, left: 4, right: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: widget.isSelected 
-                ? (widget.isDark ? const Color(0xFF1E1E2E) : Colors.white)
-                : (_isHovered ? (widget.isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04)) : Colors.transparent),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(8),
-              topRight: Radius.circular(8),
-            ),
-            boxShadow: widget.isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, -2))] : [],
-          ),
-          child: Row(
-            children: [
-              AnimatedScale(
-                duration: const Duration(milliseconds: 300),
-                scale: widget.isSelected ? 1.0 : (_isHovered ? 1.1 : 1.0),
-                child: Icon(
-                  Icons.description_outlined, 
-                  size: 14, 
-                  color: widget.isSelected ? accentColor : Colors.grey
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                widget.name,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: widget.isSelected 
-                      ? (widget.isDark ? Colors.white : Colors.black87) 
-                      : Colors.grey,
-                  fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: widget.onClose,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: widget.isSelected || _isHovered ? 1.0 : 0.0,
-                  child: Icon(
-                    Icons.close_rounded, 
-                    size: 14, 
-                    color: widget.isSelected ? Colors.grey : Colors.grey.withOpacity(0.5)
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
   Widget _buildWelcomeScreen(BuildContext context, MarkdownProvider provider, bool isDark) {
     return Center(
@@ -482,6 +393,95 @@ class _AnimatedTabState extends State<_AnimatedTab> {
     );
   }
 }
+
+class _AnimatedTab extends StatefulWidget {
+  final String name;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+  final VoidCallback onClose;
+
+  const _AnimatedTab({
+    required this.name,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+    required this.onClose,
+  });
+
+  @override
+  State<_AnimatedTab> createState() => _AnimatedTabState();
+}
+
+class _AnimatedTabState extends State<_AnimatedTab> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final accentColor = widget.isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5);
+    
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.only(top: 6, left: 4, right: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: widget.isSelected 
+                ? (widget.isDark ? const Color(0xFF1E1E2E) : Colors.white)
+                : (_isHovered ? (widget.isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04)) : Colors.transparent),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(8),
+              topRight: Radius.circular(8),
+            ),
+            boxShadow: widget.isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, -2))] : [],
+          ),
+          child: Row(
+            children: [
+              AnimatedScale(
+                duration: const Duration(milliseconds: 300),
+                scale: widget.isSelected ? 1.0 : (_isHovered ? 1.1 : 1.0),
+                child: Icon(
+                  Icons.description_outlined, 
+                  size: 14, 
+                  color: widget.isSelected ? accentColor : Colors.grey
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                widget.name,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: widget.isSelected 
+                      ? (widget.isDark ? Colors.white : Colors.black87) 
+                      : Colors.grey,
+                  fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: widget.onClose,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: widget.isSelected || _isHovered ? 1.0 : 0.0,
+                  child: Icon(
+                    Icons.close_rounded, 
+                    size: 14, 
+                    color: widget.isSelected ? Colors.grey : Colors.grey.withOpacity(0.5)
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class _CustomLogo extends StatefulWidget {
   final bool isDark;
