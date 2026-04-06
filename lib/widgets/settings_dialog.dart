@@ -264,9 +264,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(p.t('close'), style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(provider.t('close'), style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
         ],
       ),
+
     );
 
   }
