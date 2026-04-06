@@ -218,7 +218,9 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                         ],
                       ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
 
                   if (provider.showSearchOverlay)
                     Positioned(top: 8, right: 16, child: SearchOverlayWidget(provider: provider)),
