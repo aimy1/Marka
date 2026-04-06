@@ -233,7 +233,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
             const SizedBox(height: 40),
             _settingTile(p.t('about_version'), Icons.info_outline_rounded, isDark, Text('v3.3.6', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
 
-            _settingTile(p.t('about_author'), Icons.person_outline_rounded, isDark, Text('Antigravity', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
+            _settingTile(p.t('about_author'), Icons.person_outline_rounded, isDark, Text('Asniya', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
+
             _settingTile(p.t('about_license'), Icons.description_outlined, isDark, Text('MIT License', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
             _settingTile(p.t('about_github'), Icons.link_rounded, isDark, SelectableText('github.com/aimy1/Marka', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)))),
           ],
@@ -297,6 +298,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   // ── Existing Dropdowns & Sliders (Migrated) ──
+  #define MyAppPublisher "Asniya"
 
   Widget _buildLanguageDropdown(MarkdownProvider provider, bool isDark) {
     return _settingTile(provider.t('language'), Icons.translate_rounded, isDark, DropdownButton<String>(

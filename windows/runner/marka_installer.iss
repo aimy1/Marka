@@ -3,7 +3,9 @@
 #define MyAppVersion "3.3.6"
 
 
-#define MyAppPublisher "Antigravity"
+#define MyAppPublisher "Asniya"
+
+
 #define MyAppURL "https://github.com/aimy1/Marka"
 #define MyAppExeName "marka.exe"
 #define MyAppIcon "resources\app_icon.ico"

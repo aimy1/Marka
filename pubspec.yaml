@@ -71,7 +71,8 @@ flutter_to_debian:
   version: 3.3.6
   architecture: amd64
   auto_dependencies: false
-  maintainer: Antigravity <aimy1@github.com>
+  maintainer: Asniya <aimy1@github.com>
+
   section: utils
   priority: optional
   homepage: https://github.com/aimy1/Marka
