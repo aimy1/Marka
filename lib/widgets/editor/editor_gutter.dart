@@ -1,114 +1,65 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../providers/markdown_provider.dart';
 
-/// Professional Editor Gutter for Marka v2.1.0 (Kate Refactor)
-/// Strictly Right-Aligned, Fixed Width, and Studio Grey Aesthetics.
+/// Marka v2.8.0 - Professional Line Number Gutter
+/// Enforces pixel-perfect vertical alignment with the main editor surface.
 class MarkaEditorGutter extends StatelessWidget {
   final ScrollController scrollController;
-  final ScrollController lineNumbersController;
-  final int activeLine;
   final int lineCount;
-  final MarkdownProvider provider;
+  final double fontSize;
+  final double lineHeight;
 
   const MarkaEditorGutter({
     super.key,
     required this.scrollController,
-    required this.lineNumbersController,
-    required this.activeLine,
     required this.lineCount,
-    required this.provider,
+    required this.fontSize,
+    required this.lineHeight,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Core Studio Colors (Minimalism)
-    final Color gutterBg = isDark ? const Color(0xFF18181A) : const Color(0xFFE8E8E8);
-    final Color gutterBorder = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFCCCCCC);
-    final Color numberColor = isDark ? const Color(0xFF858585) : const Color(0xFF6E6E6E);
-    final Color activeNumberColor = isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000);
+    final p = Provider.of<MarkdownProvider>(context);
 
-    final double lineHeight = provider.fontSize * provider.lineHeight;
-    const double topPadding = 24.0;
-    const double gutterWidth = 60.0; // Fixed Width per User Request
+    if (!p.showLineNumbers) return const SizedBox.shrink();
+
+    // Calculate width based on line count digits
+    final double width = lineCount.toString().length * (fontSize * 0.6) + 32;
 
     return Container(
-      width: gutterWidth,
+      width: width,
       decoration: BoxDecoration(
-        color: gutterBg,
-        border: Border(
-          right: BorderSide(color: gutterBorder, width: 1),
-        ),
+        color: isDark ? const Color(0xFF181825) : const Color(0xFFF9F9F9),
+        border: Border(right: BorderSide(color: isDark ? Colors.white10 : Colors.black12)),
       ),
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: RepaintBoundary(
-          child: ListView.builder(
-            controller: lineNumbersController,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(top: topPadding),
-            itemCount: lineCount,
-            itemExtent: lineHeight,
-            cacheExtent: 1500, // Increased for stability
-            itemBuilder: (context, index) {
-              final isActive = index == activeLine;
-              return Container(
-                padding: const EdgeInsets.only(right: 12),
-                alignment: Alignment.centerRight, // RIGHT-ALIGNED Gutter
-                child: Text(
-                  '${index + 1}',
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 11,
-                    height: 1.0,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                    color: isActive ? activeNumberColor : numberColor,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+      child: ListView.builder(
+        controller: scrollController,
+        physics: const NeverScrollableScrollPhysics(), // Synced by external source
+        itemCount: lineCount,
+        padding: EdgeInsets.symmetric(vertical: p.lineHeight * 16),
+        itemBuilder: (context, index) {
+          final isCurrent = p.cursorLine == index + 1;
+          return Container(
+            height: fontSize * lineHeight,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 12),
+            child: Text(
+              '${index + 1}',
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: fontSize * 0.82,
+                height: lineHeight,
+                color: isCurrent 
+                  ? (isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF))
+                  : (isDark ? Colors.white10 : Colors.black12),
+                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
-}
-
-/// Viewport-Aware Indentation Guides Layer (Studio Grade)
-class MarkaIndentGuidesLayer extends CustomPainter {
-  final ScrollController scrollController;
-  final double charWidth;
-  final double horizontalOffset;
-  final double topPadding;
-  final double lineHeight;
-  final Color guideColor;
-  
-  MarkaIndentGuidesLayer({
-    required this.scrollController,
-    required this.charWidth,
-    required this.horizontalOffset,
-    required this.topPadding,
-    required this.lineHeight,
-    required this.guideColor
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (!scrollController.hasClients) return;
-    
-    final paint = Paint()..color = guideColor..strokeWidth = 1;
-    
-    // Draw vertical guides every 4 characters with strict grid logic
-    for (int i = 1; i < 20; i++) {
-        final x = horizontalOffset + (i * 4 * charWidth);
-        if (x > size.width) break;
-        canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant MarkaIndentGuidesLayer oldDelegate) => 
-    oldDelegate.scrollController.offset != scrollController.offset;
 }

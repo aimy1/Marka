@@ -102,12 +102,26 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const _SearchIntent(),
         LogicalKeySet(LogicalKeyboardKey.escape): const _CloseSearchIntent(),
         LogicalKeySet(LogicalKeyboardKey.enter): const _EnterIntent(),
+        LogicalKeySet(LogicalKeyboardKey.tab): const _IndentIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.tab): const _OutdentIntent(),
+        LogicalKeySet(LogicalKeyboardKey.alt, LogicalKeyboardKey.arrowUp): const _MoveLineUpIntent(),
+        LogicalKeySet(LogicalKeyboardKey.alt, LogicalKeyboardKey.arrowDown): const _MoveLineDownIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.slash): const _ToggleCommentIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyK): const _DeleteLineIntent(),
+        LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.alt, LogicalKeyboardKey.arrowDown): const _DuplicateLineIntent(),
       },
       child: Actions(
         actions: {
           _SearchIntent: _SearchAction(provider),
           _CloseSearchIntent: _CloseSearchAction(provider),
           _EnterIntent: _EnterAction(this),
+          _IndentIntent: _IndentAction(this),
+          _OutdentIntent: _OutdentAction(this),
+          _MoveLineUpIntent: _MoveLineUpAction(this),
+          _MoveLineDownIntent: _MoveLineDownAction(this),
+          _ToggleCommentIntent: _ToggleCommentAction(this),
+          _DeleteLineIntent: _DeleteLineAction(this),
+          _DuplicateLineIntent: _DuplicateLineAction(this),
         },
         child: Column(
           children: [
@@ -130,38 +144,55 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                           selectionHandleColor: isDark ? const Color(0xFFCBA6F7) : Colors.blue,
                         ),
                       ),
-                      child: TextField(
-                        controller: _controller,
-                        scrollController: _scrollController,
-                        focusNode: _focusNode,
-                        maxLines: null,
-                        expands: true,
-                        cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-                        cursorWidth: 1.2,
-                        textAlignVertical: TextAlignVertical.top,
-                        selectionControls: desktopTextSelectionControls,
-                        onChanged: (text) => _handleAutoPairing(text),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 32, 
-                            vertical: provider.lineHeight * 16
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (provider.showLineNumbers)
+                             MarkaEditorGutter(
+                               scrollController: _scrollController,
+                               lineCount: _controller.text.split('\n').length,
+                               fontSize: provider.fontSize,
+                               lineHeight: provider.lineHeight,
+                             ),
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              scrollController: _scrollController,
+                              focusNode: _focusNode,
+                              maxLines: null,
+                              expands: true,
+                              cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+                              cursorWidth: 1.2,
+                              textAlignVertical: TextAlignVertical.top,
+                              selectionControls: desktopTextSelectionControls,
+                              onChanged: (text) {
+                                _handleAutoPairing(text);
+                                if (provider.showLineNumbers) setState(() {});
+                              },
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 32, 
+                                  vertical: provider.lineHeight * 16
+                                ),
+                              ),
+                              strutStyle: StrutStyle(
+                                forceStrutHeight: true,
+                                height: provider.lineHeight,
+                                fontSize: provider.fontSize,
+                              ),
+                              style: GoogleFonts.getFont(
+                                provider.fontFamily,
+                                fontSize: provider.fontSize,
+                                height: provider.lineHeight,
+                                letterSpacing: 0,
+                                color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
+                              ),
+                            ),
                           ),
-                        ),
-                        strutStyle: StrutStyle(
-                          forceStrutHeight: true,
-                          height: provider.lineHeight,
-                          fontSize: provider.fontSize,
-                        ),
-                        style: GoogleFonts.getFont(
-                          provider.fontFamily,
-                          fontSize: provider.fontSize,
-                          height: provider.lineHeight,
-                          letterSpacing: 0,
-                          color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -177,6 +208,90 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     );
   }
 
+  void _moveLine({required bool up}) {
+    final text = _controller.text;
+    final sel = _controller.selection;
+    if (sel.start == -1) return;
+
+    final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
+    final lineEnd = text.indexOf('\n', sel.start);
+    final actualEnd = lineEnd == -1 ? text.length : lineEnd;
+    final currentLine = text.substring(lineStart, actualEnd);
+
+    if (up) {
+      if (lineStart == 0) return;
+      final prevLineStart = text.lastIndexOf('\n', lineStart - 2) + 1;
+      final prevLine = text.substring(prevLineStart, lineStart - 1);
+      
+      final newText = text.replaceRange(prevLineStart, actualEnd, '$currentLine\n$prevLine');
+      final newOffset = prevLineStart + (sel.start - lineStart);
+      _controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newOffset),
+      );
+    } else {
+      if (actualEnd == text.length) return;
+      final nextLineEnd = text.indexOf('\n', actualEnd + 1);
+      final actualNextEnd = nextLineEnd == -1 ? text.length : nextLineEnd;
+      final nextLine = text.substring(actualEnd + 1, actualNextEnd);
+      
+      final newText = text.replaceRange(lineStart, actualNextEnd, '$nextLine\n$currentLine');
+      final newOffset = lineStart + nextLine.length + 1 + (sel.start - lineStart);
+      _controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newOffset),
+      );
+    }
+  }
+
+  void _duplicateLine() {
+    final text = _controller.text;
+    final sel = _controller.selection;
+    final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
+    final lineEnd = text.indexOf('\n', sel.start);
+    final actualEnd = lineEnd == -1 ? text.length : lineEnd;
+    final currentLine = text.substring(lineStart, actualEnd);
+
+    final newText = text.replaceRange(actualEnd, actualEnd, '\n$currentLine');
+    _controller.text = newText;
+    _controller.selection = TextSelection.collapsed(offset: sel.start + currentLine.length + 1);
+  }
+
+  void _deleteLine() {
+     final text = _controller.text;
+     final sel = _controller.selection;
+     final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
+     final lineEnd = text.indexOf('\n', sel.start);
+     final actualEnd = lineEnd == -1 ? text.length : lineEnd + 1;
+     
+     final newText = text.replaceRange(lineStart, actualEnd, '');
+     _controller.text = newText;
+     _controller.selection = TextSelection.collapsed(offset: lineStart.clamp(0, newText.length));
+  }
+
+  void _toggleComment() {
+    final text = _controller.text;
+    final sel = _controller.selection;
+    final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
+    final lineEnd = text.indexOf('\n', sel.start);
+    final actualEnd = lineEnd == -1 ? text.length : lineEnd;
+    final currentLine = text.substring(lineStart, actualEnd);
+
+    if (currentLine.trim().startsWith('<!--') && currentLine.trim().endsWith('-->')) {
+      final uncomm = currentLine.trim().substring(4, currentLine.trim().length - 3).trim();
+      _controller.value = TextEditingValue(
+        text: text.replaceRange(lineStart, actualEnd, uncomm),
+        selection: TextSelection.collapsed(offset: lineStart + uncomm.length),
+      );
+    } else {
+      final comm = '<!-- $currentLine -->';
+      _controller.value = TextEditingValue(
+        text: text.replaceRange(lineStart, actualEnd, comm),
+        selection: TextSelection.collapsed(offset: lineStart + comm.length),
+      );
+    }
+  }
+
   void _handleAutoPairing(String text) {
     final sel = _controller.selection;
     if (!sel.isCollapsed || sel.start == 0) return;
@@ -188,7 +303,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
 
     if (pairs.containsKey(char)) {
       final closing = pairs[char]!;
-      // Only pair if at the end of text or before a space/punctuation
       bool shouldPair = true;
       if (sel.start < text.length) {
         final nextChar = text[sel.start];
@@ -204,6 +318,34 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
           selection: TextSelection.collapsed(offset: sel.start),
         );
       }
+    }
+  }
+
+  void _handleTab({bool isOutdent = false}) {
+    final text = _controller.text;
+    final sel = _controller.selection;
+    
+    // Find the current line start and end
+    final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
+    final lineEnd = text.indexOf('\n', sel.start);
+    final currentLine = text.substring(lineStart, lineEnd == -1 ? text.length : lineEnd);
+    
+    if (isOutdent) {
+      // Logic for Shift + Tab: Remove 2 spaces if present
+      if (currentLine.startsWith('  ')) {
+        final newText = text.replaceRange(lineStart, lineStart + 2, '');
+        _controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(offset: (sel.start - 2).clamp(0, newText.length)),
+        );
+      }
+    } else {
+      // Logic for Tab: Insert 2 spaces
+      final newText = text.replaceRange(lineStart, lineStart, '  ');
+      _controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: sel.start + 2),
+      );
     }
   }
 
@@ -268,4 +410,41 @@ class _EnterIntent extends Intent { const _EnterIntent(); }
 class _EnterAction extends Action<_EnterIntent> {
   final _MarkdownEditorWidgetState s; _EnterAction(this.s);
   @override Object? invoke(_EnterIntent i) { s._handleEnter(); return null; }
+}
+class _IndentIntent extends Intent { const _IndentIntent(); }
+class _IndentAction extends Action<_IndentIntent> {
+  final _MarkdownEditorWidgetState s; _IndentAction(this.s);
+  @override Object? invoke(_IndentIntent i) { s._handleTab(); return null; }
+}
+class _OutdentIntent extends Intent { const _OutdentIntent(); }
+class _OutdentAction extends Action<_OutdentIntent> {
+  final _MarkdownEditorWidgetState s; _OutdentAction(this.s);
+  @override Object? invoke(_OutdentIntent i) { s._handleTab(isOutdent: true); return null; }
+}
+
+/// Marka v2.9.0 Industrial Intents
+class _MoveLineUpIntent extends Intent { const _MoveLineUpIntent(); }
+class _MoveLineUpAction extends Action<_MoveLineUpIntent> {
+  final _MarkdownEditorWidgetState s; _MoveLineUpAction(this.s);
+  @override Object? invoke(_MoveLineUpIntent i) { s._moveLine(up: true); return null; }
+}
+class _MoveLineDownIntent extends Intent { const _MoveLineDownIntent(); }
+class _MoveLineDownAction extends Action<_MoveLineDownIntent> {
+  final _MarkdownEditorWidgetState s; _MoveLineDownAction(this.s);
+  @override Object? invoke(_MoveLineDownIntent i) { s._moveLine(up: false); return null; }
+}
+class _DuplicateLineIntent extends Intent { const _DuplicateLineIntent(); }
+class _DuplicateLineAction extends Action<_DuplicateLineIntent> {
+  final _MarkdownEditorWidgetState s; _DuplicateLineAction(this.s);
+  @override Object? invoke(_DuplicateLineIntent i) { s._duplicateLine(); return null; }
+}
+class _ToggleCommentIntent extends Intent { const _ToggleCommentIntent(); }
+class _ToggleCommentAction extends Action<_ToggleCommentIntent> {
+  final _MarkdownEditorWidgetState s; _ToggleCommentAction(this.s);
+  @override Object? invoke(_ToggleCommentIntent i) { s._toggleComment(); return null; }
+}
+class _DeleteLineIntent extends Intent { const _DeleteLineIntent(); }
+class _DeleteLineAction extends Action<_DeleteLineIntent> {
+  final _MarkdownEditorWidgetState s; _DeleteLineAction(this.s);
+  @override Object? invoke(_DeleteLineIntent i) { s._deleteLine(); return null; }
 }

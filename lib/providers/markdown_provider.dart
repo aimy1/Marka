@@ -93,13 +93,28 @@ class MarkdownProvider with ChangeNotifier {
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
       : null;
 
-  String get pathSeparator => io.Platform.isWindows ? '\\' : '/';
-  
   // Search Getters
   String get searchQuery => _searchQuery;
   List<int> get searchMatches => _searchMatches;
   int get currentMatchIndex => _currentMatchIndex;
   bool get showSearchOverlay => _showSearchOverlay;
+
+  // ── Advanced Search v2.8.0 ──
+  bool _isCaseSensitive = false;
+  bool get isCaseSensitive => _isCaseSensitive;
+  void toggleCaseSensitive() { _isCaseSensitive = !_isCaseSensitive; _performSearch(); notifyListeners(); }
+
+  bool _isRegex = false;
+  bool get isRegex => _isRegex;
+  void toggleRegex() { _isRegex = !_isRegex; _performSearch(); notifyListeners(); }
+
+  String _replaceQuery = '';
+  String get replaceQuery => _replaceQuery;
+  void updateReplaceQuery(String v) { _replaceQuery = v; notifyListeners(); }
+
+  bool _showLineNumbers = true;
+  bool get showLineNumbers => _showLineNumbers;
+  void toggleLineNumbers() { _showLineNumbers = !_showLineNumbers; _saveSettings(); notifyListeners(); }
 
   // State Management
   void updateContent(String newContent) {
@@ -115,7 +130,6 @@ class MarkdownProvider with ChangeNotifier {
 
   // Debounced Cursor Info Performance Optimization
   void updateCursorInfo(int line, int col, int selLength) {
-    // Only update instantly if the change is significant (line change)
     if (_cursorLine != line) {
       _cursorLine = line;
       _cursorColumn = col;
@@ -123,8 +137,6 @@ class MarkdownProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-
-    // Debounce column/selection updates to 50ms for performance in large files
     _cursorTimer?.cancel();
     _cursorTimer = Timer(const Duration(milliseconds: 50), () {
       if (_cursorColumn != col || _selectionLength != selLength) {
@@ -140,6 +152,7 @@ class MarkdownProvider with ChangeNotifier {
     _showSearchOverlay = !_showSearchOverlay;
     if (!_showSearchOverlay) {
       _searchQuery = '';
+      _replaceQuery = '';
       _searchMatches = [];
       _currentMatchIndex = -1;
     }
@@ -160,16 +173,18 @@ class MarkdownProvider with ChangeNotifier {
       return;
     }
     
-    final text = content.toLowerCase();
-    final q = _searchQuery.toLowerCase();
-    int start = 0;
-    
-    // Safety cap to prevent UI thread lock on massive search results
-    while (_searchMatches.length < _maxSearchMatches) {
-      final index = text.indexOf(q, start);
-      if (index == -1) break;
-      _searchMatches.add(index);
-      start = index + q.length;
+    try {
+      final text = content;
+      final q = _isRegex ? _searchQuery : RegExp.escape(_searchQuery);
+      final regex = RegExp(q, caseSensitive: _isCaseSensitive, multiLine: true);
+      
+      final matches = regex.allMatches(text);
+      for (final m in matches) {
+        if (_searchMatches.length >= _maxSearchMatches) break;
+        _searchMatches.add(m.start);
+      }
+    } catch (e) {
+      debugPrint('Search Regex Error: $e');
     }
     
     if (_searchMatches.isNotEmpty) {
@@ -194,9 +209,25 @@ class MarkdownProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void replaceAll(String replacement) {
+  void replaceNext() {
+    if (_searchMatches.isEmpty || _currentMatchIndex == -1) return;
+    final start = _searchMatches[_currentMatchIndex];
+    // Find length of current match
+    final text = content;
+    final q = _isRegex ? _searchQuery : RegExp.escape(_searchQuery);
+    final regex = RegExp(q, caseSensitive: _isCaseSensitive);
+    final match = regex.matchAsPrefix(text, start);
+    if (match != null) {
+      final newContent = text.replaceRange(match.start, match.end, _replaceQuery);
+      updateContent(newContent);
+    }
+  }
+
+  void replaceAll() {
     if (_searchQuery.isEmpty) return;
-    final newContent = content.replaceAll(_searchQuery, replacement);
+    final q = _isRegex ? _searchQuery : RegExp.escape(_searchQuery);
+    final regex = RegExp(q, caseSensitive: _isCaseSensitive);
+    final newContent = content.replaceAll(regex, _replaceQuery);
     updateContent(newContent);
   }
 
@@ -215,7 +246,35 @@ class MarkdownProvider with ChangeNotifier {
     
     _previewContent = content;
     await refreshWorkspace();
+    
+    // Auto-init for new professional users
+    if (!kIsWeb && _workspacePaths.isEmpty) {
+      await initProWorkspace();
+    }
     notifyListeners();
+  }
+
+  Future<void> initProWorkspace() async {
+    if (kIsWeb) return;
+    try {
+      final root = io.Directory.current.path;
+      final workspacePath = '$root${pathSeparator}Marka_Workspace';
+      final dir = io.Directory(workspacePath);
+      
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+        final welcomeFile = io.File('$workspacePath${pathSeparator}Welcome_Pro.md');
+        await welcomeFile.writeAsString(_proWelcomeMarkdown);
+      }
+
+      if (!_workspacePaths.contains(workspacePath)) {
+        _workspacePaths.add(workspacePath);
+        await _saveSettings();
+        await refreshWorkspace();
+      }
+    } catch (e) {
+      debugPrint('Error initializing Pro Workspace: $e');
+    }
   }
 
   Future<void> _saveSettings() async {
@@ -655,6 +714,54 @@ class MarkdownProvider with ChangeNotifier {
       'find': '查找',
     },
   };
+
+  static const String _proWelcomeMarkdown = r'''---
+title: Marka 专业版功能教程 (v2.9.0)
+date: 2026-04-06
+categories: [IDE, 生产力]
+tags: [快捷键, 工业化, 写作]
+---
+
+# 🎓 Marka 指尖流：工业级快捷键教程
+
+欢迎来到您的物理工作区！Marka 2.9.0 引入了一套工业标准的“物理行操作”指令，让您能够像重构代码一样重构您的文章。
+
+## 1. 物理行位移 (Line Manipulation)
+
+无需剪切粘贴，直接通过物理按键平移内容层级：
+- **向上移动行**: `Alt + ↑` (向上箭头)
+- **向下移动行**: `Alt + ↓` (向下箭头)
+- **下方克隆行**: `Shift + Alt + ↓` (快速复制当前段落)
+
+## 2. 段落结构化重构 (Editor Precision)
+
+- **切换注释**: `Ctrl + /` (自动包裹 `<!-- -->` 标签)
+- **强制删除行**: `Ctrl + Shift + K` (物理移除所在行)
+- **智能缩进**: `Tab` (增加缩进) / `Shift + Tab` (减少缩进)
+
+## 3. 搜索与替换大师 (Pro Search)
+
+- **全局查找**: `Ctrl + F`
+- **正则模式**: 点击搜索框侧边的 `.*` 切换。
+- **批量替换**: 展开搜索框下方的箭头，输入替换文本，点击 `Replace All`。
+
+---
+
+### 🏋️ 快捷键竞技场 (Interactive Playground)
+
+*在这里，您可以直接尝试按下 **Alt + ↑** 将下方两行诗句的位置互换：*
+
+1. 鹅，鹅，鹅，
+2. 曲项向天歌。
+
+*或者尝试按下 **Ctrl + /** 对下面的文本进行语义注释：*
+
+<!-- 这是您的第一条专业注释 -->
+这是一行即将被您隐藏的文字。
+
+---
+Markdown 设计之美，尽在 Marka。
+''';
 
   static const String _welcomeMarkdown = r'''---
 title: Markdown 快速入门指南

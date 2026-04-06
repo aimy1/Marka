@@ -113,6 +113,7 @@ class SettingsDialog extends StatelessWidget {
                             _buildSwitchItem(provider.t('auto_save'), Icons.auto_awesome_rounded, provider.autoSave, (v) => provider.toggleAutoSave(), isDark, accentColor),
                             _buildSwitchItem(provider.t('split_screen'), Icons.splitscreen_rounded, provider.isSplitScreen, (v) => provider.toggleSplitScreen(), isDark, accentColor),
                             _buildSwitchItem(provider.t('word_wrap'), Icons.wrap_text_rounded, provider.isWrapped, (v) => provider.toggleWrap(), isDark, accentColor),
+                            _buildSwitchItem('Show Line Numbers', Icons.format_list_numbered_rounded, provider.showLineNumbers, (v) => provider.toggleLineNumbers(), isDark, accentColor),
                           ],
                           isDark
                         ),
