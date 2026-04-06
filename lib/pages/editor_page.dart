@@ -138,8 +138,6 @@ class _EditorPageState extends State<EditorPage> {
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  _VersionBadge(isDark: isDark),
                 ],
               ),
             ),
@@ -517,33 +515,3 @@ class _CustomLogoState extends State<_CustomLogo> {
   }
 }
 
-class _VersionBadge extends StatelessWidget {
-  final bool isDark;
-  const _VersionBadge({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final accentColor = isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark 
-              ? [accentColor.withOpacity(0.15), accentColor.withOpacity(0.05)]
-              : [accentColor.withOpacity(0.1), Colors.transparent],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accentColor.withOpacity(0.2)),
-      ),
-      child: Text(
-        'v3.3.4',
-        style: GoogleFonts.inter(
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          color: accentColor.withOpacity(0.8),
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}

@@ -424,11 +424,18 @@ void _showFolderContextMenu(BuildContext context, MarkdownProvider provider, Str
     position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
     items: [
       PopupMenuItem(
-        onTap: () => provider.removeWorkspaceFolder(path),
+        onTap: () => provider.openInExplorer(path),
         child: Row(
-          children: [Icon(Icons.folder_delete_outlined, size: 18, color: Colors.red), SizedBox(width: 12), Text(provider.t('remove_folder'), style: const TextStyle(color: Colors.red))],
+          children: [Icon(Icons.folder_open_rounded, size: 18), SizedBox(width: 12), Text(provider.t('open_location'))],
         ),
       ),
+      PopupMenuItem(
+        onTap: () => provider.removeWorkspaceFolder(path),
+        child: Row(
+          children: [Icon(Icons.folder_delete_outlined, size: 18, color: Colors.cyan), SizedBox(width: 12), Text(provider.t('remove_folder'))],
+        ),
+      ),
+
     ],
   );
 }
@@ -445,11 +452,18 @@ void _showFileContextMenu(BuildContext context, MarkdownProvider provider, Works
         ),
       ),
       PopupMenuItem(
+        onTap: () => provider.openInExplorer(item.path),
+        child: Row(
+          children: [Icon(Icons.folder_open_rounded, size: 18), SizedBox(width: 12), Text(provider.t('open_location'))],
+        ),
+      ),
+      PopupMenuItem(
         onTap: () => provider.deleteFile(item.path),
         child: Row(
           children: [Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red), SizedBox(width: 12), Text(provider.t('delete'), style: const TextStyle(color: Colors.red))],
         ),
       ),
+
     ],
   );
 }

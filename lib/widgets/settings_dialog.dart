@@ -157,12 +157,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _settingTile(p.t('font_size'), Icons.format_size_rounded, isDark, _buildSizeControls(p, isDark)),
             _settingTile(p.t('line_height'), Icons.format_line_spacing_rounded, isDark, _buildLineHeightSlider(p, accentColor)),
 
-            _settingTile(p.t('line_highlight'), Icons.highlight_alt_rounded, isDark, Switch(
-              value: p.highlightActiveLine,
-
-              activeColor: accentColor,
-              onChanged: (v) => p.toggleHighlightActiveLine(),
-            )),
           ],
         );
       case 2: // Appearance
@@ -210,7 +204,40 @@ class _SettingsDialogState extends State<SettingsDialog> {
           ],
         );
       default:
-        return Center(child: Text(p.t('about_desc'), textAlign: TextAlign.center, style: GoogleFonts.outfit(fontSize: 14, height: 1.5, color: isDark ? Colors.white30 : Colors.black26)));
+        return Column(
+          children: [
+            _sectionTitle(p.t('about')),
+            const SizedBox(height: 20),
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset('markd.logo.jpg', width: 80, height: 80, fit: BoxFit.cover),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: Text(
+                'Marka IDE',
+                style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, color: isDark ? Colors.white : Colors.black87),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                p.t('about_desc'),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: isDark ? Colors.white70 : Colors.black54),
+              ),
+            ),
+            const SizedBox(height: 40),
+            _settingTile(p.t('about_version'), Icons.info_outline_rounded, isDark, Text('v3.3.6', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
+
+            _settingTile(p.t('about_author'), Icons.person_outline_rounded, isDark, Text('Antigravity', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
+            _settingTile(p.t('about_license'), Icons.description_outlined, isDark, Text('MIT License', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
+            _settingTile(p.t('about_github'), Icons.link_rounded, isDark, SelectableText('github.com/aimy1/Marka', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)))),
+          ],
+        );
     }
   }
 

@@ -1,6 +1,7 @@
 ; Inno Setup Script for Marka
 #define MyAppName "Marka"
-#define MyAppVersion "3.3.5"
+#define MyAppVersion "3.3.6"
+
 
 #define MyAppPublisher "Antigravity"
 #define MyAppURL "https://github.com/aimy1/Marka"
@@ -30,6 +31,8 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed={#MyAppArch}
 ArchitecturesInstallIn64BitMode={#MyAppArch}
+ChangesAssociations=yes
+
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -75,3 +78,9 @@ begin
   end;
 end;
 
+[Registry]
+Root: HKA; Subkey: "Software\Classes\.md\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppName}.md"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.md"; ValueType: string; ValueName: ""; ValueData: "Markdown Document"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.md\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\{#MyAppName}.md\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".md"; ValueData: ""

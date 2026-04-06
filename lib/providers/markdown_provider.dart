@@ -29,7 +29,6 @@ class MarkdownProvider with ChangeNotifier {
   int _tabSize = 2;
   double _editorPadding = 32.0;
   String _locale = 'en';
-  bool _highlightActiveLine = true;
   bool _smoothScrolling = true;
   List<String> _openedFilePaths = [];
 
@@ -79,7 +78,6 @@ class MarkdownProvider with ChangeNotifier {
   int get tabSize => _tabSize;
   double get editorPadding => _editorPadding;
   String get locale => _locale;
-  bool get highlightActiveLine => _highlightActiveLine;
   bool get smoothScrolling => _smoothScrolling;
 
 
@@ -106,7 +104,6 @@ class MarkdownProvider with ChangeNotifier {
   void updateEditorPadding(double v) { _editorPadding = v.clamp(16, 96); _saveSettings(); notifyListeners(); }
   void toggleAutoPairing() { _autoPairing = !_autoPairing; _saveSettings(); notifyListeners(); }
   void updateTabSize(int v) { _tabSize = v == 4 ? 4 : 2; _saveSettings(); notifyListeners(); }
-  void toggleHighlightActiveLine() { _highlightActiveLine = !_highlightActiveLine; _saveSettings(); notifyListeners(); }
   void toggleSmoothScrolling() { _smoothScrolling = !_smoothScrolling; _saveSettings(); notifyListeners(); }
 
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
@@ -272,7 +269,6 @@ class MarkdownProvider with ChangeNotifier {
     _locale = prefs.getString('locale') ?? 'en';
     _workspacePaths = prefs.getStringList('workspacePaths') ?? [];
     _openedFilePaths = prefs.getStringList('openedFilePaths') ?? [];
-    _highlightActiveLine = prefs.getBool('highlightActiveLine') ?? true;
     _smoothScrolling = prefs.getBool('smoothScrolling') ?? true;
     _searchQuery = prefs.getString('searchQuery') ?? '';
     _replaceQuery = prefs.getString('replaceQuery') ?? '';
@@ -341,7 +337,6 @@ class MarkdownProvider with ChangeNotifier {
     await prefs.setString('locale', _locale);
     await prefs.setStringList('workspacePaths', _workspacePaths);
     await prefs.setStringList('openedFilePaths', _sessions.where((s) => s.path != null).map((s) => s.path!).toList());
-    await prefs.setBool('highlightActiveLine', _highlightActiveLine);
     await prefs.setBool('smoothScrolling', _smoothScrolling);
     await prefs.setString('searchQuery', _searchQuery);
     await prefs.setString('replaceQuery', _replaceQuery);
@@ -453,6 +448,25 @@ class MarkdownProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error saving file: $e');
+    }
+  }
+
+  Future<void> openInExplorer(String path) async {
+    if (kIsWeb) return;
+    try {
+      if (io.Platform.isWindows) {
+        // Windows: open explorer and select the file
+        await io.Process.run('explorer.exe', ['/select,', path]);
+      } else if (io.Platform.isMacOS) {
+        // macOS: reveal in finder
+        await io.Process.run('open', ['-R', path]);
+      } else {
+        // Linux: open the parent directory
+        final dir = io.Directory(path).parent.path;
+        await io.Process.run('xdg-open', [dir]);
+      }
+    } catch (e) {
+      debugPrint('Error opening directory: $e');
     }
   }
 
@@ -725,9 +739,17 @@ class MarkdownProvider with ChangeNotifier {
       'about': 'About',
       'smooth_scrolling': 'Smooth Scrolling',
       'spaces': 'Spaces',
-      'about_desc': 'Marka IDE v3.3.5\nBuilt for Industrial Writing',
+      'about_desc': 'Marka is a professional-grade Markdown editor designed for industrial writing and focus. [v3.3.6]',
+
+      'about_version': 'Version',
+      'about_github': 'GitHub Repository',
+      'about_author': 'Author',
+      'about_license': 'License',
       'find': 'Find',
+
+      'open_location': 'Open File Location',
     },
+
 
 
     'zh': {
@@ -781,7 +803,6 @@ class MarkdownProvider with ChangeNotifier {
       'tab_size': 'Tab 缩进大小',
       'auto_pairing': '自动补全括符号',
       'editor_padding': '编辑器左右间距',
-      'line_highlight': '高亮当前行',
       'pro_features': '高级功能',
       'replace_all': '全部替换',
       'no_results': '未找到结果',
@@ -794,9 +815,17 @@ class MarkdownProvider with ChangeNotifier {
       'about': '关于软件',
       'smooth_scrolling': '丝滑滚动',
       'spaces': '空格缩进',
-      'about_desc': 'Marka IDE v3.3.5\n专为工业级写作打造',
+      'about_desc': 'Marka 是一款为工业级写作和高度专注而设计的专业级 Markdown 编辑器。[v3.3.6]',
+
+      'about_version': '版本号',
+      'about_github': 'GitHub 仓库',
+      'about_author': '作者',
+      'about_license': '开源协议',
       'find': '查找',
+
+      'open_location': '打开文件位置',
     },
+
 
 
   };

@@ -178,20 +178,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
 
                             child: Stack(
                               children: [
-                                if (provider.highlightActiveLine)
-                                  Positioned.fill(
-                                    child: CustomPaint(
-                                      painter: _ActiveLinePainter(
-                                        cursorLine: provider.cursorLine,
-                                        fontSize: provider.fontSize,
-                                        lineHeight: provider.lineHeight,
-                                        scrollController: _scrollController,
-                                        accentColor: isDark ? const Color(0xFFCBA6F7).withOpacity(0.05) : const Color(0xFF8839EF).withOpacity(0.05),
-                                        padding: provider.lineHeight * 16,
-                                        leftPadding: provider.editorPadding,
-                                      ),
-                                    ),
-                                  ),
                                 TextField(
                                   controller: _controller,
                                   undoController: _undoController,
@@ -514,47 +500,3 @@ class _FormatH1Intent extends Intent { const _FormatH1Intent(); }
 class _FormatH2Intent extends Intent { const _FormatH2Intent(); }
 class _FormatH3Intent extends Intent { const _FormatH3Intent(); }
 
-class _ActiveLinePainter extends CustomPainter {
-  final int cursorLine;
-  final double fontSize;
-  final double lineHeight;
-  final ScrollController scrollController;
-  final Color accentColor;
-  final double padding;
-  final double leftPadding;
-
-  _ActiveLinePainter({
-    required this.cursorLine,
-    required this.fontSize,
-    required this.lineHeight,
-    required this.scrollController,
-    required this.accentColor,
-    required this.padding,
-    required this.leftPadding,
-  }) : super(repaint: scrollController);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (cursorLine < 1) return;
-    
-    final paint = Paint()..color = accentColor;
-    final rowHeight = fontSize * lineHeight;
-    final top = (cursorLine - 1) * rowHeight + padding - scrollController.offset;
-    
-    // Only draw if visible
-    if (top + rowHeight > 0 && top < size.height) {
-      canvas.drawRect(Rect.fromLTWH(0, top, size.width, rowHeight), paint);
-      
-      // Industrial highlight border (left)
-      final borderPaint = Paint()..color = accentColor.withOpacity(0.5);
-      canvas.drawRect(Rect.fromLTWH(0, top, 4, rowHeight), borderPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ActiveLinePainter old) => 
-    old.cursorLine != cursorLine || 
-    old.fontSize != fontSize || 
-    old.lineHeight != lineHeight ||
-    old.scrollController.offset != scrollController.offset;
-}
