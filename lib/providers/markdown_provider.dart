@@ -24,7 +24,12 @@ class MarkdownProvider with ChangeNotifier {
   bool _isSplitScreen = true;
   bool _isWrapped = true;
   bool _showToolbar = true;
+  bool _showToolbar = true;
   bool _isSyncScroll = true;
+  bool _autoPairing = true;
+  int _tabSize = 2;
+  double _editorPadding = 32.0;
+  bool _showLineHighlight = true;
   String _locale = 'en';
 
   // Kate-style Cursor Tracking (Debounced)
@@ -68,6 +73,10 @@ class MarkdownProvider with ChangeNotifier {
   bool get isWrapped => _isWrapped;
   bool get showToolbar => _showToolbar;
   bool get isSyncScroll => _isSyncScroll;
+  bool get autoPairing => _autoPairing;
+  int get tabSize => _tabSize;
+  double get editorPadding => _editorPadding;
+  bool get showLineHighlight => _showLineHighlight;
   String get locale => _locale;
 
   int get cursorLine => _cursorLine;
@@ -90,6 +99,10 @@ class MarkdownProvider with ChangeNotifier {
   void updateFontFamily(String v) { _fontFamily = v; _saveSettings(); notifyListeners(); }
   void toggleWrap() { _isWrapped = !_isWrapped; _saveSettings(); notifyListeners(); }
   void toggleAutoSave() { _autoSave = !_autoSave; _saveSettings(); notifyListeners(); }
+  void updateEditorPadding(double v) { _editorPadding = v.clamp(16, 96); _saveSettings(); notifyListeners(); }
+  void toggleAutoPairing() { _autoPairing = !_autoPairing; _saveSettings(); notifyListeners(); }
+  void toggleLineHighlight() { _showLineHighlight = !_showLineHighlight; _saveSettings(); notifyListeners(); }
+  void updateTabSize(int v) { _tabSize = v == 4 ? 4 : 2; _saveSettings(); notifyListeners(); }
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
       : null;
@@ -113,9 +126,6 @@ class MarkdownProvider with ChangeNotifier {
   String get replaceQuery => _replaceQuery;
   void updateReplaceQuery(String v) { _replaceQuery = v; notifyListeners(); }
 
-  bool _showLineNumbers = true;
-  bool get showLineNumbers => _showLineNumbers;
-  void toggleLineNumbers() { _showLineNumbers = !_showLineNumbers; _saveSettings(); notifyListeners(); }
 
   // State Management
   void updateContent(String newContent) {
@@ -242,6 +252,10 @@ class MarkdownProvider with ChangeNotifier {
     _isWrapped = prefs.getBool('isWrapped') ?? true;
     _showToolbar = prefs.getBool('showToolbar') ?? true;
     _isSyncScroll = prefs.getBool('isSyncScroll') ?? true;
+    _autoPairing = prefs.getBool('autoPairing') ?? true;
+    _tabSize = prefs.getInt('tabSize') ?? 2;
+    _editorPadding = prefs.getDouble('editorPadding') ?? 32.0;
+    _showLineHighlight = prefs.getBool('showLineHighlight') ?? true;
     _locale = prefs.getString('locale') ?? 'en';
     _workspacePaths = prefs.getStringList('workspacePaths') ?? [];
     
@@ -288,6 +302,10 @@ class MarkdownProvider with ChangeNotifier {
     await prefs.setBool('isWrapped', _isWrapped);
     await prefs.setBool('showToolbar', _showToolbar);
     await prefs.setBool('isSyncScroll', _isSyncScroll);
+    await prefs.setBool('autoPairing', _autoPairing);
+    await prefs.setInt('tabSize', _tabSize);
+    await prefs.setDouble('editorPadding', _editorPadding);
+    await prefs.setBool('showLineHighlight', _showLineHighlight);
     await prefs.setString('locale', _locale);
     await prefs.setStringList('workspacePaths', _workspacePaths);
   }
@@ -562,7 +580,6 @@ class MarkdownProvider with ChangeNotifier {
   void updateSelection(int start, int end) {
     final s = activeSession;
     if (s != null) { s.selectionStart = start; s.selectionEnd = end; }
-    _requestSelectionOffset = start;
     notifyListeners();
   }
 
@@ -638,6 +655,7 @@ class MarkdownProvider with ChangeNotifier {
       'heading': 'Heading',
       'strikethrough': 'Strikethrough',
       'list': 'Bullet List',
+      'ordered_list': 'Numbered List',
       'task_list': 'Task List',
       'link': 'Link',
       'image': 'Image',
@@ -645,6 +663,10 @@ class MarkdownProvider with ChangeNotifier {
       'terminal': 'Code Block',
       'quote': 'Quote',
       'hr': 'Horizontal Line',
+      'tab_size': 'Tab Size',
+      'auto_pairing': 'Auto Pair Brackets',
+      'editor_padding': 'Horizontal Padding',
+      'line_highlight': 'Highlight Active Line',
       'pro_features': 'ADVANCED FEATURES',
       'appearance': 'INTERFACE APPEARANCE',
       'typography': 'FONT & SPACING',
@@ -696,6 +718,7 @@ class MarkdownProvider with ChangeNotifier {
       'heading': '标题',
       'strikethrough': '删除线',
       'list': '无序列表',
+      'ordered_list': '数字列表',
       'task_list': '任务列表',
       'link': '插入链接',
       'image': '插入图片',
@@ -703,6 +726,10 @@ class MarkdownProvider with ChangeNotifier {
       'terminal': '代码块',
       'quote': '引用',
       'hr': '分割线',
+      'tab_size': 'Tab 缩进大小',
+      'auto_pairing': '自动补全括符号',
+      'editor_padding': '编辑器左右间距',
+      'line_highlight': '高亮当前行',
       'pro_features': '高级功能',
       'appearance': '界面外观',
       'typography': '字体排版',
@@ -765,64 +792,88 @@ Markdown 设计之美，尽在 Marka。
 ''';
 
   static const String _welcomeMarkdown = r'''---
-title: Markdown 快速入门指南
+title: 🚀 Marka IDE: 您的专业创作空间
 date: 2026-04-06
-categories: [文档, 教程]
-tags: [Marka, Markdown, 极简]
+categories: [IDE, 教程, 效率]
+tags: [Marka, Markdown, 精准对齐, 查找替换]
 ---
 
-# 🚀 欢迎使用 Marka IDE
+# 🚀 欢迎进入 Marka IDE
 
-Marka 是一款为专业创作者打造的工业级 Markdown 编辑器。本指南将带您快速掌握 Markdown 的基本语法与 Marka 的特色功能。
+> **Marka: 专为专业人士打造的像素级对齐 Markdown 创作空间。**
 
-## 1. 基础排版
+本文档将作为您的第一篇交互式指南，带您快速掌握 **Marka** 的独家生产力特性与 **Markdown** 的标准排版方案。
 
-Markdown 使用直观的符号来定义格式，无需复杂的快捷键：
-- **加粗**: `**加粗文本**`
-- *斜体*: `*斜体文本*`
-- ~~删除线~~: `~~删除线文本~~`
+---
 
-## 2. 多级标题
+## 🎨 第一部分：Marka IDE 特色功能 (The Power User)
 
-使用 `#` 的数量来定义标题等级：
+Marka 不止是一个文本编辑器，它是一个基于工业级标准构建的创作工作站：
+
+### 1.1 像素级对齐 (Kate 引擎)
+- **视觉稳定性**: 通过 `StrutStyle` 强力锁定，无论字体大小，每一行都精确分布在原子网格中。
+- **行号基线同步**: 行号与文本基线始终完美同步，即使是大规模文档也能保持视觉连贯。
+
+### 1.2 工业级查找与替换
+- **智能选区**: 完善的选区交互，点击移动光标、拖动快速选中文本。
+- **高亮查找**: `Ctrl + F` 开启。全量颜色匹配高亮，当前匹配项橙色强调，按 `Enter` 快速跳转。
+
+### 1.3 深度定制化
+- **编辑器布局**: 在“设置 > 字数与排版”中调节左右间距，在极简居中与全宽录入间自由切换。
+- **撤销/重做**: 专业的 `Undo/Redo` 控制器，全场景支持快捷键（Ctrl + Z / Y）操作。
+- **分屏同步滚动**: 点击右上角分屏按钮，实现编辑器与预览窗口 1:1 物理百分比锁定。
+
+---
+
+## ✍️ 第二部分：Markdown 实战教程 (The Writing Master)
+
+Markdown 旨在让您专注于内容而非格式。
+
+### 2.1 文本样式与排版
+- **粗体**: `**加粗文本**` -> **加粗文本**
+- *斜体*: `*斜体文本*` -> *斜体文本*
+- ~~删除线~~: `~~删除线文本~~` -> ~~删除线文本~~
+- `行内代码`: 使用反引号 \`void main()\`
+
+### 2.2 多级标题 (H1 - H3)
 # 一级标题 (H1)
 ## 二级标题 (H2)
 ### 三级标题 (H3)
 
-## 3. 列表与任务
+### 2.3 列表与任务管理
+- **无序列表**: 使用 `-` 或 `*` 符号。
+- **有序列表**: 使用 `1. ` 符号。
+- [x] 已掌握 Marka 特色功能
+- [ ] 完成这篇 Markdown 实战教程
+- [ ] 尝试按下 `Tab` 调节缩进层级
 
-轻松管理您的待办事项与大纲：
-- 无序列表项 1
-- 无序列表项 2
-  - 子项目
-
-- [ ] 待办事项
-- [x] 已完成事项
-
-- [x] 已完成的 Marka 配置
-- [ ] 体验同步滚动功能
-
-## 4. 代码表现
-
-Marka 支持 100+ 种语言的代码高亮。行内代码使用反引号，例如 `void main()`。
-代码块使用三个反引号并指定语言：
-
+### 2.4 代码块与表格
 ```dart
 void main() {
-  print("Hello Marka!");
+  print("Hello Marka IDE!");
 }
 ```
 
-## 5. 引用与链接
+| 特性 | 支持情况 | 版本备注 |
+| :--- | :--- | :--- |
+| 查找高亮 | ✅ 已上线 | Engine 3.0+ |
+| 原子网格 | ✅ 已上线 | Kate 级精度 |
+| 撤销控制器 | ✅ 已上线 | 生产力套件 |
 
-> "简洁是最终的复杂。" —— 达芬奇
+> "至简即是至繁。" —— 达芬奇
 
-您可以方便地插入 [外部链接](https://github.com/marka-ide) 或图片。
+---
+
+## ⚙️ 快捷键矩阵 (Productivity Flow)
+- `Ctrl + B`: **加粗** / `Ctrl + I`: *斜体*
+- `Ctrl + F`: **查找与替换** 面板
+- `Alt + ↑/↓`: **向上/下快速移动整行**
+- `Ctrl + Z`: **撤销** / `Ctrl + Y`: **重做**
+- `Ctrl + \ `: **侧边栏开关**
 
 ---
 
 ### 💡 小贴士
-- **分屏预览**: 点击右上角的分屏图标，开启同步滚动体验。
-- **YAML 渲染**: 文档顶部的 `---` 区域会被 Marka 自动转化为精美的文章页头。
+**Hero Headers**: 在文档最顶部加入 YAML 属性（如上方的 `title`），Marka 会自动渲染为精美的文章卡片。
 ''';
 }

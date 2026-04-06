@@ -1,31 +1,33 @@
 # 🚀 Marka IDE
 
+[中文文档](README_ZH.md)
+
 > **The Precision Markdown Workspace for Professionals.**
 
 Marka is a modern, high-performance Markdown IDE built with Flutter, designed for writers and developers who demand industrial-grade precision and a zen-like writing experience. Inspired by the strict layout standards of the **Kate** editor and the aesthetic elegance of the **Catppuccin** palette.
 
-![Marka Studio Preview](https://img.shields.io/badge/Release-v2.6.0-CBA6F7?style=for-the-badge&logo=markdown)
+![Marka Studio Preview](https://img.shields.io/badge/Release-v3.0.0-CBA6F7?style=for-the-badge&logo=markdown)
 ![Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter)
 
 ---
 
 ## ✨ Key Features
 
-### 📐 Kate-Style Strict Alignment (Engine 2.2)
+### 📐 Kate-Style Atomic Grid (Engine 3.0)
 Zero vertical jitter. Every line is locked to an atomic 21-pixel grid using `StrutStyle` forcing. Row numbers and text baselines stay perfectly synchronized, even in documents with 100,000+ lines.
 
-### 🖼️ YAML Front Matter Hero Headers
-First impressions matter. Marka automatically parses YAML metadata (`title`, `date`, `categories`, `tags`) and renders a stunning **Hero Header** in the previewer, transforming raw data into a polished article preview.
-
-### 🔄 Zen Mode & Real-time Sync Scroll
-Experience 1:1 visual anchoring. The bi-directional sync engine ensures that your editor and preview stay "physically locked" at the same scroll percentage, providing instant visual feedback.
-
-### 📊 Pro Status Bar & Word Count
-Stay informed without distraction. The industrial status bar provides real-time cursor coordinates (`Ln`, `Col`), semantic word count, encoding detection, and sync status.
+### 🔍 Industrial Find & Replace
+Beyond basic search. Marka provides real-time match highlighting across the entire document, with a distinct emphasis on the current focus. Supports Regex, case-sensitivity, and one-click global replacement.
 
 ### 🎨 Studio Aesthetics
 - **Catppuccin Integration**: High-contrast, low-fatigue color schemes for both Light and Dark modes.
-- **Typography**: Optimized for `JetBrains Mono` (Editor) and `Outfit / Inter` (UI/Preview).
+- **Dynamic Layout**: Adjustable horizontal editor padding, custom font families (default `JetBrains Mono`), and line height controls.
+
+### 🚀 Developer Productivity Suite
+- **Standard Selection Behavior**: Reliable click-to-focus and drag-to-select logic that matches professional IDEs.
+- **Undo/Redo History**: Full support for `UndoHistoryController`, ensuring every snippet insertion or format change is reversible.
+- **Real-time Sync Scroll**: 1:1 visual anchoring between the editor and preview for instant visual feedback.
+- **Shortcut Matrix**: Standard Markdown shortcuts (Ctrl+B/I/L) plus advanced line manipulation (Alt+↑/↓).
 
 ---
 
@@ -33,8 +35,8 @@ Stay informed without distraction. The industrial status bar provides real-time 
 
 - **Core Engine**: Flutter (Skia/Impeller)
 - **State Management**: Provider
-- **Typography**: Google Fonts Integration
-- **Editing**: Custom Modular Architecture (Engine 2.0)
+- **Typography**: Google Fonts / JetBrains Mono
+- **Editing**: Modular Engine 3.0 Architecture
 
 ---
 
@@ -43,22 +45,24 @@ Stay informed without distraction. The industrial status bar provides real-time 
 ### Installation
 1. Clone the repository
 2. Run `flutter pub get`
-3. Run `flutter run -d windows` (or your preferred platform)
+3. Launch with `flutter run -d windows` (or your preferred platform)
 
 ### Keyboard Shortcuts
 - `Ctrl + S`: Save Document
-- `Ctrl + F`: Toggle Search Overlay
-- `Alt + Z`: Toggle Word Wrap (Planned)
-- `Ctrl + \`: Toggle Sidebar
+- `Ctrl + F`: Toggle Search/Replace Overlay
+- `Alt + ↑/↓`: Move Current Line Up/Down
+- `Ctrl + Z`: Undo Changes
+- `Ctrl + Y`: Redo Changes
+- `Ctrl + \ `: Toggle Sidebar
 
 ---
 
 ## 🗺️ Roadmap
-- [x] Engine 2.1: Atomic Grid Alignment
-- [x] Engine 2.3: Gutter-less Zen Mode
-- [x] v2.6.0: YAML Metadata Hero Headers
-- [ ] v2.7.0: Multi-session Cloud Sync (Coming soon)
-- [ ] v2.8.0: Plugin Architecture
+- [x] v2.9.0: Atomic Grid Alignment logic
+- [x] v3.0.0: Find Highlighting & Industrial Selection Fixes
+- [x] v3.1.0: Undo/Redo History Controller
+- [ ] v3.2.0: Multi-session Cloud Sync (In Progress)
+- [ ] v4.0.0: Plugin & Plugin Architecture
 
 ---
 

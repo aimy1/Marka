@@ -83,6 +83,7 @@ class _SearchOverlayWidgetState extends State<SearchOverlayWidget> {
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         ),
+                        onSubmitted: (v) => p.findNext(),
                         style: GoogleFonts.inter(fontSize: 13, color: isDark ? Colors.white : Colors.black87),
                       ),
                     ),

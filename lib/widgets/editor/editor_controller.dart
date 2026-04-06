@@ -27,10 +27,22 @@ class MarkaEditorController extends TextEditingController {
       RegExp(r'```[\s\S]*?```'): isDark ? const Color(0xFF94E2D5) : const Color(0xFF179299),
     };
 
+    final Map<int, TextSelection> matches = {};
+    if (provider.searchQuery.isNotEmpty) {
+      for (int i = 0; i < provider.searchMatches.length; i++) {
+        final start = provider.searchMatches[i];
+        matches[start] = TextSelection(
+          baseOffset: start, 
+          extentOffset: start + provider.searchQuery.length
+        );
+      }
+    }
+
     text.splitMapJoin(
       RegExp(patterns.keys.map((r) => r.pattern).join('|'), multiLine: true),
       onMatch: (m) {
         final matchText = m[0]!;
+        final matchStart = m.start;
         Color? matchColor;
         FontWeight weight = FontWeight.normal;
         for (final entry in patterns.entries) {
@@ -40,11 +52,78 @@ class MarkaEditorController extends TextEditingController {
             break;
           }
         }
-        children.add(TextSpan(text: matchText, style: style?.copyWith(color: matchColor, fontWeight: weight)));
+
+        // Apply secondary search highlighting if within range
+        List<TextSpan> innerSpans = [];
+        int currentIdx = 0;
+        
+        if (provider.searchQuery.isNotEmpty) {
+          final searchReg = RegExp(RegExp.escape(provider.searchQuery), caseSensitive: provider.isCaseSensitive);
+          matchText.splitMapJoin(
+            searchReg,
+            onMatch: (sm) {
+              final smStart = sm.start;
+              final globalStart = matchStart + smStart;
+              final isCurrent = provider.searchMatches.indexOf(globalStart) == provider.currentMatchIndex;
+              
+              innerSpans.add(TextSpan(text: matchText.substring(currentIdx, smStart)));
+              innerSpans.add(TextSpan(
+                text: sm[0],
+                style: TextStyle(
+                  backgroundColor: isCurrent 
+                      ? Colors.orange.withOpacity(0.5) 
+                      : Colors.yellow.withOpacity(0.3),
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ));
+              currentIdx = sm.end;
+              return '';
+            },
+            onNonMatch: (n) { return ''; }
+          );
+          innerSpans.add(TextSpan(text: matchText.substring(currentIdx)));
+        }
+
+        if (innerSpans.isEmpty) {
+          children.add(TextSpan(text: matchText, style: style?.copyWith(color: matchColor, fontWeight: weight)));
+        } else {
+          children.add(TextSpan(
+            children: innerSpans, 
+            style: style?.copyWith(color: matchColor, fontWeight: weight)
+          ));
+        }
         return '';
       },
       onNonMatch: (n) {
-        children.add(TextSpan(text: n, style: style));
+        final matchStart = text.indexOf(n, children.isEmpty ? 0 : text.indexOf(children.last.toPlainText() ?? '') + (children.last.toPlainText()?.length ?? 0));
+        // Simple search highlighting for non-syntax matches
+        if (provider.searchQuery.isNotEmpty) {
+          final searchReg = RegExp(RegExp.escape(provider.searchQuery), caseSensitive: provider.isCaseSensitive);
+          int currentIdx = 0;
+          n.splitMapJoin(
+            searchReg,
+            onMatch: (sm) {
+              final globalStart = matchStart + sm.start;
+              final isCurrent = provider.searchMatches.indexOf(globalStart) == provider.currentMatchIndex;
+              children.add(TextSpan(text: n.substring(currentIdx, sm.start), style: style));
+              children.add(TextSpan(
+                text: sm[0],
+                style: style?.copyWith(
+                  backgroundColor: isCurrent 
+                      ? Colors.orange.withOpacity(0.5) 
+                      : Colors.yellow.withOpacity(0.3),
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ));
+              currentIdx = sm.end;
+              return '';
+            },
+            onNonMatch: (n) { return ''; }
+          );
+          children.add(TextSpan(text: n.substring(currentIdx), style: style));
+        } else {
+          children.add(TextSpan(text: n, style: style));
+        }
         return '';
       },
     );

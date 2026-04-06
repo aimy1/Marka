@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/markdown_provider.dart';
 import 'search_overlay_widget.dart';
 import 'editor/editor_controller.dart';
-import 'editor/editor_gutter.dart';
 
 /// Marka v2.6.3 - Selection Interaction Fix
 /// Removed experimental gesture listeners that blocked mouse selection.
@@ -23,6 +22,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   late MarkaEditorController _controller;
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  late UndoHistoryController _undoController;
 
   static const double _fontSize = 14.0;
   static const double _lineHeight = 1.5;
@@ -37,6 +37,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     _controller = MarkaEditorController(provider: provider);
     _controller.addListener(_onTextChanged);
     provider.addListener(_onProviderChanged);
+    _undoController = UndoHistoryController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
@@ -90,6 +91,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     _controller.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
+    _undoController.dispose();
     super.dispose();
   }
 
@@ -161,7 +163,11 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                       }
                       return false;
                     },
-                    child: Theme(
+                    child: Stack( // Wrap in stack for background highlight
+                      children: [
+                        if (provider.showLineHighlight) 
+                          _buildActiveLineHighlight(provider, isDark),
+                        Theme(
                       data: Theme.of(context).copyWith(
                         textSelectionTheme: TextSelectionThemeData(
                           selectionColor: isDark ? const Color(0xFFCBA6F7).withOpacity(0.2) : Colors.blue.withOpacity(0.2),
@@ -171,16 +177,10 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (provider.showLineNumbers)
-                             MarkaEditorGutter(
-                               scrollController: _scrollController,
-                               lineCount: _controller.text.split('\n').length,
-                               fontSize: provider.fontSize,
-                               lineHeight: provider.lineHeight,
-                             ),
                           Expanded(
                             child: TextField(
                               controller: _controller,
+                              undoController: _undoController,
                               scrollController: _scrollController,
                               focusNode: _focusNode,
                               maxLines: null,
@@ -189,16 +189,15 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                               cursorWidth: 1.2,
                               textAlignVertical: TextAlignVertical.top,
                               selectionControls: desktopTextSelectionControls,
-                              onChanged: (text) {
+                               onChanged: (text) {
                                 _handleAutoPairing(text);
-                                if (provider.showLineNumbers) setState(() {});
                               },
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
+                                fillColor: Colors.transparent, 
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 32, 
+                                  horizontal: provider.editorPadding, 
                                   vertical: provider.lineHeight * 16
                                 ),
                               ),
@@ -355,22 +354,48 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     final currentLine = text.substring(lineStart, lineEnd == -1 ? text.length : lineEnd);
     
     if (isOutdent) {
-      // Logic for Shift + Tab: Remove 2 spaces if present
-      if (currentLine.startsWith('  ')) {
-        final newText = text.replaceRange(lineStart, lineStart + 2, '');
+      final spaces = ' ' * provider.tabSize;
+      if (currentLine.startsWith(spaces)) {
+        final newText = text.replaceRange(lineStart, lineStart + provider.tabSize, '');
         _controller.value = TextEditingValue(
           text: newText,
-          selection: TextSelection.collapsed(offset: (sel.start - 2).clamp(0, newText.length)),
+          selection: TextSelection.collapsed(offset: (sel.start - provider.tabSize).clamp(0, newText.length)),
         );
       }
     } else {
-      // Logic for Tab: Insert 2 spaces
-      final newText = text.replaceRange(lineStart, lineStart, '  ');
+      final spaces = ' ' * provider.tabSize;
+      final newText = text.replaceRange(lineStart, lineStart, spaces);
       _controller.value = TextEditingValue(
         text: newText,
-        selection: TextSelection.collapsed(offset: sel.start + 2),
+        selection: TextSelection.collapsed(offset: sel.start + provider.tabSize),
       );
     }
+  }
+
+  Widget _buildActiveLineHighlight(MarkdownProvider p, bool isDark) {
+    final double lh = p.fontSize * p.lineHeight;
+    final double topPad = p.lineHeight * 16;
+    
+    return AnimatedBuilder(
+      animation: _scrollController,
+      builder: (context, _) {
+        if (!_scrollController.hasClients) return const SizedBox.shrink();
+        final double offset = (topPad + ((p.cursorLine - 1) * lh)) - _scrollController.offset;
+        
+        return Positioned(
+          top: offset, left: 0, right: 0, height: lh,
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.025),
+              border: Border.symmetric(
+                vertical: BorderSide.none, 
+                horizontal: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 0.5)
+              ),
+            ),
+          ),
+        );
+      }
+    );
   }
 
   void _handleEnter() {
@@ -403,6 +428,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         _tool(Icons.strikethrough_s_rounded, () => p.insertSnippet('~~', '~~'), p.t('strikethrough'), iconCol),
         const VerticalDivider(width: 16, indent: 8, endIndent: 8),
         _tool(Icons.format_list_bulleted_rounded, () => p.insertSnippet('- ', ''), p.t('list'), iconCol),
+        _tool(Icons.format_list_numbered_rounded, () => p.insertSnippet('1. ', ''), p.t('ordered_list'), iconCol),
         _tool(Icons.checklist_rtl_rounded, () => p.insertSnippet('- [ ] ', ''), p.t('task_list'), iconCol),
         _tool(Icons.format_quote_rounded, () => p.insertSnippet('> ', ''), p.t('quote'), iconCol),
         _tool(Icons.code_rounded, () => p.insertSnippet('`', '`'), p.t('code'), iconCol),

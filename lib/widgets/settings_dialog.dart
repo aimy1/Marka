@@ -99,6 +99,12 @@ class SettingsDialog extends StatelessWidget {
                               _buildLineHeightSlider(provider, accentColor),
                               isDark
                             ),
+                            _buildSettingRow(
+                              provider.t('editor_padding'),
+                              Icons.horizontal_distribute_rounded,
+                              _buildPaddingSlider(provider, accentColor),
+                              isDark
+                            ),
                           ],
                           isDark
                         ),
@@ -111,9 +117,16 @@ class SettingsDialog extends StatelessWidget {
                             _buildSwitchItem(provider.t('sync_scroll'), Icons.sync_rounded, provider.isSyncScroll, (v) => provider.toggleSyncScroll(), isDark, accentColor),
                             _buildSwitchItem(provider.t('show_toolbar'), Icons.construction_rounded, provider.showToolbar, (v) => provider.toggleToolbar(), isDark, accentColor),
                             _buildSwitchItem(provider.t('auto_save'), Icons.auto_awesome_rounded, provider.autoSave, (v) => provider.toggleAutoSave(), isDark, accentColor),
+                            _buildSwitchItem(provider.t('auto_pairing'), Icons.code_rounded, provider.autoPairing, (v) => provider.toggleAutoPairing(), isDark, accentColor),
+                            _buildSwitchItem(provider.t('line_highlight'), Icons.highlight_rounded, provider.showLineHighlight, (v) => provider.toggleLineHighlight(), isDark, accentColor),
+                            _buildSettingRow(
+                              provider.t('tab_size'),
+                              Icons.keyboard_tab_rounded,
+                              _buildTabDropdown(provider, isDark),
+                              isDark
+                            ),
                             _buildSwitchItem(provider.t('split_screen'), Icons.splitscreen_rounded, provider.isSplitScreen, (v) => provider.toggleSplitScreen(), isDark, accentColor),
                             _buildSwitchItem(provider.t('word_wrap'), Icons.wrap_text_rounded, provider.isWrapped, (v) => provider.toggleWrap(), isDark, accentColor),
-                            _buildSwitchItem('Show Line Numbers', Icons.format_list_numbered_rounded, provider.showLineNumbers, (v) => provider.toggleLineNumbers(), isDark, accentColor),
                           ],
                           isDark
                         ),
@@ -309,6 +322,33 @@ class SettingsDialog extends StatelessWidget {
         activeColor: accentColor,
         onChanged: (v) => provider.updateLineHeight(v),
       ),
+    );
+  }
+
+  Widget _buildPaddingSlider(MarkdownProvider provider, Color accentColor) {
+    return SizedBox(
+      width: 120,
+      child: Slider(
+        value: provider.editorPadding,
+        min: 16.0,
+        max: 96.0,
+        divisions: 20,
+        activeColor: accentColor,
+        onChanged: (v) => provider.updateEditorPadding(v),
+      ),
+    );
+  }
+
+  Widget _buildTabDropdown(MarkdownProvider provider, bool isDark) {
+    return DropdownButton<int>(
+      value: provider.tabSize,
+      underline: const SizedBox(),
+      dropdownColor: isDark ? const Color(0xFF1E1E2F) : Colors.white,
+      onChanged: (v) => v != null ? provider.updateTabSize(v) : null,
+      items: [2, 4].map((s) => DropdownMenuItem(
+        value: s,
+        child: Text('$s Spaces', style: GoogleFonts.inter(fontSize: 13)),
+      )).toList(),
     );
   }
 
