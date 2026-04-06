@@ -25,6 +25,7 @@ class MarkdownProvider with ChangeNotifier {
   bool _isWrapped = true;
   bool _showToolbar = true;
   bool _isSyncScroll = true;
+  bool _autoPairing = true;
   int _tabSize = 2;
   double _editorPadding = 32.0;
   String _locale = 'en';
@@ -70,10 +71,10 @@ class MarkdownProvider with ChangeNotifier {
   bool get isWrapped => _isWrapped;
   bool get showToolbar => _showToolbar;
   bool get isSyncScroll => _isSyncScroll;
+  bool get autoPairing => _autoPairing;
   int get tabSize => _tabSize;
   double get editorPadding => _editorPadding;
   String get locale => _locale;
-Line Number 80 Original Content:   String get locale => _locale;
 
   int get cursorLine => _cursorLine;
   int get cursorColumn => _cursorColumn;
@@ -97,7 +98,6 @@ Line Number 80 Original Content:   String get locale => _locale;
   void toggleAutoSave() { _autoSave = !_autoSave; _saveSettings(); notifyListeners(); }
   void updateEditorPadding(double v) { _editorPadding = v.clamp(16, 96); _saveSettings(); notifyListeners(); }
   void toggleAutoPairing() { _autoPairing = !_autoPairing; _saveSettings(); notifyListeners(); }
-  void toggleLineHighlight() { _showLineHighlight = !_showLineHighlight; _saveSettings(); notifyListeners(); }
   void updateTabSize(int v) { _tabSize = v == 4 ? 4 : 2; _saveSettings(); notifyListeners(); }
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
