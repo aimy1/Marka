@@ -207,7 +207,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     final iconCol = isDark ? const Color(0xFFCDD6F4).withOpacity(0.7) : const Color(0xFF4C4F69).withOpacity(0.7);
     return Container(
       height: 38, padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF2F2F2), border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.black10))),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF2F2F2), border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.black12))),
       child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
         _tool(Icons.format_bold_rounded, () => p.insertSnippet('**', '**'), p.t('bold'), iconCol),
         _tool(Icons.format_italic_rounded, () => p.insertSnippet('*', '*'), p.t('italic'), iconCol),
