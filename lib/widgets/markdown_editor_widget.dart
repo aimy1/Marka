@@ -1,11 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../providers/markdown_provider.dart';
 import 'search_overlay_widget.dart';
+import 'editor/editor_controller.dart';
+import 'editor/editor_gutter.dart';
+import 'editor/editor_surface.dart';
 
+/// Marka IDE Engine 2.0 - The Reconstructed Editor Architecture
+/// Modularized for High-Performance, Tactile Typing, and Incremental Intelligence.
 class MarkdownEditorWidget extends StatefulWidget {
   const MarkdownEditorWidget({super.key});
 
@@ -14,7 +18,7 @@ class MarkdownEditorWidget extends StatefulWidget {
 }
 
 class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
-  late TextEditingController _controller;
+  late MarkaEditorController _controller;
   late ScrollController _scrollController;
   late ScrollController _lineNumbersController;
   late FocusNode _focusNode;
@@ -23,7 +27,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   void initState() {
     super.initState();
     final provider = Provider.of<MarkdownProvider>(context, listen: false);
-    _controller = MarkdownTextEditingController(provider: provider);
+    _controller = MarkaEditorController(provider: provider);
     _scrollController = ScrollController();
     _lineNumbersController = ScrollController();
     _focusNode = FocusNode();
@@ -59,7 +63,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
       
       if (_activeLine != line - 1) setState(() => _activeLine = line - 1);
       
-      // OPTIMIZED: Debounced update
+      // ENGINE 2.0 PERFORMANCE: Debounced status updates
       provider.updateCursorInfo(line, col, selLen);
       provider.updateSelection(selection.start, selection.end);
     }
@@ -137,14 +141,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     final text = _controller.text;
     final lineCount = '\n'.allMatches(text).length + 1;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    const double gutterWidth = 52.0;
-    const double horizontalPadding = 24.0;
-    const double topPadding = 24.0;
-    
-    final double lineHeightFactor = provider.lineHeight;
-    final double calculatedLineHeight = provider.fontSize * lineHeightFactor;
-    final charWidth = provider.fontSize * 0.6; 
 
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
@@ -164,62 +160,27 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
             Expanded(
               child: Stack(
                 children: [
-                  // 1. Optimized Gutter & Clipping Guides
-                  Positioned.fill(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildGutter(gutterWidth, topPadding, calculatedLineHeight, lineCount, isDark),
-                        Expanded(
-                          child: Container(
-                            color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFEFF1F5),
-                            child: AnimatedBuilder(
-                              animation: _scrollController,
-                              builder: (context, _) {
-                                return CustomPaint(
-                                  painter: _IndentGuidesPainter(
-                                    scrollController: _scrollController,
-                                    charWidth: charWidth,
-                                    horizontalOffset: horizontalPadding,
-                                    topPadding: topPadding,
-                                    lineHeight: calculatedLineHeight,
-                                    guideColor: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.04),
-                                  ),
-                                );
-                              }
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  _buildLineHighlight(topPadding, calculatedLineHeight, isDark),
-                  
-                  Positioned.fill(
-                    child: TextField(
-                      controller: _controller,
-                      scrollController: _scrollController,
-                      focusNode: _focusNode,
-                      maxLines: null,
-                      expands: true,
-                      autofocus: true,
-                      cursorColor: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-                      cursorWidth: 2,
-                      textAlignVertical: TextAlignVertical.top,
-                      decoration: InputDecoration(
-                        isDense: true, border: InputBorder.none, hintText: 'Start writing...',
-                        contentPadding: const EdgeInsets.only(
-                          left: gutterWidth + horizontalPadding, top: topPadding, bottom: topPadding, right: horizontalPadding
-                        ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Modular Gutter (Engine 2.0)
+                      MarkaEditorGutter(
+                        scrollController: _scrollController,
+                        lineNumbersController: _lineNumbersController,
+                        activeLine: _activeLine,
+                        lineCount: lineCount,
+                        provider: provider,
                       ),
-                      strutStyle: StrutStyle(forceStrutHeight: true, height: lineHeightFactor, fontSize: provider.fontSize, fontFamily: provider.fontFamily),
-                      style: GoogleFonts.getFont(
-                        provider.fontFamily, fontSize: provider.fontSize, height: lineHeightFactor,
-                        letterSpacing: 0, fontFeatures: const [FontFeature.disable('liga')],
-                        color: isDark ? const Color(0xFFCDD6F4) : const Color(0xFF4C4F69),
+                      
+                      // Modular Input Surface (Engine 2.0)
+                      MarkaEditorSurface(
+                        controller: _controller,
+                        scrollController: _scrollController,
+                        focusNode: _focusNode,
+                        activeLine: _activeLine,
+                        provider: provider,
                       ),
-                    ),
+                    ],
                   ),
 
                   if (provider.showSearchOverlay)
@@ -230,56 +191,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildGutter(double width, double top, double height, int count, bool isDark) {
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
-        border: Border(right: BorderSide(color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8), width: 1)),
-      ),
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: ListView.builder(
-          controller: _lineNumbersController,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.only(top: top),
-          itemCount: count,
-          itemExtent: height,
-          cacheExtent: 1000, // PERFORMANCE: Increase cache for smoother high-volume scrolling
-          itemBuilder: (context, index) {
-            final isActive = index == _activeLine;
-            return Container(
-              padding: const EdgeInsets.only(right: 12),
-              alignment: Alignment.centerRight,
-              child: Text(
-                '${index + 1}',
-                style: GoogleFonts.jetBrainsMono(
-                  fontSize: 10, height: 1.0, fontWeight: isActive ? FontWeight.w800 : FontWeight.w400,
-                  color: isActive ? (isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF)) : (isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2)),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLineHighlight(double topPadding, double lineHeight, bool isDark) {
-    if (!_scrollController.hasClients) return const SizedBox.shrink();
-    return AnimatedBuilder(
-      animation: _scrollController,
-      builder: (context, child) {
-        final offset = (topPadding + (_activeLine * lineHeight)) - _scrollController.offset;
-        if (offset < -lineHeight || offset > 2000) return const SizedBox.shrink(); // PERFORMANCE: Aggressive clipping
-        return Positioned(
-          top: offset, left: 0, right: 0, height: lineHeight,
-          child: Container(color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.03)),
-        );
-      },
     );
   }
 
@@ -354,44 +265,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   }
 }
 
-// 📐 Optimized Indentation Guide Painter (Viewport-Aware)
-class _IndentGuidesPainter extends CustomPainter {
-  final ScrollController scrollController;
-  final double charWidth;
-  final double horizontalOffset;
-  final double topPadding;
-  final double lineHeight;
-  final Color guideColor;
-  
-  _IndentGuidesPainter({
-    required this.scrollController, required this.charWidth, required this.horizontalOffset, 
-    required this.topPadding, required this.lineHeight, required this.guideColor
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (!scrollController.hasClients) return;
-    
-    final paint = Paint()..color = guideColor..strokeWidth = 1;
-    final scrollOffset = scrollController.offset;
-    
-    // PERFORMANCE: Only draw guides currently within the viewport
-    final startY = (scrollOffset - topPadding).clamp(0.0, double.infinity);
-    final endY = (scrollOffset + size.height).clamp(0.0, double.infinity);
-
-    // Draw vertical guides every 4 characters
-    for (int i = 1; i < 15; i++) {
-        final x = horizontalOffset + (i * 4 * charWidth);
-        if (x > size.width) break;
-        // Limit the line to the physical canvas height but logically represent the visible segment
-        canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-  }
-  @override bool shouldRepaint(covariant _IndentGuidesPainter oldDelegate) => 
-    oldDelegate.scrollController.offset != scrollController.offset;
-}
-
-// Shortcut definitions
+// Shortcuts
 class _IndentIntent extends Intent { const _IndentIntent(); }
 class _IndentAction extends Action<_IndentIntent> {
   final _MarkdownEditorWidgetState state; _IndentAction(this.state);
@@ -406,36 +280,4 @@ class _CloseSearchIntent extends Intent { const _CloseSearchIntent(); }
 class _CloseSearchAction extends Action<_CloseSearchIntent> {
   final MarkdownProvider provider; _CloseSearchAction(this.provider);
   @override Object? invoke(_CloseSearchIntent intent) { if (provider.showSearchOverlay) provider.toggleSearchOverlay(); return null; }
-}
-
-class MarkdownTextEditingController extends TextEditingController {
-  final MarkdownProvider provider;
-  MarkdownTextEditingController({required this.provider}) { text = provider.content; }
-
-  @override
-  TextSpan buildTextSpan({required BuildContext context, TextStyle? style, required bool withComposing}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final List<TextSpan> children = [];
-    final patterns = {
-      RegExp(r'\*\*.*?\*\*'): isDark ? const Color(0xFFF9E2AF) : const Color(0xFFDF8E1D),
-      RegExp(r'\*.*?\*'): isDark ? const Color(0xFFF9E2AF) : const Color(0xFFDF8E1D),
-      RegExp(r'^#+ .*$', multiLine: true): isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
-      RegExp(r'\[.*?\]\(.*?\)'): isDark ? const Color(0xFF89B4FA) : const Color(0xFF1E66F5),
-      RegExp(r'`.*?`'): isDark ? const Color(0xFFFAB387) : const Color(0xFFFE640B),
-      RegExp(r'^> .*$', multiLine: true): isDark ? const Color(0xFFA6ADC8) : const Color(0xFF7C7F93),
-      RegExp(r'```[\s\S]*?```'): isDark ? const Color(0xFF94E2D5) : const Color(0xFF179299),
-    };
-
-    text.splitMapJoin(
-      RegExp(patterns.keys.map((r) => r.pattern).join('|'), multiLine: true),
-      onMatch: (m) {
-        final matchText = m[0]!; Color? matchColor; FontWeight weight = FontWeight.normal;
-        for (final entry in patterns.entries) { if (entry.key.hasMatch(matchText)) { matchColor = entry.value; if (entry.key.pattern.contains(r'\*\*')) weight = FontWeight.bold; break; } }
-        children.add(TextSpan(text: matchText, style: style?.copyWith(color: matchColor, fontWeight: weight)));
-        return '';
-      },
-      onNonMatch: (n) { children.add(TextSpan(text: n, style: style)); return ''; },
-    );
-    return TextSpan(children: children, style: style);
-  }
 }
