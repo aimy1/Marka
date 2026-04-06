@@ -80,6 +80,7 @@ class MarkdownProvider with ChangeNotifier {
   int? get requestSelectionOffset => _requestSelectionOffset;
 
   double get scrollPercentage => activeSession?.scrollPercentage ?? 0.0;
+  int get wordCount => content.trim().isEmpty ? 0 : content.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
   String? get currentFilePath => activeSession?.path;
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
@@ -654,29 +655,65 @@ class MarkdownProvider with ChangeNotifier {
     },
   };
 
-  static const String _welcomeMarkdown = '''
-# 🚀 Marka
+  static const String _welcomeMarkdown = r'''---
+title: Markdown 快速入门指南
+date: 2026-04-06
+categories: [文档, 教程]
+tags: [Marka, Markdown, 极简]
+---
 
-A **modern**, workspace-centric Markdown editor.
+# 🚀 欢迎使用 Marka IDE
 
-## ✨ Features
-- **Real-time Preview**: See changes instantly
-- **Syntax Highlighting**: Beautiful code blocks
-- **Dark Mode**: Eye-friendly interface
+Marka 是一款为专业创作者打造的工业级 Markdown 编辑器。本指南将带您快速掌握 Markdown 的基本语法与 Marka 的特色功能。
 
-## 💻 Code Example
+## 1. 基础排版
+
+Markdown 使用直观的符号来定义格式，无需复杂的快捷键：
+- **加粗**: `**加粗文本**`
+- *斜体*: `*斜体文本*`
+- ~~删除线~~: `~~删除线文本~~`
+
+## 2. 多级标题
+
+使用 `#` 的数量来定义标题等级：
+# 一级标题 (H1)
+## 二级标题 (H2)
+### 三级标题 (H3)
+
+## 3. 列表与任务
+
+轻松管理您的待办事项与大纲：
+- 无序列表项 1
+- 无序列表项 2
+  - 子项目
+
+1. 有序列表项 1
+2. 有序列表项 2
+
+- [x] 已完成的 Marka 配置
+- [ ] 体验同步滚动功能
+
+## 4. 代码表现
+
+Marka 支持 100+ 种语言的代码高亮。行内代码使用反引号，例如 `void main()`。
+代码块使用三个反引号并指定语言：
+
 ```dart
 void main() {
   print("Hello Marka!");
 }
 ```
 
-> "Simplicity is the ultimate sophistication." — Leonardo da Vinci
+## 5. 引用与链接
+
+> "简洁是最终的复杂。" —— 达芬奇
+
+您可以方便地插入 [外部链接](https://github.com/marka-ide) 或图片。
 
 ---
-### 🛠️ Built with
-1. Flutter
-2. Provider
-3. Google Fonts
+
+### 💡 小贴士
+- **分屏预览**: 点击右上角的分屏图标，开启同步滚动体验。
+- **YAML 渲染**: 文档顶部的 `---` 区域会被 Marka 自动转化为精美的文章页头。
 ''';
 }

@@ -14,7 +14,7 @@ class StatusBarWidget extends StatelessWidget {
     
     // Calculate stats
     final charCount = text.length;
-    final wordCount = text.isEmpty ? 0 : text.trim().split(RegExp(r'\s+')).length;
+    final wordCount = provider.wordCount;
     
     // Colors
     final textColor = isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93);
