@@ -16,10 +16,10 @@ class MarkdownProvider with ChangeNotifier {
   List<String> _workspacePaths = [];
   Map<String, List<WorkspaceItem>> _workspaceFilesMap = {};
   
-  // Settings
-  String _fontFamily = 'Inter';
+  // Settings v2.7.1 Consolidated
+  String _fontFamily = 'JetBrains Mono';
   double _fontSize = 14.0;
-  double _lineHeight = 1.6;
+  double _lineHeight = 1.5;
   bool _autoSave = false;
   bool _isSplitScreen = true;
   bool _isWrapped = true;
@@ -83,26 +83,12 @@ class MarkdownProvider with ChangeNotifier {
   int get wordCount => content.trim().isEmpty ? 0 : content.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
   String? get currentFilePath => activeSession?.path;
 
-  // ── Pro Settings v2.7.0 ──
-  double _fontSize = 14.0;
-  double get fontSize => _fontSize;
-  void updateFontSize(double v) { _fontSize = v; notifyListeners(); }
-
-  double _lineHeight = 1.5;
-  double get lineHeight => _lineHeight;
-  void updateLineHeight(double v) { _lineHeight = v; notifyListeners(); }
-
-  String _fontFamily = 'JetBrains Mono';
-  String get fontFamily => _fontFamily;
-  void updateFontFamily(String v) { _fontFamily = v; notifyListeners(); }
-
-  bool _wordWrap = true;
-  bool get wordWrap => _wordWrap;
-  void toggleWordWrap() { _wordWrap = !_wordWrap; notifyListeners(); }
-
-  bool _autoSave = false;
-  bool get autoSave => _autoSave;
-  void toggleAutoSave() { _autoSave = !_autoSave; notifyListeners(); }
+  // ── Pro Settings v2.7.1 ──
+  void updateFontSize(double v) { _fontSize = v.clamp(8, 32); _saveSettings(); notifyListeners(); }
+  void updateLineHeight(double v) { _lineHeight = v.clamp(1.0, 3.0); _saveSettings(); notifyListeners(); }
+  void updateFontFamily(String v) { _fontFamily = v; _saveSettings(); notifyListeners(); }
+  void toggleWrap() { _isWrapped = !_isWrapped; _saveSettings(); notifyListeners(); }
+  void toggleAutoSave() { _autoSave = !_autoSave; _saveSettings(); notifyListeners(); }
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
       : null;
@@ -510,14 +496,8 @@ class MarkdownProvider with ChangeNotifier {
   // View Controls
   void refreshPreview() { final s = activeSession; if (s != null) { _previewContent = s.content; notifyListeners(); } }
   void toggleSplitScreen() { _isSplitScreen = !_isSplitScreen; _saveSettings(); notifyListeners(); }
-  void toggleWrap() { _isWrapped = !_isWrapped; _saveSettings(); notifyListeners(); }
-  void toggleAutoSave() { _autoSave = !_autoSave; _saveSettings(); notifyListeners(); }
   void toggleToolbar() { _showToolbar = !_showToolbar; _saveSettings(); notifyListeners(); }
   void toggleSyncScroll() { _isSyncScroll = !_isSyncScroll; _saveSettings(); notifyListeners(); }
-  
-  void updateFontFamily(String family) { _fontFamily = family; _saveSettings(); notifyListeners(); }
-  void updateFontSize(double size) { _fontSize = size.clamp(8, 32); _saveSettings(); notifyListeners(); }
-  void updateLineHeight(double height) { _lineHeight = height.clamp(1.0, 3.0); _saveSettings(); notifyListeners(); }
   
   void updateSelection(int start, int end) {
     final s = activeSession;
