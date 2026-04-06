@@ -508,6 +508,18 @@ class _SnippetAction extends Action<Intent> {
   @override Object? invoke(Intent i) { p.insertSnippet(prefix, suffix); return null; }
 }
 
+class _FormatBoldIntent extends Intent { const _FormatBoldIntent(); }
+class _FormatItalicIntent extends Intent { const _FormatItalicIntent(); }
+class _FormatLinkIntent extends Intent { const _FormatLinkIntent(); }
+class _FormatImageIntent extends Intent { const _FormatImageIntent(); }
+class _FormatStrikethroughIntent extends Intent { const _FormatStrikethroughIntent(); }
+class _FormatQuoteIntent extends Intent { const _FormatQuoteIntent(); }
+class _FormatInlineCodeIntent extends Intent { const _FormatInlineCodeIntent(); }
+class _FormatCodeBlockIntent extends Intent { const _FormatCodeBlockIntent(); }
+class _FormatH1Intent extends Intent { const _FormatH1Intent(); }
+class _FormatH2Intent extends Intent { const _FormatH2Intent(); }
+class _FormatH3Intent extends Intent { const _FormatH3Intent(); }
+
 class _ActiveLinePainter extends CustomPainter {
   final int cursorLine;
   final double fontSize;
