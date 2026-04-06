@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../providers/markdown_provider.dart';
+import '../../providers/markdown_provider.dart';
 
 /// Professional Editor Controller for Marka Engine 2.0
 /// Handles Incremental Highlighting, Block Indent, and Auto-closing logic.
