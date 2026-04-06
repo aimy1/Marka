@@ -110,6 +110,18 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.slash): const _ToggleCommentIntent(),
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyK): const _DeleteLineIntent(),
         LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.alt, LogicalKeyboardKey.arrowDown): const _DuplicateLineIntent(),
+        // Markdown Formatting Shortcuts
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyB): const _FormatBoldIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyI): const _FormatItalicIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyL): const _FormatLinkIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyI): const _FormatImageIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyX): const _FormatStrikethroughIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyQ): const _FormatQuoteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.period): const _FormatInlineCodeIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyC): const _FormatCodeBlockIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.digit1): const _FormatH1Intent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.digit2): const _FormatH2Intent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.digit3): const _FormatH3Intent(),
       },
       child: Actions(
         actions: {
@@ -123,6 +135,17 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
           _ToggleCommentIntent: _ToggleCommentAction(this),
           _DeleteLineIntent: _DeleteLineAction(this),
           _DuplicateLineIntent: _DuplicateLineAction(this),
+          _FormatBoldIntent: _SnippetAction(provider, '**', '**'),
+          _FormatItalicIntent: _SnippetAction(provider, '*', '*'),
+          _FormatLinkIntent: _SnippetAction(provider, '[', '](url)'),
+          _FormatImageIntent: _SnippetAction(provider, '![', '](url)'),
+          _FormatStrikethroughIntent: _SnippetAction(provider, '~~', '~~'),
+          _FormatQuoteIntent: _SnippetAction(provider, '> ', ''),
+          _FormatInlineCodeIntent: _SnippetAction(provider, '`', '`'),
+          _FormatCodeBlockIntent: _SnippetAction(provider, '```\n', '\n```'),
+          _FormatH1Intent: _SnippetAction(provider, '# ', ''),
+          _FormatH2Intent: _SnippetAction(provider, '## ', ''),
+          _FormatH3Intent: _SnippetAction(provider, '### ', ''),
         },
         child: Column(
           children: [
@@ -357,9 +380,9 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
 
     final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
     final currentLine = text.substring(lineStart, sel.start);
-    final match = RegExp(r'^(\s*(?:[-*+]|\d+\.)\s*)').firstMatch(currentLine);
+    final match = RegExp(r'^(\s*(?:[-*+])\s*)').firstMatch(currentLine);
 
-    final prefix = (match != null && match.group(1)!.trim().isNotEmpty) ? _nextPrefix(match.group(1)!) : '';
+    final prefix = (match != null && match.group(1)!.trim().isNotEmpty) ? match.group(1)! : '';
     final newText = text.replaceRange(sel.start, sel.end, '\n$prefix');
     _controller.value = TextEditingValue(
       text: newText,
@@ -367,14 +390,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     );
   }
 
-  String _nextPrefix(String prefix) {
-    final numMatch = RegExp(r'^(\s*)(\d+)(\.\s+)').firstMatch(prefix);
-    if (numMatch != null) {
-       final n = int.parse(numMatch.group(2)!) + 1;
-       return '${numMatch.group(1)}$n${numMatch.group(3)}';
-    }
-    return prefix;
-  }
 
   Widget _buildToolbar(MarkdownProvider p, bool isDark) {
     final iconCol = isDark ? const Color(0xFFCDD6F4).withOpacity(0.7) : const Color(0xFF4C4F69).withOpacity(0.7);
@@ -385,10 +400,19 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         _tool(Icons.format_bold_rounded, () => p.insertSnippet('**', '**'), p.t('bold'), iconCol),
         _tool(Icons.format_italic_rounded, () => p.insertSnippet('*', '*'), p.t('italic'), iconCol),
         _tool(Icons.title_rounded, () => p.insertSnippet('# ', ''), p.t('heading'), iconCol),
+        _tool(Icons.strikethrough_s_rounded, () => p.insertSnippet('~~', '~~'), p.t('strikethrough'), iconCol),
         const VerticalDivider(width: 16, indent: 8, endIndent: 8),
         _tool(Icons.format_list_bulleted_rounded, () => p.insertSnippet('- ', ''), p.t('list'), iconCol),
-        _tool(Icons.format_list_numbered_rounded, () => p.insertSnippet('1. ', ''), p.t('numbered_list'), iconCol),
+        _tool(Icons.checklist_rtl_rounded, () => p.insertSnippet('- [ ] ', ''), p.t('task_list'), iconCol),
+        _tool(Icons.format_quote_rounded, () => p.insertSnippet('> ', ''), p.t('quote'), iconCol),
+        _tool(Icons.code_rounded, () => p.insertSnippet('`', '`'), p.t('code'), iconCol),
+        _tool(Icons.terminal_rounded, () => p.insertSnippet('```\n', '\n```'), p.t('terminal'), iconCol),
+        const VerticalDivider(width: 16, indent: 8, endIndent: 8),
+        _tool(Icons.link_rounded, () => p.insertSnippet('[', '](url)'), p.t('link'), iconCol),
+        _tool(Icons.image_outlined, () => p.insertSnippet('![', '](url)'), p.t('image'), iconCol),
         _tool(Icons.grid_on_rounded, () => p.insertSnippet('| Header | Header |\n| :--- | :--- |\n| Cell | Cell |', ''), p.t('table'), iconCol),
+        _tool(Icons.horizontal_rule_rounded, () => p.insertSnippet('---\n', ''), p.t('hr'), iconCol),
+        const VerticalDivider(width: 16, indent: 8, endIndent: 8),
         _tool(Icons.search_rounded, () => p.toggleSearchOverlay(), p.t('find'), iconCol),
       ])),
     );
@@ -449,3 +473,25 @@ class _DeleteLineAction extends Action<_DeleteLineIntent> {
   final _MarkdownEditorWidgetState s; _DeleteLineAction(this.s);
   @override Object? invoke(_DeleteLineIntent i) { s._deleteLine(); return null; }
 }
+
+/// Dynamic Snippet Action
+class _SnippetAction extends Action<Intent> {
+  final MarkdownProvider p; 
+  final String prefix; 
+  final String suffix;
+  _SnippetAction(this.p, this.prefix, this.suffix);
+  @override Object? invoke(Intent i) { p.insertSnippet(prefix, suffix); return null; }
+}
+
+/// Marka v2.9.1 Productivity Intents
+class _FormatBoldIntent extends Intent { const _FormatBoldIntent(); }
+class _FormatItalicIntent extends Intent { const _FormatItalicIntent(); }
+class _FormatLinkIntent extends Intent { const _FormatLinkIntent(); }
+class _FormatImageIntent extends Intent { const _FormatImageIntent(); }
+class _FormatStrikethroughIntent extends Intent { const _FormatStrikethroughIntent(); }
+class _FormatQuoteIntent extends Intent { const _FormatQuoteIntent(); }
+class _FormatInlineCodeIntent extends Intent { const _FormatInlineCodeIntent(); }
+class _FormatCodeBlockIntent extends Intent { const _FormatCodeBlockIntent(); }
+class _FormatH1Intent extends Intent { const _FormatH1Intent(); }
+class _FormatH2Intent extends Intent { const _FormatH2Intent(); }
+class _FormatH3Intent extends Intent { const _FormatH3Intent(); }

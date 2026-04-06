@@ -638,22 +638,22 @@ class MarkdownProvider with ChangeNotifier {
       'heading': 'Heading',
       'strikethrough': 'Strikethrough',
       'list': 'Bullet List',
-      'numbered_list': 'Numbered List',
       'task_list': 'Task List',
       'link': 'Link',
       'image': 'Image',
       'code': 'Inline Code',
       'terminal': 'Code Block',
       'quote': 'Quote',
-      'pro_features': 'PRO FEATURES',
-      'appearance': 'APPEARANCE',
-      'typography': 'TYPOGRAPHY',
+      'hr': 'Horizontal Line',
+      'pro_features': 'ADVANCED FEATURES',
+      'appearance': 'INTERFACE APPEARANCE',
+      'typography': 'FONT & SPACING',
       'ln_col': 'Ln {0}, Col {1}',
       'sel': 'Sel {0}',
-      'search': 'Search...',
-      'replace': 'Replace with...',
+      'search': 'Find...',
+      'replace': 'Replace...',
       'replace_all': 'Replace All',
-      'no_results': 'No Results',
+      'no_results': 'No matching results',
       'find': 'Find',
     },
     'zh': {
@@ -663,7 +663,7 @@ class MarkdownProvider with ChangeNotifier {
       'line_height': '行高',
       'auto_save': '自动保存',
       'theme': '主题模式',
-      'language': '软件语言',
+      'language': '语言',
       'split_screen': '分屏预览',
       'word_wrap': '自动换行',
       'close': '关闭',
@@ -678,17 +678,17 @@ class MarkdownProvider with ChangeNotifier {
       'cancel': '取消',
       'create': '创建',
       'welcome_title': '欢迎使用 Marka',
-      'welcome_desc': '打开一个项目目录来启动您的 Markdown 工作流。',
+      'welcome_desc': '打开一个文件夹，开启您的 Markdown 创作之旅。',
       'open_files': '打开文件',
       'words': '字数统计',
-      'save_tooltip': '保存 (Ctrl+S)',
+      'save_tooltip': '立即保存 (Ctrl+S)',
       'new_file_tooltip': '新建文件',
-      'split_tooltip': '切换分屏预览',
-      'settings_tooltip': '设置中心',
-      'no_folders_open': '暂未打开工作目录',
+      'split_tooltip': '切换分屏模式',
+      'settings_tooltip': '偏好设置',
+      'no_folders_open': '未打开任何工作目录',
       'remove_folder': '移除目录',
-      'no_md_files': '无 Markdown 文件',
-      'sync_scroll': '同步滚动',
+      'no_md_files': '暂无 .md 文件',
+      'sync_scroll': '同步滚动预览',
       'show_toolbar': '显示编辑器工具栏',
       'copied': '已复制到剪贴板',
       'bold': '加粗',
@@ -696,22 +696,22 @@ class MarkdownProvider with ChangeNotifier {
       'heading': '标题',
       'strikethrough': '删除线',
       'list': '无序列表',
-      'numbered_list': '有序列表',
       'task_list': '任务列表',
       'link': '插入链接',
       'image': '插入图片',
       'code': '行内代码',
       'terminal': '代码块',
-      'quote': '引用块',
-      'pro_features': '专业功能',
-      'appearance': '显示外观',
-      'typography': '文字排版',
+      'quote': '引用',
+      'hr': '分割线',
+      'pro_features': '高级功能',
+      'appearance': '界面外观',
+      'typography': '字体排版',
       'ln_col': '行 {0}, 列 {1}',
-      'sel': '选区 {0}',
+      'sel': '已选 {0}',
       'search': '查找内容...',
       'replace': '替换为...',
       'replace_all': '全部替换',
-      'no_results': '无搜索结果',
+      'no_results': '未找到结果',
       'find': '查找',
     },
   };
@@ -752,8 +752,8 @@ tags: [快捷键, 工业化, 写作]
 
 *在这里，您可以直接尝试按下 **Alt + ↑** 将下方两行诗句的位置互换：*
 
-1. 鹅，鹅，鹅，
-2. 曲项向天歌。
+- 鹅，鹅，鹅，
+- 曲项向天歌。
 
 *或者尝试按下 **Ctrl + /** 对下面的文本进行语义注释：*
 
@@ -796,8 +796,8 @@ Markdown 使用直观的符号来定义格式，无需复杂的快捷键：
 - 无序列表项 2
   - 子项目
 
-1. 有序列表项 1
-2. 有序列表项 2
+- [ ] 待办事项
+- [x] 已完成事项
 
 - [x] 已完成的 Marka 配置
 - [ ] 体验同步滚动功能
