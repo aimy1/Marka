@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/markdown_provider.dart';
 
-/// Professional Editor Gutter for Marka Engine 2.0
-/// Handles Line Numbers, Active Line Highlighting, and Indentation Guides.
+/// Professional Editor Gutter for Marka v2.1.0 (Kate Refactor)
+/// Strictly Right-Aligned, Fixed Width, and Studio Grey Aesthetics.
 class MarkaEditorGutter extends StatelessWidget {
   final ScrollController scrollController;
   final ScrollController lineNumbersController;
@@ -24,19 +24,23 @@ class MarkaEditorGutter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Core Studio Colors (Minimalism)
+    final Color gutterBg = isDark ? const Color(0xFF18181A) : const Color(0xFFE8E8E8);
+    final Color gutterBorder = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFCCCCCC);
+    final Color numberColor = isDark ? const Color(0xFF858585) : const Color(0xFF6E6E6E);
+    final Color activeNumberColor = isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000);
+
     final double lineHeight = provider.fontSize * provider.lineHeight;
     const double topPadding = 24.0;
-    const double gutterWidth = 52.0;
+    const double gutterWidth = 60.0; // Fixed Width per User Request
 
     return Container(
       width: gutterWidth,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF11111B) : const Color(0xFFE6E9EF),
+        color: gutterBg,
         border: Border(
-          right: BorderSide(
-            color: isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8),
-            width: 1,
-          ),
+          right: BorderSide(color: gutterBorder, width: 1),
         ),
       ),
       child: ScrollConfiguration(
@@ -48,21 +52,19 @@ class MarkaEditorGutter extends StatelessWidget {
             padding: const EdgeInsets.only(top: topPadding),
             itemCount: lineCount,
             itemExtent: lineHeight,
-            cacheExtent: 1000,
+            cacheExtent: 1500, // Increased for stability
             itemBuilder: (context, index) {
               final isActive = index == activeLine;
               return Container(
                 padding: const EdgeInsets.only(right: 12),
-                alignment: Alignment.centerRight,
+                alignment: Alignment.centerRight, // RIGHT-ALIGNED Gutter
                 child: Text(
                   '${index + 1}',
                   style: GoogleFonts.jetBrainsMono(
-                    fontSize: 10,
+                    fontSize: 11,
                     height: 1.0,
-                    fontWeight: isActive ? FontWeight.w800 : FontWeight.w400,
-                    color: isActive 
-                      ? (isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF))
-                      : (isDark ? const Color(0xFF585B70) : const Color(0xFF9399B2)),
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                    color: isActive ? activeNumberColor : numberColor,
                   ),
                 ),
               );
@@ -74,7 +76,7 @@ class MarkaEditorGutter extends StatelessWidget {
   }
 }
 
-/// Viewport-Aware Indentation Guides Layer
+/// Viewport-Aware Indentation Guides Layer (Studio Grade)
 class MarkaIndentGuidesLayer extends CustomPainter {
   final ScrollController scrollController;
   final double charWidth;
@@ -97,10 +99,9 @@ class MarkaIndentGuidesLayer extends CustomPainter {
     if (!scrollController.hasClients) return;
     
     final paint = Paint()..color = guideColor..strokeWidth = 1;
-    final scrollOffset = scrollController.offset;
     
-    // Performance: Only draw within the physical viewport
-    for (int i = 1; i < 15; i++) {
+    // Draw vertical guides every 4 characters with strict grid logic
+    for (int i = 1; i < 20; i++) {
         final x = horizontalOffset + (i * 4 * charWidth);
         if (x > size.width) break;
         canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
