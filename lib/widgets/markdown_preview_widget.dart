@@ -89,29 +89,41 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
     final lh = provider.lineHeight;
 
     return MarkdownStyleSheet(
-      h1: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.w800, height: 1.3, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)),
-      h2: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w700, height: 1.4, color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299)),
-      h3: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600, height: 1.4, color: accentColor),
-      p: GoogleFonts.inter(fontSize: 15, height: lh, color: textColor),
+      h1: GoogleFonts.outfit(fontSize: 30, fontWeight: FontWeight.w800, height: 1.4, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)),
+      h2: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w700, height: 1.5, color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299)),
+      h3: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w600, height: 1.5, color: accentColor),
+      p: GoogleFonts.inter(fontSize: 16, height: 1.7, color: isDark ? const Color(0xFFEBDBB2) : const Color(0xFF282828)),
       strong: const TextStyle(fontWeight: FontWeight.bold),
       em: const TextStyle(fontStyle: FontStyle.italic),
-      blockquote: GoogleFonts.inter(fontSize: 15, height: lh, color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93), fontStyle: FontStyle.italic),
-      listBullet: GoogleFonts.inter(fontSize: 15, color: accentColor),
-      listIndent: 28.0,
-      tableBody: GoogleFonts.inter(fontSize: 14, height: lh, color: textColor),
-      tableBorder: TableBorder.all(color: Colors.transparent, width: 0),
-      tableHead: GoogleFonts.inter(fontWeight: FontWeight.w800, color: accentColor, fontSize: 12),
-      code: TextStyle(
-        fontFamily: 'monospace', 
-        fontSize: 13,
+      blockquote: GoogleFonts.inter(
+        fontSize: 16, 
+        height: 1.7, 
+        color: isDark ? const Color(0xFF9399B2) : const Color(0xFF7C7F93), 
+        fontStyle: FontStyle.italic
+      ),
+      blockquoteDecoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
+        border: Border(left: BorderSide(color: accentColor, width: 4)),
+        borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+      ),
+      blockquotePadding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
+      listBullet: GoogleFonts.inter(fontSize: 16, color: accentColor),
+      listIndent: 32.0,
+      tableBody: GoogleFonts.inter(fontSize: 15, height: 1.6, color: textColor),
+      tableBorder: TableBorder.all(color: isDark ? Colors.white10 : Colors.black12, width: 0.5),
+      tableHead: GoogleFonts.inter(fontWeight: FontWeight.w800, color: accentColor, fontSize: 13),
+      tableCellsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      code: GoogleFonts.jetBrainsMono(
+        fontSize: 13.5,
         backgroundColor: (isDark ? const Color(0xFFFAB387) : const Color(0xFFFE640B)).withOpacity(0.1),
         color: isDark ? const Color(0xFFFAB387) : const Color(0xFFFE640B)
       ),
       codeblockDecoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF2F2F2),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: borderColor),
       ),
+      codeblockPadding: const EdgeInsets.all(20),
     );
   }
 }

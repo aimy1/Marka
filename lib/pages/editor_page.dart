@@ -141,6 +141,22 @@ class _EditorPageState extends State<EditorPage> {
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'v3.1.0',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white38 : Colors.black38,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -197,6 +213,7 @@ class _EditorPageState extends State<EditorPage> {
   }) {
     return InkWell(
       onTap: onTap,
+      hoverColor: isClose ? Colors.red : (isDark ? Colors.white10 : Colors.black12),
       borderRadius: BorderRadius.circular(4),
       child: Container(
         height: 32,
@@ -207,9 +224,7 @@ class _EditorPageState extends State<EditorPage> {
         child: Icon(
           icon,
           size: 16,
-          color: isClose 
-              ? Colors.red.withOpacity(0.7) 
-              : (isDark ? Colors.white54 : Colors.black45),
+          color: isDark ? Colors.white54 : Colors.black45,
         ),
       ),
     );

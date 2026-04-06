@@ -25,10 +25,8 @@ class MarkdownProvider with ChangeNotifier {
   bool _isWrapped = true;
   bool _showToolbar = true;
   bool _isSyncScroll = true;
-  bool _autoPairing = true;
   int _tabSize = 2;
   double _editorPadding = 32.0;
-  bool _showLineHighlight = true;
   String _locale = 'en';
 
   // Kate-style Cursor Tracking (Debounced)
@@ -72,11 +70,10 @@ class MarkdownProvider with ChangeNotifier {
   bool get isWrapped => _isWrapped;
   bool get showToolbar => _showToolbar;
   bool get isSyncScroll => _isSyncScroll;
-  bool get autoPairing => _autoPairing;
   int get tabSize => _tabSize;
   double get editorPadding => _editorPadding;
-  bool get showLineHighlight => _showLineHighlight;
   String get locale => _locale;
+Line Number 80 Original Content:   String get locale => _locale;
 
   int get cursorLine => _cursorLine;
   int get cursorColumn => _cursorColumn;
@@ -254,7 +251,6 @@ class MarkdownProvider with ChangeNotifier {
     _autoPairing = prefs.getBool('autoPairing') ?? true;
     _tabSize = prefs.getInt('tabSize') ?? 2;
     _editorPadding = prefs.getDouble('editorPadding') ?? 32.0;
-    _showLineHighlight = prefs.getBool('showLineHighlight') ?? true;
     _locale = prefs.getString('locale') ?? 'en';
     _workspacePaths = prefs.getStringList('workspacePaths') ?? [];
     
@@ -304,7 +300,6 @@ class MarkdownProvider with ChangeNotifier {
     await prefs.setBool('autoPairing', _autoPairing);
     await prefs.setInt('tabSize', _tabSize);
     await prefs.setDouble('editorPadding', _editorPadding);
-    await prefs.setBool('showLineHighlight', _showLineHighlight);
     await prefs.setString('locale', _locale);
     await prefs.setStringList('workspacePaths', _workspacePaths);
   }

@@ -118,7 +118,6 @@ class SettingsDialog extends StatelessWidget {
                             _buildSwitchItem(provider.t('show_toolbar'), Icons.construction_rounded, provider.showToolbar, (v) => provider.toggleToolbar(), isDark, accentColor),
                             _buildSwitchItem(provider.t('auto_save'), Icons.auto_awesome_rounded, provider.autoSave, (v) => provider.toggleAutoSave(), isDark, accentColor),
                             _buildSwitchItem(provider.t('auto_pairing'), Icons.code_rounded, provider.autoPairing, (v) => provider.toggleAutoPairing(), isDark, accentColor),
-                            _buildSwitchItem(provider.t('line_highlight'), Icons.highlight_rounded, provider.showLineHighlight, (v) => provider.toggleLineHighlight(), isDark, accentColor),
                             _buildSettingRow(
                               provider.t('tab_size'),
                               Icons.keyboard_tab_rounded,

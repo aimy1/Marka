@@ -163,11 +163,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                       }
                       return false;
                     },
-                    child: Stack( // Wrap in stack for background highlight
-                      children: [
-                        if (provider.showLineHighlight) 
-                          _buildActiveLineHighlight(provider, isDark),
-                        Theme(
+                    child: Theme(
                       data: Theme.of(context).copyWith(
                         textSelectionTheme: TextSelectionThemeData(
                           selectionColor: isDark ? const Color(0xFFCBA6F7).withOpacity(0.2) : Colors.blue.withOpacity(0.2),
@@ -218,9 +214,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
                   if (provider.showSearchOverlay)
                     Positioned(top: 8, right: 16, child: SearchOverlayWidget(provider: provider)),
@@ -376,31 +370,6 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
     }
   }
 
-  Widget _buildActiveLineHighlight(MarkdownProvider p, bool isDark) {
-    final double lh = p.fontSize * p.lineHeight;
-    final double topPad = p.lineHeight * 16;
-    
-    return AnimatedBuilder(
-      animation: _scrollController,
-      builder: (context, _) {
-        if (!_scrollController.hasClients) return const SizedBox.shrink();
-        final double offset = (topPad + ((p.cursorLine - 1) * lh)) - _scrollController.offset;
-        
-        return Positioned(
-          top: offset, left: 0, right: 0, height: lh,
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.025),
-              border: Border.symmetric(
-                vertical: BorderSide.none, 
-                horizontal: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 0.5)
-              ),
-            ),
-          ),
-        );
-      }
-    );
-  }
 
   void _handleEnter() {
     final text = _controller.text;
