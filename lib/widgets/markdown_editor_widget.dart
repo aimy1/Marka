@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/markdown_provider.dart';
 import 'search_overlay_widget.dart';
 import 'editor/editor_controller.dart';
-import 'editor/editor_gutter.dart';
+
 
 /// Marka v2.6.3 - Selection Interaction Fix
 /// Removed experimental gesture listeners that blocked mouse selection.
@@ -174,14 +174,8 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (provider.showLineNumbers)
-                            MarkaEditorGutter(
-                              scrollController: _scrollController, 
-                              lineCount: provider.content.split('\n').length, 
-                              fontSize: provider.fontSize, 
-                              lineHeight: provider.lineHeight
-                            ),
                           Expanded(
+
                             child: Stack(
                               children: [
                                 if (provider.highlightActiveLine)

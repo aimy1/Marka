@@ -89,8 +89,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
           _navItem(2, p.t('appearance'), Icons.space_dashboard_rounded, accentColor, isDark),
           _navItem(3, p.t('advanced'), Icons.terminal_rounded, accentColor, isDark),
           const Spacer(),
-          _navItem(4, 'About', Icons.info_outline_rounded, accentColor, isDark),
+          _navItem(4, p.t('about'), Icons.info_outline_rounded, accentColor, isDark),
         ],
+
       ),
     );
   }
@@ -154,13 +155,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _buildFontDropdown(p, isDark),
             _settingTile(p.t('font_size'), Icons.format_size_rounded, isDark, _buildSizeControls(p, isDark)),
             _settingTile(p.t('line_height'), Icons.format_line_spacing_rounded, isDark, _buildLineHeightSlider(p, accentColor)),
-            _settingTile('Display Line Numbers', Icons.format_list_numbered_rounded, isDark, Switch(
-              value: p.showLineNumbers,
-              activeColor: accentColor,
-              onChanged: (v) => p.toggleLineNumbers(),
-            )),
-            _settingTile('Highlight Active Line', Icons.highlight_alt_rounded, isDark, Switch(
+
+            _settingTile(p.t('line_highlight'), Icons.highlight_alt_rounded, isDark, Switch(
               value: p.highlightActiveLine,
+
               activeColor: accentColor,
               onChanged: (v) => p.toggleHighlightActiveLine(),
             )),
@@ -203,7 +201,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               activeColor: accentColor,
               onChanged: (v) => p.toggleSyncScroll(),
             )),
-            _settingTile('Smooth Scrolling', Icons.mouse_rounded, isDark, Switch(
+            _settingTile(p.t('smooth_scrolling'), Icons.mouse_rounded, isDark, Switch(
               value: p.smoothScrolling,
               activeColor: accentColor,
               onChanged: (v) => p.toggleSmoothScrolling(),
@@ -211,9 +209,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
           ],
         );
       default:
-        return const Center(child: Text('Marka IDE v3.3.5\nBuilt for Industrial Writing'));
+        return Center(child: Text(p.t('about_desc'), textAlign: TextAlign.center, style: GoogleFonts.outfit(fontSize: 14, height: 1.5, color: isDark ? Colors.white30 : Colors.black26)));
     }
   }
+
 
   Widget _sectionTitle(String title) {
     return Padding(
@@ -248,13 +247,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
       padding: const EdgeInsets.fromLTRB(32, 24, 24, 16),
       child: Row(
         children: [
-          Text(['General', 'Editor', 'Interface', 'Advanced', 'About'][_selectedIndex], 
+          Text([p.t('general'), p.t('editor'), p.t('appearance'), p.t('advanced'), p.t('about')][_selectedIndex], 
             style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black)),
           const Spacer(),
           IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded, size: 20)),
         ],
       ),
     );
+
   }
 
   Widget _buildFooter(BuildContext context, bool isDark) {
@@ -264,10 +264,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('Close', style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(p.t('close'), style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
         ],
       ),
     );
+
   }
 
   // ── Existing Dropdowns & Sliders (Migrated) ──
@@ -328,8 +329,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
       value: p.tabSize,
       underline: const SizedBox(),
       onChanged: (v) => v != null ? p.updateTabSize(v) : null,
-      items: [2, 4].map((s) => DropdownMenuItem(value: s, child: Text('$s Spaces', style: GoogleFonts.inter(fontSize: 13)))).toList(),
+      items: [2, 4].map((s) => DropdownMenuItem(value: s, child: Text('$s ${p.t('spaces')}', style: GoogleFonts.inter(fontSize: 13)))).toList(),
     );
+
   }
 
   Widget _miniBtn(IconData icon, VoidCallback tap, bool isDark) {

@@ -29,9 +29,10 @@ class MarkdownProvider with ChangeNotifier {
   int _tabSize = 2;
   double _editorPadding = 32.0;
   String _locale = 'en';
-  bool _showLineNumbers = true;
   bool _highlightActiveLine = true;
   bool _smoothScrolling = true;
+  List<String> _openedFilePaths = [];
+
 
   // Kate-style Cursor Tracking (Debounced)
   int _cursorLine = 1;
@@ -78,9 +79,9 @@ class MarkdownProvider with ChangeNotifier {
   int get tabSize => _tabSize;
   double get editorPadding => _editorPadding;
   String get locale => _locale;
-  bool get showLineNumbers => _showLineNumbers;
   bool get highlightActiveLine => _highlightActiveLine;
   bool get smoothScrolling => _smoothScrolling;
+
 
   int get cursorLine => _cursorLine;
   int get cursorColumn => _cursorColumn;
@@ -105,9 +106,9 @@ class MarkdownProvider with ChangeNotifier {
   void updateEditorPadding(double v) { _editorPadding = v.clamp(16, 96); _saveSettings(); notifyListeners(); }
   void toggleAutoPairing() { _autoPairing = !_autoPairing; _saveSettings(); notifyListeners(); }
   void updateTabSize(int v) { _tabSize = v == 4 ? 4 : 2; _saveSettings(); notifyListeners(); }
-  void toggleLineNumbers() { _showLineNumbers = !_showLineNumbers; _saveSettings(); notifyListeners(); }
   void toggleHighlightActiveLine() { _highlightActiveLine = !_highlightActiveLine; _saveSettings(); notifyListeners(); }
   void toggleSmoothScrolling() { _smoothScrolling = !_smoothScrolling; _saveSettings(); notifyListeners(); }
+
   String? get currentFileDirectory => activeSession?.path?.contains(pathSeparator) == true 
       ? activeSession?.path?.substring(0, activeSession?.path?.lastIndexOf(pathSeparator)) 
       : null;
@@ -270,23 +271,31 @@ class MarkdownProvider with ChangeNotifier {
     _editorPadding = prefs.getDouble('editorPadding') ?? 32.0;
     _locale = prefs.getString('locale') ?? 'en';
     _workspacePaths = prefs.getStringList('workspacePaths') ?? [];
-    _showLineNumbers = prefs.getBool('showLineNumbers') ?? true;
+    _openedFilePaths = prefs.getStringList('openedFilePaths') ?? [];
     _highlightActiveLine = prefs.getBool('highlightActiveLine') ?? true;
     _smoothScrolling = prefs.getBool('smoothScrolling') ?? true;
     _searchQuery = prefs.getString('searchQuery') ?? '';
     _replaceQuery = prefs.getString('replaceQuery') ?? '';
     
-    _previewContent = content;
     await refreshWorkspace();
     
-    // Auto-init for new professional users (v3.3.4)
-    if (!kIsWeb && _workspacePaths.isEmpty) {
+    // Restoration Logic
+    if (_openedFilePaths.isNotEmpty) {
+      for (final p in _openedFilePaths) {
+        await openFileDirectly(p, notify: false);
+      }
+    }
+
+    // Auto-init for new users
+    if (!kIsWeb && _workspacePaths.isEmpty && _openedFilePaths.isEmpty) {
       await initWorkspace();
     } else if (_sessions.isEmpty) {
-      _sessions = [DocSession(name: 'Welcome.md', content: _welcomeMarkdown, originalContent: _welcomeMarkdown)];
+      // If no sessions and not first run, show empty state (no sessions)
+      // The EditorPage will handle the Welcome screen
     }
     notifyListeners();
   }
+
 
   Future<void> initWorkspace() async {
     if (kIsWeb) return;
@@ -308,9 +317,10 @@ class MarkdownProvider with ChangeNotifier {
         await refreshWorkspace();
       }
 
-      // Automatically open the Welcome.md file for a great first impression
+      // Automatically open the Welcome.md file ONLY on first init
       await openFileDirectly(welcomeFilePath);
     } catch (e) {
+
       debugPrint('Error initializing Workspace: $e');
     }
   }
@@ -330,12 +340,13 @@ class MarkdownProvider with ChangeNotifier {
     await prefs.setDouble('editorPadding', _editorPadding);
     await prefs.setString('locale', _locale);
     await prefs.setStringList('workspacePaths', _workspacePaths);
-    await prefs.setBool('showLineNumbers', _showLineNumbers);
+    await prefs.setStringList('openedFilePaths', _sessions.where((s) => s.path != null).map((s) => s.path!).toList());
     await prefs.setBool('highlightActiveLine', _highlightActiveLine);
     await prefs.setBool('smoothScrolling', _smoothScrolling);
     await prefs.setString('searchQuery', _searchQuery);
     await prefs.setString('replaceQuery', _replaceQuery);
   }
+
 
   void switchTab(int index) {
     if (index >= 0 && index < _sessions.length) {
@@ -517,7 +528,7 @@ class MarkdownProvider with ChangeNotifier {
     }
   }
 
-  Future<void> openFileDirectly(String path) async {
+  Future<void> openFileDirectly(String path, {bool notify = true}) async {
     try {
       int existingIndex = _sessions.indexWhere((s) => s.path == path);
       if (existingIndex != -1) {
@@ -525,17 +536,24 @@ class MarkdownProvider with ChangeNotifier {
         _previewContent = _sessions[existingIndex].content;
       } else {
         if (kIsWeb) return;
-        String content = await io.File(path).readAsString();
-        final session = DocSession(path: path, name: path.split(pathSeparator).last, content: content, originalContent: content);
-        _sessions.add(session);
-        _activeTabIndex = _sessions.length - 1;
-        _previewContent = content;
+        final file = io.File(path);
+        if (await file.exists()) {
+          String content = await file.readAsString();
+          final session = DocSession(path: path, name: path.split(pathSeparator).last, content: content, originalContent: content);
+          _sessions.add(session);
+          _activeTabIndex = _sessions.length - 1;
+          _previewContent = content;
+        }
       }
-      notifyListeners();
+      if (notify) {
+        _saveSettings();
+        notifyListeners();
+      }
     } catch (e) {
       debugPrint('Error opening file directly: $e');
     }
   }
+
 
   Future<void> createFile(String name, String folderPath) async {
     try {
@@ -603,6 +621,7 @@ class MarkdownProvider with ChangeNotifier {
   void toggleSplitScreen() { _isSplitScreen = !_isSplitScreen; _saveSettings(); notifyListeners(); }
   void toggleToolbar() { _showToolbar = !_showToolbar; _saveSettings(); notifyListeners(); }
   void toggleSyncScroll() { _isSyncScroll = !_isSyncScroll; _saveSettings(); notifyListeners(); }
+
   
   void updateSelection(int start, int end) {
     final s = activeSession;
@@ -703,8 +722,19 @@ class MarkdownProvider with ChangeNotifier {
       'replace': 'Replace...',
       'replace_all': 'Replace All',
       'no_results': 'No matching results',
+      'interface': 'Interface',
+      'general': 'General',
+      'editor': 'Editor',
+      'appearance': 'Appearance',
+      'advanced': 'Advanced',
+      'about': 'About',
+      'smooth_scrolling': 'Smooth Scrolling',
+      'spaces': 'Spaces',
+      'about_desc': 'Marka IDE v3.3.5\nBuilt for Industrial Writing',
       'find': 'Find',
     },
+
+
     'zh': {
       'settings': '设置',
       'font_family': '字体',
@@ -766,8 +796,19 @@ class MarkdownProvider with ChangeNotifier {
       'replace': '替换为...',
       'replace_all': '全部替换',
       'no_results': '未找到结果',
+      'interface': '界面外观',
+      'general': '常规设置',
+      'editor': '编辑器',
+      'appearance': '外观界面',
+      'advanced': '高级设置',
+      'about': '关于软件',
+      'smooth_scrolling': '丝滑滚动',
+      'spaces': '空格缩进',
+      'about_desc': 'Marka IDE v3.3.5\n专为工业级写作打造',
       'find': '查找',
     },
+
+
   };
 
 
@@ -793,7 +834,8 @@ Marka 不止是一个文本编辑器，它是一个基于工业级标准构建�
 
 ### 1.1 像素级对齐 (Kate 引擎)
 - **视觉稳定性**: 通过 `StrutStyle` 强力锁定，无论字体大小，每一行都精确分布在原子网格中。
-- **行号基线同步**: 行号与文本基线始终完美同步，即使是大规模文档也能保持视觉连贯。
+- **工业级渲染**: 文本基线与编辑器网格始终完美同步，即使是大规模文档也能保持视觉连贯。
+
 
 ### 1.2 工业级查找与替换
 - **智能选区**: 完善的选区交互，点击移动光标、拖动快速选中文本。

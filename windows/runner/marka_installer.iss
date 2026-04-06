@@ -1,6 +1,7 @@
 ; Inno Setup Script for Marka
 #define MyAppName "Marka"
-#define MyAppVersion "3.3.4"
+#define MyAppVersion "3.3.5"
+
 #define MyAppPublisher "Antigravity"
 #define MyAppURL "https://github.com/aimy1/Marka"
 #define MyAppExeName "marka.exe"
@@ -48,3 +49,29 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+function InitializeSetup: Boolean;
+var
+  UninstallString, Msg: String;
+  ResultCode: Integer;
+begin
+  Result := True;
+  // Deep search in both User and Machine registry for the AppId
+  if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{5D8B4D4E-7C23-4B3F-9A5A-6A3B2D1E4C1A}_is1', 'UninstallString', UninstallString) or
+     RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{5D8B4D4E-7C23-4B3F-9A5A-6A3B2D1E4C1A}_is1', 'UninstallString', UninstallString) then
+  begin
+    // Localized prompt based on selected installer language
+    if ActiveLanguage = 'chinesesimplified' then
+      Msg := '检测到系统中已安装旧版本的 Marka。建议先卸载旧版本以确保安装环境整洁。' + #13#10 + #13#10 + '是否现在执行卸载过程？'
+    else
+      Msg := 'An existing version of Marka was detected. It is recommended to uninstall the previous version before continuing.' + #13#10 + #13#10 + 'Would you like to uninstall it now?';
+
+    if MsgBox(Msg, mbConfirmation, mbYesNo) = idYes then
+    begin
+      // Executing uninstaller with /SILENT flag to minimize friction
+      Exec(RemoveQuotes(UninstallString), '/SILENT', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+    end;
+  end;
+end;
+
