@@ -24,7 +24,6 @@ class MarkdownProvider with ChangeNotifier {
   bool _isSplitScreen = true;
   bool _isWrapped = true;
   bool _showToolbar = true;
-  bool _showToolbar = true;
   bool _isSyncScroll = true;
   bool _autoPairing = true;
   int _tabSize = 2;

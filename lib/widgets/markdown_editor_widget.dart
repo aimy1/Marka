@@ -345,13 +345,15 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   }
 
   void _handleTab({bool isOutdent = false}) {
+    final provider = Provider.of<MarkdownProvider>(context, listen: false);
     final text = _controller.text;
     final sel = _controller.selection;
     
     // Find the current line start and end
     final lineStart = text.lastIndexOf('\n', sel.start - 1) + 1;
     final lineEnd = text.indexOf('\n', sel.start);
-    final currentLine = text.substring(lineStart, lineEnd == -1 ? text.length : lineEnd);
+    final actualEnd = lineEnd == -1 ? text.length : lineEnd;
+    final currentLine = text.substring(lineStart, actualEnd);
     
     if (isOutdent) {
       final spaces = ' ' * provider.tabSize;
@@ -359,7 +361,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         final newText = text.replaceRange(lineStart, lineStart + provider.tabSize, '');
         _controller.value = TextEditingValue(
           text: newText,
-          selection: TextSelection.collapsed(offset: (sel.start - provider.tabSize).clamp(0, newText.length)),
+          selection: TextSelection.collapsed(offset: (sel.start - provider.tabSize).clamp(0, newText.length).toInt()),
         );
       }
     } else {
@@ -367,7 +369,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
       final newText = text.replaceRange(lineStart, lineStart, spaces);
       _controller.value = TextEditingValue(
         text: newText,
-        selection: TextSelection.collapsed(offset: sel.start + provider.tabSize),
+        selection: TextSelection.collapsed(offset: (sel.start + provider.tabSize).toInt()),
       );
     }
   }
