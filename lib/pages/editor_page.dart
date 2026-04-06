@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import '../providers/markdown_provider.dart';
+
 import '../widgets/markdown_editor_widget.dart';
 import '../widgets/markdown_preview_widget.dart';
 
@@ -36,74 +38,83 @@ class _EditorPageState extends State<EditorPage> {
         const SingleActivator(LogicalKeyboardKey.keyS, meta: true): () => provider.saveFile(),
       },
       child: Scaffold(
-        body: Column(
-          children: [
-            _buildCustomTitleBar(isDark),
-            Expanded(
-              child: Row(
-                children: [
-                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    width: _showSidebar ? 260 : 0,
-                    child: ClipRect(
-                      child: OverflowBox(
-                        minWidth: 260,
-                        maxWidth: 260,
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: _showSidebar ? 1.0 : 0.0,
-                          child: const SidebarWidget(),
+        body: DropTarget(
+          onDragDone: (details) {
+            for (final file in details.files) {
+              if (file.path.endsWith('.md') || file.path.endsWith('.markdown') || file.path.endsWith('.txt')) {
+                provider.openByPath(file.path);
+              }
+            }
+          },
+          child: Column(
+            children: [
+              _buildCustomTitleBar(isDark),
+              Expanded(
+                child: Row(
+                  children: [
+                     AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      width: _showSidebar ? 260 : 0,
+                      child: ClipRect(
+                        child: OverflowBox(
+                          minWidth: 260,
+                          maxWidth: 260,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: _showSidebar ? 1.0 : 0.0,
+                            child: const SidebarWidget(),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _buildTabBarWrapper(provider, isDark),
-                        Expanded(
-                          child: (provider.sessions.length == 1 && provider.sessions.first.name == 'Welcome.md' && provider.workspacePaths.isEmpty)
-                            ? _buildWelcomeScreen(context, provider, isDark)
-                            : AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 300),
-                                transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-                                child: Row(
-                                  key: ValueKey(provider.isSplitScreen),
-                                  children: [
-                                    Expanded(
-                                      child: Stack(
-                                        children: [
-                                          const MarkdownEditorWidget(),
-                                          Positioned(
-                                            bottom: 20,
-                                            right: 20,
-                                            child: _buildEditorBadge(provider),
-                                          ),
-                                        ],
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildTabBarWrapper(provider, isDark),
+                          Expanded(
+                            child: (provider.sessions.length == 1 && provider.sessions.first.name == 'Welcome.md' && provider.workspacePaths.isEmpty)
+                              ? _buildWelcomeScreen(context, provider, isDark)
+                              : AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+                                  child: Row(
+                                    key: ValueKey(provider.isSplitScreen),
+                                    children: [
+                                      Expanded(
+                                        child: Stack(
+                                          children: [
+                                            const MarkdownEditorWidget(),
+                                            Positioned(
+                                              bottom: 20,
+                                              right: 20,
+                                              child: _buildEditorBadge(provider),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    if (provider.isSplitScreen)
-                                      Container(
-                                        width: 1,
-                                        color: Theme.of(context).dividerColor,
-                                      ),
-                                    if (provider.isSplitScreen)
-                                      const Expanded(
-                                        child: MarkdownPreviewWidget(),
-                                      ),
-                                  ],
+                                      if (provider.isSplitScreen)
+                                        Container(
+                                          width: 1,
+                                          color: Theme.of(context).dividerColor,
+                                        ),
+                                      if (provider.isSplitScreen)
+                                        const Expanded(
+                                          child: MarkdownPreviewWidget(),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                        ),
-                        const StatusBarWidget(),
-                      ],
+                          ),
+                          const StatusBarWidget(),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

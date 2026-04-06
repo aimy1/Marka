@@ -47,6 +47,7 @@ dependencies:
   adaptive_theme: ^3.7.2
   window_manager: ^0.5.1
   shared_preferences: ^2.5.2
+  desktop_drop: ^0.5.0
 
 dev_dependencies:
   flutter_test:

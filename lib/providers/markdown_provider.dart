@@ -373,6 +373,42 @@ class MarkdownProvider with ChangeNotifier {
   }
 
   // File Operations
+  Future<void> openByPath(String path) async {
+    if (kIsWeb) return;
+    try {
+      final file = io.File(path);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final name = path.split(pathSeparator).last;
+        
+        int existingIndex = _sessions.indexWhere((s) => s.path == path);
+        if (existingIndex == -1) {
+          final session = DocSession(
+            path: path,
+            name: name,
+            content: content,
+            originalContent: content,
+          );
+          
+          if (_sessions.length == 1 && (_sessions[0].name == 'Untitled.md' || _sessions[0].name == 'Welcome.md') && !_sessions[0].isModified) {
+            _sessions[0] = session;
+            _activeTabIndex = 0;
+          } else {
+            _sessions.add(session);
+            _activeTabIndex = _sessions.length - 1;
+          }
+          _previewContent = content;
+        } else {
+          _activeTabIndex = existingIndex;
+          _previewContent = _sessions[existingIndex].content;
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error opening file by path: $e');
+    }
+  }
+
   Future<void> openFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -397,11 +433,7 @@ class MarkdownProvider with ChangeNotifier {
             path = platformFile.path;
             if (path != null) {
               content = await io.File(path).readAsString();
-              final parentPath = io.File(path).parent.path;
-              if (!_workspacePaths.contains(parentPath)) {
-                _workspacePaths.add(parentPath);
-                await refreshWorkspace();
-              }
+
             }
           }
 
