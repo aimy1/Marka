@@ -82,6 +82,7 @@ class MarkdownProvider with ChangeNotifier {
   double get scrollPercentage => activeSession?.scrollPercentage ?? 0.0;
   int get wordCount => content.trim().isEmpty ? 0 : content.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
   String? get currentFilePath => activeSession?.path;
+  String get pathSeparator => io.Platform.isWindows ? '\\' : '/';
 
   // ── Pro Settings v2.7.1 ──
   void updateFontSize(double v) { _fontSize = v.clamp(8, 32); _saveSettings(); notifyListeners(); }

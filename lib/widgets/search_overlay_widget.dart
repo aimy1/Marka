@@ -110,7 +110,7 @@ class _SearchOverlayWidgetState extends State<SearchOverlayWidget> {
               // Replace Row
               if (_showReplace)
                 Padding(
-                  padding: const EdgeInsets.top(8),
+                  padding: const EdgeInsets.only(top: 8),
                   child: Row(
                     children: [
                       const SizedBox(width: 32),
