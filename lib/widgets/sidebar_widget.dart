@@ -314,36 +314,44 @@ class _FileListItemState extends State<_FileListItem> {
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = widget.isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5);
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 1.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
             color: widget.isSelected 
-                ? (widget.isDark ? const Color(0xFF313244) : const Color(0xFFDCE0E8)) 
+                ? (widget.isDark ? const Color(0xFF313244) : accentColor.withOpacity(0.1)) 
                 : (_isHovered ? (widget.isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04)) : Colors.transparent),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
+            border: widget.isSelected 
+                ? Border.all(color: accentColor.withOpacity(0.3), width: 0.5)
+                : Border.all(color: Colors.transparent, width: 0.5),
           ),
           child: InkWell(
             onTap: widget.onTap,
             onSecondaryTapDown: (details) => widget.onSecondaryTap(details.globalPosition),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
+              padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 10.0),
               child: Row(
                 children: [
-                  AnimatedScale(
-                    duration: const Duration(milliseconds: 200),
-                    scale: _isHovered ? 1.1 : 1.0,
-                    child: Icon(
-                      Icons.description_outlined, 
-                      size: 14, 
-                      color: widget.isSelected ? const Color(0xFFCBA6F7) : (widget.isDark ? Colors.white30 : Colors.black38),
+                  if (widget.isSelected)
+                    _ActivePulseIcon(isDark: widget.isDark, accentColor: accentColor)
+                  else
+                    AnimatedScale(
+                      duration: const Duration(milliseconds: 300),
+                      scale: _isHovered ? 1.15 : 1.0,
+                      child: Icon(
+                        Icons.description_outlined, 
+                        size: 14, 
+                        color: (widget.isDark ? Colors.white30 : Colors.black38),
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -351,21 +359,60 @@ class _FileListItemState extends State<_FileListItem> {
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: widget.isSelected 
-                            ? (widget.isDark ? Colors.white : Colors.black87)
+                            ? (widget.isDark ? Colors.white : accentColor)
                             : (widget.isDark ? Colors.white60 : Colors.black54),
-                        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w400,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (widget.isSelected)
-                    const Icon(Icons.circle, size: 4, color: Color(0xFFCBA6F7)),
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle),
+                    ),
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ActivePulseIcon extends StatefulWidget {
+  final bool isDark;
+  final Color accentColor;
+  const _ActivePulseIcon({required this.isDark, required this.accentColor});
+
+  @override
+  State<_ActivePulseIcon> createState() => _ActivePulseIconState();
+}
+
+class _ActivePulseIconState extends State<_ActivePulseIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.4, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: Icon(Icons.description_rounded, size: 16, color: widget.accentColor),
     );
   }
 }
