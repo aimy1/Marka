@@ -1,4 +1,4 @@
-# 🚀 Marka IDE (v3.3.4)
+# 🚀 Marka IDE
 
 [中文文档](README_ZH.md)
 
