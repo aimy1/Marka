@@ -67,7 +67,7 @@ begin
     else
       Msg := 'An existing version of Marka was detected. It is recommended to uninstall the previous version before continuing.' + #13#10 + #13#10 + 'Would you like to uninstall it now?';
 
-    if MsgBox(Msg, mbConfirmation, mbYesNo) = idYes then
+    if MsgBox(Msg, mbConfirmation, MB_YESNO) = IDYES then
     begin
       // Executing uninstaller with /SILENT flag to minimize friction
       Exec(RemoveQuotes(UninstallString), '/SILENT', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
