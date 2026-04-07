@@ -64,7 +64,6 @@ Beyond basic search. Marka provides real-time match highlighting across the enti
 - [x] v2.9.0: Atomic Grid Alignment logic
 - [x] v3.0.0: Find Highlighting & Industrial Selection Fixes
 - [x] v3.1.0: Undo/Redo History Controller
-- [ ] v3.2.0: Multi-session Cloud Sync (In Progress)
 - [ ] v4.0.0: Plugin & Plugin Architecture
 
 ---
