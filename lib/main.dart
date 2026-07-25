@@ -7,8 +7,21 @@ import 'package:window_manager/window_manager.dart';
 import 'providers/markdown_provider.dart';
 import 'pages/editor_page.dart';
 
-void main() async {
+import 'dart:io' as io;
+
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  String? initialFilePath;
+  if (args.isNotEmpty) {
+    final rawPath = args.first.trim();
+    if (!kIsWeb && rawPath.isNotEmpty) {
+      final file = io.File(rawPath);
+      if (file.existsSync()) {
+        initialFilePath = file.absolute.path;
+      }
+    }
+  }
   
   if (!kIsWeb) {
     // Initialize Window Manager for desktop
@@ -33,7 +46,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => MarkdownProvider()),
+        ChangeNotifierProvider(create: (_) => MarkdownProvider(initialSingleFilePath: initialFilePath)),
       ],
       child: MyApp(savedThemeMode: savedThemeMode),
     ),

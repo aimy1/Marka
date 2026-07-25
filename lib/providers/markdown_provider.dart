@@ -278,6 +278,12 @@ class MarkdownProvider with ChangeNotifier {
     updateContent(newContent);
   }
 
+  final String? initialSingleFilePath;
+
+  MarkdownProvider({this.initialSingleFilePath}) {
+    _loadSettings();
+  }
+
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _fontFamily = prefs.getString('fontFamily') ?? 'Inter';
@@ -303,19 +309,18 @@ class MarkdownProvider with ChangeNotifier {
     
     await refreshWorkspace();
     
-    // Restoration Logic
-    if (_openedFilePaths.isNotEmpty) {
+    // Single File Direct Open Mode
+    if (initialSingleFilePath != null && initialSingleFilePath!.isNotEmpty) {
+      await openSingleFile(initialSingleFilePath!);
+    } else if (_openedFilePaths.isNotEmpty) {
       for (final p in _openedFilePaths) {
         await openFileDirectly(p, notify: false);
       }
     }
 
     // Auto-init for new users
-    if (!kIsWeb && _workspacePaths.isEmpty && _openedFilePaths.isEmpty) {
+    if (!kIsWeb && _workspacePaths.isEmpty && _openedFilePaths.isEmpty && _sessions.isEmpty) {
       await initWorkspace();
-    } else if (_sessions.isEmpty) {
-      // If no sessions and not first run, show empty state (no sessions)
-      // The EditorPage will handle the Welcome screen
     }
 
     // Start periodic backup timer
@@ -324,6 +329,50 @@ class MarkdownProvider with ChangeNotifier {
     });
 
     notifyListeners();
+  }
+
+  Future<void> openSingleFile(String filePath) async {
+    if (kIsWeb) return;
+    try {
+      final file = io.File(filePath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final fileName = pathUtils.basename(filePath);
+
+        int existingIndex = _sessions.indexWhere((s) => s.path == filePath);
+        if (existingIndex != -1) {
+          _activeTabIndex = existingIndex;
+          _previewContent = _sessions[existingIndex].content;
+        } else {
+          final session = DocSession(
+            path: filePath,
+            name: fileName,
+            content: content,
+            originalContent: content,
+          );
+
+          if (_sessions.length == 1 &&
+              (_sessions[0].name == 'Untitled.md' || _sessions[0].name == 'Welcome.md') &&
+              !_sessions[0].isModified) {
+            _sessions[0] = session;
+            _activeTabIndex = 0;
+          } else {
+            _sessions.add(session);
+            _activeTabIndex = _sessions.length - 1;
+          }
+          _previewContent = content;
+        }
+
+        final parentPath = file.parent.path;
+        if (!_workspacePaths.contains(parentPath)) {
+          _workspacePaths.add(parentPath);
+          await refreshWorkspace();
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error opening single file: $e');
+    }
   }
 
 
@@ -991,7 +1040,7 @@ $bodyHtml
       'about': 'About',
       'smooth_scrolling': 'Smooth Scrolling',
       'spaces': 'Spaces',
-      'about_desc': 'Marka is a professional-grade Markdown editor designed for industrial writing and focus. [v3.3.8]',
+      'about_desc': 'Marka is a professional-grade Markdown editor designed for industrial writing and focus. [v3.3.9]',
 
       'about_version': 'Version',
       'about_github': 'GitHub Repository',

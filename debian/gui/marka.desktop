@@ -2,10 +2,11 @@
 Name=Marka
 Comment=Modern workspace Markdown editor.
 GenericName=Markdown Editor
-Exec=marka
+Exec=marka %f
 Icon=marka
 Terminal=false
 Type=Application
 Categories=Office;TextEditor;Utility;
 Keywords=Markdown;Editor;Marka;
+MimeType=text/markdown;text/plain;
 StartupNotify=true

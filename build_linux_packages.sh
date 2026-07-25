@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Marka IDE Packaging Runner (v3.3.8) ==="
+echo "=== Marka IDE Packaging Runner (v3.3.9) ==="
 
 # 1. Compile Flutter application
 echo "Building Flutter project for Linux release..."
@@ -68,14 +68,14 @@ if [ ! -f ./appimagetool-x86_64.AppImage ]; then
 fi
 
 echo "Running appimagetool with APPIMAGE_EXTRACT_AND_RUN=1..."
-./appimagetool-x86_64.AppImage build/AppDir build/Marka-3.3.8-x86_64.AppImage || {
+./appimagetool-x86_64.AppImage build/AppDir build/Marka-3.3.9-x86_64.AppImage || {
   ./appimagetool-x86_64.AppImage --appimage-extract
-  ./squashfs-root/AppRun build/AppDir build/Marka-3.3.8-x86_64.AppImage
+  ./squashfs-root/AppRun build/AppDir build/Marka-3.3.9-x86_64.AppImage
 }
 
-if [ -f build/Marka-3.3.8-x86_64.AppImage ]; then
-  cp build/Marka-3.3.8-x86_64.AppImage dist/
-  echo "AppImage created successfully at dist/Marka-3.3.8-x86_64.AppImage"
+if [ -f build/Marka-3.3.9-x86_64.AppImage ]; then
+  cp build/Marka-3.3.9-x86_64.AppImage dist/
+  echo "AppImage created successfully at dist/Marka-3.3.9-x86_64.AppImage"
 fi
 
 # Clean temp folders
