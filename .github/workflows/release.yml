@@ -1,0 +1,107 @@
+name: Marka Release Package
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-22.04]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Dependencies (Linux)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libkeybinder-3.0-dev libayatana-appindicator3-dev rpm
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Packages
+        run: flutter pub get
+
+      - name: Build Windows x64 Installer
+        if: matrix.os == 'windows-latest'
+        run: |
+          flutter build windows --release
+          iscc /dMyAppArch=x64 windows\runner\marka_installer.iss
+
+
+      - name: Build macOS Installer
+        if: matrix.os == 'macos-latest'
+        run: |
+          flutter build macos --release
+          brew install create-dmg
+          create-dmg \
+            --volname "Marka Installer" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "Marka.app" 200 190 \
+            --hide-extension "Marka.app" \
+            --app-drop-link 600 185 \
+            "Marka-Installer-macOS.dmg" \
+            "build/macos/Build/Products/Release/"*.app
+
+      - name: Build Linux Installer
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          # 1. Build Debian Package
+          flutter build linux --release
+          dart pub global activate flutter_to_debian
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          flutter_to_debian
+          mv build/linux/x64/release/debian/*.deb Marka-Installer-Ubuntu.deb
+
+          # 2. Build AppImage & RPM
+          chmod +x ./build_linux_packages.sh
+          ./build_linux_packages.sh
+          mv dist/Marka-3.3.8-x86_64.AppImage Marka-Installer-AppImage.AppImage
+          mv dist/*.rpm Marka-Installer-Fedora.rpm
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-installers
+          path: |
+            Marka-Installer-*.exe
+            Marka-Installer-*.dmg
+            Marka-Installer-*.deb
+            Marka-Installer-*.AppImage
+            Marka-Installer-*.rpm
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

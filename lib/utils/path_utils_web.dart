@@ -1,0 +1,3 @@
+String getPathSeparator() {
+  return '/';
+}

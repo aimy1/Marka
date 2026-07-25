@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Marka
+Comment=Modern workspace Markdown editor.
+GenericName=Markdown Editor
+Exec=marka
+Icon=marka
+Terminal=false
+Type=Application
+Categories=Office;TextEditor;Utility;
+Keywords=Markdown;Editor;Marka;
+StartupNotify=true
