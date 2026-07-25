@@ -8,6 +8,7 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:path/path.dart' as p;
 import '../models/doc_session.dart';
 import '../models/workspace_item.dart';
 import '../models/outline_item.dart';
@@ -334,7 +335,7 @@ class MarkdownProvider with ChangeNotifier {
       final file = io.File(filePath);
       if (await file.exists()) {
         final content = await file.readAsString();
-        final fileName = PathUtils.basename(filePath);
+        final fileName = p.basename(filePath);
 
         int existingIndex = _sessions.indexWhere((s) => s.path == filePath);
         if (existingIndex != -1) {
