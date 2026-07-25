@@ -44,8 +44,9 @@ else
   echo "RPM created successfully at dist/"
 fi
 
-# 3. Package AppImage (Optional Fallback)
+# 3. Package AppImage (Linux Universal)
 echo "Packaging AppImage..."
+export APPIMAGE_EXTRACT_AND_RUN=1
 mkdir -p build/AppDir
 cp -r build/linux/x64/release/bundle/* build/AppDir/
 cp debian/gui/marka.desktop build/AppDir/
@@ -62,21 +63,19 @@ chmod +x build/AppDir/AppRun
 
 if [ ! -f ./appimagetool-x86_64.AppImage ]; then
   echo "Downloading appimagetool..."
-  curl -L -o ./appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage || true
-  chmod +x ./appimagetool-x86_64.AppImage || true
+  curl -L -o ./appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+  chmod +x ./appimagetool-x86_64.AppImage
 fi
 
-if [ -f ./appimagetool-x86_64.AppImage ]; then
-  echo "Extracting appimagetool..."
-  ./appimagetool-x86_64.AppImage --appimage-extract || true
-  if [ -d squashfs-root ]; then
-    mv squashfs-root build/squashfs-root
-    ./build/squashfs-root/AppRun build/AppDir build/Marka-3.3.8-x86_64.AppImage || true
-    if [ -f build/Marka-3.3.8-x86_64.AppImage ]; then
-      cp build/Marka-3.3.8-x86_64.AppImage dist/
-      echo "AppImage created successfully at dist/Marka-3.3.8-x86_64.AppImage"
-    fi
-  fi
+echo "Running appimagetool with APPIMAGE_EXTRACT_AND_RUN=1..."
+./appimagetool-x86_64.AppImage build/AppDir build/Marka-3.3.8-x86_64.AppImage || {
+  ./appimagetool-x86_64.AppImage --appimage-extract
+  ./squashfs-root/AppRun build/AppDir build/Marka-3.3.8-x86_64.AppImage
+}
+
+if [ -f build/Marka-3.3.8-x86_64.AppImage ]; then
+  cp build/Marka-3.3.8-x86_64.AppImage dist/
+  echo "AppImage created successfully at dist/Marka-3.3.8-x86_64.AppImage"
 fi
 
 # Clean temp folders
