@@ -63,7 +63,7 @@ chmod +x build/AppDir/AppRun
 
 if [ ! -f ./appimagetool-x86_64.AppImage ]; then
   echo "Downloading appimagetool..."
-  curl -L -o ./appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+  curl -L -o ./appimagetool-x86_64.AppImage https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
   chmod +x ./appimagetool-x86_64.AppImage
 fi
 

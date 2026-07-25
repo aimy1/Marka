@@ -43,7 +43,7 @@ jobs:
         run: |
           flutter build windows --release
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /dMyAppArch=x64 windows\runner\marka_installer.iss
-          copy windows\runner\Output\*.exe Marka-Installer-Windows.exe || copy Output\*.exe Marka-Installer-Windows.exe || copy *.exe Marka-Installer-Windows.exe
+          if (Test-Path "windows\runner\Output\*.exe") { copy windows\runner\Output\*.exe Marka-Installer-Windows.exe } elseif (Test-Path "Output\*.exe") { copy Output\*.exe Marka-Installer-Windows.exe } else { copy *.exe Marka-Installer-Windows.exe }
 
       - name: Build macOS Application Package
         if: matrix.os == 'macos-latest'
