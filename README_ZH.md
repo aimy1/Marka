@@ -71,15 +71,20 @@ flutter run -d chrome # 或 windows / linux
 
 ### 编译发布包
 
-#### 📦 Linux (RPM 软件包与 AppImage)
-我们提供了一键自动化打包脚本，可以编译 Flutter release 产物，提取无 FUSE 权限依赖的打包工具并直接生成 RPM 包及 AppImage：
+#### 📦 Linux / Fedora 44 (RPM 软件包与 AppImage)
+我们提供了一键自动化打包脚本，可以编译 Flutter release 产物，提取无 FUSE 权限依赖的打包工具并直接生成适配 Fedora 44 的 RPM 包及 AppImage：
 ```bash
 chmod +x build_linux_packages.sh
 ./build_linux_packages.sh
 ```
 编译成功后的包会统一放置在根目录下的 `dist/` 文件夹中：
 - `dist/Marka-3.3.8-x86_64.AppImage`
-- `dist/marka-3.3.8-1.x86_64.rpm`
+- `dist/marka-3.3.8-1.fc44.x86_64.rpm`
+
+在 Fedora 44 上直接使用 `dnf` 一键安装 RPM 包：
+```bash
+sudo dnf install ./dist/marka-3.3.8-1.fc44.x86_64.rpm
+```
 
 #### 📦 Windows (Inno Setup 安装器)
 1. 编译 Flutter Windows release 包：

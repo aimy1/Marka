@@ -8,6 +8,9 @@ URL:            https://github.com/aimy1/Marka
 # Disable debuginfo packages
 %define debug_package %{nil}
 
+# Fedora 44 Runtime Dependencies
+Requires:       gtk3, libayatana-appindicator3, libstdc++
+
 %description
 Marka is a modern, high-performance Markdown IDE built with Flutter.
 
