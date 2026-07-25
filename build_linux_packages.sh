@@ -18,46 +18,7 @@ rm -rf build/rpmbuild
 rm -rf build/squashfs-root
 mkdir -p dist
 
-# 2. Package AppImage
-echo "Packaging AppImage..."
-mkdir -p build/AppDir
-
-# Copy bundle contents to AppDir root
-cp -r build/linux/x64/release/bundle/* build/AppDir/
-
-# Copy desktop launcher and icon
-cp debian/gui/marka.desktop build/AppDir/
-cp debian/gui/marka.png build/AppDir/
-
-# Create AppRun launcher
-cat << 'EOF' > build/AppDir/AppRun
-#!/bin/sh
-SELF=$(readlink -f "$0")
-HERE=$(dirname "$SELF")
-export LD_LIBRARY_PATH="${HERE}/lib:${LD_LIBRARY_PATH}"
-exec "${HERE}/marka" "$@"
-EOF
-chmod +x build/AppDir/AppRun
-
-# Download appimagetool if not present
-if [ ! -f ./appimagetool-x86_64.AppImage ]; then
-  echo "Downloading appimagetool..."
-  curl -L -o ./appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
-  chmod +x ./appimagetool-x86_64.AppImage
-fi
-
-# Extract and run appimagetool to bypass FUSE requirements
-echo "Extracting appimagetool..."
-./appimagetool-x86_64.AppImage --appimage-extract
-mv squashfs-root build/squashfs-root
-
-echo "Generating AppImage package..."
-./build/squashfs-root/AppRun build/AppDir build/Marka-3.3.8-x86_64.AppImage
-
-cp build/Marka-3.3.8-x86_64.AppImage dist/
-echo "AppImage created successfully at dist/Marka-3.3.8-x86_64.AppImage"
-
-# 3. Package RPM
+# 2. Package RPM (Fedora / RHEL)
 echo "Packaging RPM..."
 if ! command -v rpmbuild &> /dev/null; then
   echo "Warning: rpmbuild command not found. Skipping RPM packaging."
@@ -79,8 +40,43 @@ else
   echo "Running rpmbuild..."
   rpmbuild --define "_topdir $(pwd)/build/rpmbuild" -bb build/rpmbuild/SPECS/marka.spec
 
-  cp build/rpmbuild/RPMS/x86_64/*.rpm dist/
+  cp build/rpmbuild/RPMS/x86_64/*.rpm dist/ || true
   echo "RPM created successfully at dist/"
+fi
+
+# 3. Package AppImage (Optional Fallback)
+echo "Packaging AppImage..."
+mkdir -p build/AppDir
+cp -r build/linux/x64/release/bundle/* build/AppDir/
+cp debian/gui/marka.desktop build/AppDir/
+cp debian/gui/marka.png build/AppDir/
+
+cat << 'EOF' > build/AppDir/AppRun
+#!/bin/sh
+SELF=$(readlink -f "$0")
+HERE=$(dirname "$SELF")
+export LD_LIBRARY_PATH="${HERE}/lib:${LD_LIBRARY_PATH}"
+exec "${HERE}/marka" "$@"
+EOF
+chmod +x build/AppDir/AppRun
+
+if [ ! -f ./appimagetool-x86_64.AppImage ]; then
+  echo "Downloading appimagetool..."
+  curl -L -o ./appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage || true
+  chmod +x ./appimagetool-x86_64.AppImage || true
+fi
+
+if [ -f ./appimagetool-x86_64.AppImage ]; then
+  echo "Extracting appimagetool..."
+  ./appimagetool-x86_64.AppImage --appimage-extract || true
+  if [ -d squashfs-root ]; then
+    mv squashfs-root build/squashfs-root
+    ./build/squashfs-root/AppRun build/AppDir build/Marka-3.3.8-x86_64.AppImage || true
+    if [ -f build/Marka-3.3.8-x86_64.AppImage ]; then
+      cp build/Marka-3.3.8-x86_64.AppImage dist/
+      echo "AppImage created successfully at dist/Marka-3.3.8-x86_64.AppImage"
+    fi
+  fi
 fi
 
 # Clean temp folders

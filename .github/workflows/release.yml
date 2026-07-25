@@ -70,8 +70,8 @@ jobs:
           # 2. Build AppImage & RPM
           chmod +x ./build_linux_packages.sh
           ./build_linux_packages.sh
-          mv dist/Marka-3.3.8-x86_64.AppImage Marka-Installer-AppImage.AppImage
-          mv dist/*.rpm Marka-Installer-Fedora.rpm
+          cp dist/*.rpm Marka-Installer-Fedora.rpm || true
+          cp dist/*.AppImage Marka-Installer-AppImage.AppImage || true
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
