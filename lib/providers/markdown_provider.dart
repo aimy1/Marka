@@ -11,6 +11,7 @@ import 'package:markdown/markdown.dart' as md;
 import '../models/doc_session.dart';
 import '../models/workspace_item.dart';
 import '../models/outline_item.dart';
+import '../utils/path_utils.dart';
 
 class MarkdownProvider with ChangeNotifier {
   List<DocSession> _sessions = [];
@@ -52,10 +53,6 @@ class MarkdownProvider with ChangeNotifier {
   int _currentMatchIndex = -1;
   bool _showSearchOverlay = false;
   static const int _maxSearchMatches = 5000;
-
-  MarkdownProvider() {
-    _loadSettings();
-  }
 
   @override
   void dispose() {
@@ -337,7 +334,7 @@ class MarkdownProvider with ChangeNotifier {
       final file = io.File(filePath);
       if (await file.exists()) {
         final content = await file.readAsString();
-        final fileName = pathUtils.basename(filePath);
+        final fileName = PathUtils.basename(filePath);
 
         int existingIndex = _sessions.indexWhere((s) => s.path == filePath);
         if (existingIndex != -1) {
