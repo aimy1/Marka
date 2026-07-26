@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.3.9-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
+  <img src="https://img.shields.io/badge/Release-v3.3.10-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
   <img src="https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
   <img src="https://img.shields.io/badge/Platforms-Linux_|_Windows_|_Web-313244?style=for-the-badge&logo=linux&logoColor=white" alt="Platforms" />
   <img src="https://img.shields.io/badge/Theme-Catppuccin-F38BA8?style=for-the-badge" alt="Theme" />
@@ -78,12 +78,13 @@ chmod +x build_linux_packages.sh
 ./build_linux_packages.sh
 ```
 编译成功后的包会统一放置在根目录下的 `dist/` 文件夹中：
-- `dist/Marka-3.3.8-x86_64.AppImage`
-- `dist/marka-3.3.8-1.fc44.x86_64.rpm`
+- `dist/Marka-3.3.10-x86_64.AppImage`
+- `dist/Marka-3.3.10-amd64.deb`
+- `dist/marka-3.3.10-1.fc44.x86_64.rpm`
 
 在 Fedora 44 上直接使用 `dnf` 一键安装 RPM 包：
 ```bash
-sudo dnf install ./dist/marka-3.3.8-1.fc44.x86_64.rpm
+sudo dnf install ./dist/marka-3.3.10-1.fc44.x86_64.rpm
 ```
 
 #### 📦 Windows (Inno Setup 安装器)

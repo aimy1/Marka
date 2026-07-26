@@ -246,7 +246,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               ),
             ),
             const SizedBox(height: 40),
-            _settingTile(p.t('about_version'), Icons.info_outline_rounded, isDark, Text('v3.3.9', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
+            _settingTile(p.t('about_version'), Icons.info_outline_rounded, isDark, Text('v3.3.10', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
 
             _settingTile(p.t('about_author'), Icons.person_outline_rounded, isDark, Text('Asniya', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87))),
 

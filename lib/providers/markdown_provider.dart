@@ -1038,7 +1038,7 @@ $bodyHtml
       'about': 'About',
       'smooth_scrolling': 'Smooth Scrolling',
       'spaces': 'Spaces',
-      'about_desc': 'Marka is a professional-grade Markdown editor designed for industrial writing and focus. [v3.3.9]',
+      'about_desc': 'Marka is a professional-grade Markdown editor designed for industrial writing and focus. [v3.3.10]',
 
       'about_version': 'Version',
       'about_github': 'GitHub Repository',
@@ -1124,7 +1124,7 @@ $bodyHtml
       'about': '关于 Marka',
       'smooth_scrolling': '平滑滚动',
       'spaces': '个空格',
-      'about_desc': 'Marka 是一款专注于高品质专注写作与极客排版的工业级 Markdown 编辑器。[v3.3.9]',
+      'about_desc': 'Marka 是一款专注于高品质专注写作与极客排版的工业级 Markdown 编辑器。[v3.3.10]',
       'about_version': '软件版本',
       'about_github': 'GitHub 开源仓库',
       'about_author': '开发者',
