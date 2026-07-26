@@ -78,10 +78,48 @@ if [ -f build/Marka-3.3.9-x86_64.AppImage ]; then
   echo "AppImage created successfully at dist/Marka-3.3.9-x86_64.AppImage"
 fi
 
+# 4. Package DEB (Debian / Ubuntu)
+echo "Packaging DEB..."
+rm -rf build/deb
+mkdir -p build/deb/DEBIAN
+mkdir -p build/deb/usr/bin
+mkdir -p build/deb/usr/share/marka
+mkdir -p build/deb/usr/share/applications
+mkdir -p build/deb/usr/share/pixmaps
+
+cp -r build/linux/x64/release/bundle/* build/deb/usr/share/marka/
+cp debian/gui/marka.desktop build/deb/usr/share/applications/
+cp debian/gui/marka.png build/deb/usr/share/pixmaps/
+
+cat << 'EOF' > build/deb/usr/bin/marka
+#!/bin/sh
+export LD_LIBRARY_PATH="/usr/share/marka/lib:${LD_LIBRARY_PATH}"
+exec "/usr/share/marka/marka" "$@"
+EOF
+chmod +x build/deb/usr/bin/marka
+
+cat << 'EOF' > build/deb/DEBIAN/control
+Package: marka
+Version: 3.3.9
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Asniya <aimy1@github.com>
+Description: Modern workspace Markdown editor built with Flutter.
+EOF
+
+if command -v dpkg-deb &> /dev/null; then
+  dpkg-deb --build build/deb dist/Marka-3.3.9-amd64.deb || true
+  echo "DEB created successfully at dist/Marka-3.3.9-amd64.deb"
+else
+  echo "Warning: dpkg-deb command not found. Skipping DEB packaging."
+fi
+
 # Clean temp folders
 rm -rf build/AppDir
 rm -rf build/rpmbuild
 rm -rf build/squashfs-root
+rm -rf build/deb
 
 echo "=== Packaging Complete! ==="
 ls -l dist/

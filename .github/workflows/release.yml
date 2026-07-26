@@ -45,19 +45,21 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /dMyAppArch=x64 windows\runner\marka_installer.iss
           if (Test-Path "windows\runner\Output\*.exe") { copy windows\runner\Output\*.exe Marka-Installer-Windows.exe } elseif (Test-Path "Output\*.exe") { copy Output\*.exe Marka-Installer-Windows.exe } else { copy *.exe Marka-Installer-Windows.exe }
 
-      - name: Build macOS Application Package
+      - name: Build macOS Application Package (DMG & ZIP)
         if: matrix.os == 'macos-latest'
         run: |
           flutter build macos --release
+          hdiutil create -volname "Marka" -srcfolder build/macos/Build/Products/Release/Marka.app -ov -format UDZO Marka-Installer-macOS.dmg || true
           cd build/macos/Build/Products/Release/
-          zip -r ../../../../Marka-Installer-macOS.zip Marka.app
+          zip -r ../../../../Marka-Installer-macOS.zip Marka.app || true
 
-      - name: Build Linux RPM & AppImage Packages
+      - name: Build Linux RPM, DEB & AppImage Packages
         if: matrix.os == 'ubuntu-22.04'
         run: |
           flutter build linux --release
           chmod +x ./build_linux_packages.sh
           ./build_linux_packages.sh
+          cp dist/*.deb Marka-Installer-Ubuntu.deb || true
           cp dist/*.rpm Marka-Installer-Fedora.rpm || true
           cp dist/*.AppImage Marka-Installer-AppImage.AppImage || true
 
@@ -67,6 +69,7 @@ jobs:
           name: ${{ matrix.os }}-installers
           path: |
             Marka-Installer-*.exe
+            Marka-Installer-*.dmg
             Marka-Installer-*.zip
             Marka-Installer-*.deb
             Marka-Installer-*.AppImage
