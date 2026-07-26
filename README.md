@@ -1,134 +1,105 @@
-# Marka IDE
+<p align="center">
+  <img src="markd.logo.jpg" width="120" height="120" style="border-radius: 24px;" alt="Marka Logo" />
+</p>
+
+<h1 align="center">Marka IDE</h1>
 
 <p align="center">
-  <a href="README_ZH.md"><b>中文文档</b></a> | 
+  <b>Modern Cross-Platform Workspace Markdown Editor Built for Focused Writing & Industrial Aesthetics</b>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.3.8-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
+  <a href="https://github.com/aimy1/Marka/releases/tag/v3.3.10">
+    <img src="https://img.shields.io/badge/Release-v3.3.10-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
+  </a>
   <img src="https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
-  <img src="https://img.shields.io/badge/Platforms-Linux_|_Windows_|_Web-313244?style=for-the-badge&logo=linux&logoColor=white" alt="Platforms" />
+  <img src="https://img.shields.io/badge/Platforms-Linux_|_macOS_|_Windows_|_Web-313244?style=for-the-badge&logo=linux&logoColor=white" alt="Platforms" />
   <img src="https://img.shields.io/badge/Theme-Catppuccin-F38BA8?style=for-the-badge" alt="Theme" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
 </p>
 
----
-
-> **The Precision Markdown Workspace for Professionals.**
->
-> Marka is a modern, high-performance Markdown IDE built with Flutter, designed for writers and developers who demand industrial-grade precision and a zen-like writing experience. It unites the strict layout standards of the **Kate** editor with the aesthetic elegance of the **Catppuccin** palette.
-
 <p align="center">
-  <img width="100%" alt="Marka IDE Screenshot" src="https://github.com/user-attachments/assets/211673ed-26c1-4f68-b400-d64baef3ed2d" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+  <a href="#-key-features">Features</a> •
+  <a href="#-downloads--installation">Download</a> •
+  <a href="#-developer-guide">Developer Guide</a> •
+  <a href="#-license">License</a>
 </p>
 
 ---
 
 ## ✨ Key Features
 
-### 📐 Kate-Style Typographic Grid (Engine 3.0)
-* **Zero Vertical Jitter**: Every line is locked to an atomic 21-pixel grid using strict `StrutStyle` constraints.
-* **Pixel-Perfect Baseline Sync**: By unifying font families and introducing `TextLeadingDistribution.even` (even layout padding), row numbers in the gutter and editor text align perfectly down to the pixel.
-* **Pure Layout Boundaries**: Eliminates all internal decoration offsets by bypassing Flutter's default Material filled states.
+### 📄 1. Single-File Open & System Association
+- **Instant Launch**: Double-click `.md` / `.txt` files or use OS "Open With" / CLI arguments to directly open target documents.
+- **Auto Workspace Context**: Parent directories are automatically mounted into the file explorer sidebar to ensure local relative images and resources render seamlessly.
 
-### 🎛️ Dynamic Resizable Workspace
-* **Draggable Sidebar**: Customize the width of the workspace file tree on the fly (drag from `180px` to `450px`).
-* **Resizable Split Screen**: Drag the middle divider to partition the editor and live preview. 
-* **60FPS High-Performance Rebuild Isolation**: Width state variables are fully localized in sub-state structures, bypassing expensive full-page builds and text reflows.
-* **Instant Transition Logic**: Sidebar transitions slide dynamically at `300ms` when toggled, but collapse to `0ms` instantly while active dragging to ensure zero latency.
+### 🎨 2. Pixel-Perfect Line Highlight Alignment
+- **Zero Cumulative Drift**: Engineered with measured `preferredLineHeight` and centered `StrutStyle` to guarantee 0px vertical drift between line numbers, cursor highlights, and text lines across 200+ lines.
+- **Catppuccin Aesthetics**: Harmonious Morandi dark/light color palettes tailored with GFM heading ladders, code tags, and blockquote accents.
 
-### 🎨 Studio-Grade Aesthetics & Theme
-* **Catppuccin Integration**: High-contrast, low-fatigue color schemes featuring the **Macchiato** (Dark) and **Latte** (Light) palettes.
-* **Micro-Animations & Feedback**: Features smooth tab switching, elastic search overlay entry, and a breathing pulse active indicator in the sidebar tree.
-* **Themed Interactive Scrollbar**: Custom `6px` pill-shaped scrollbar that blends subtly with the background and lights up dynamically with the active theme color on hover or drag.
-* **Unified Selection Colors**: Native-feeling selection highlights and handles aligned with Catppuccin Mauve accents.
+### 🐧 3. Comprehensive Linux Packaging (Fedora / Ubuntu / Universal)
+- **Fedora 44 Native RPM**: Packed with full runtime dependencies (`gtk3`, `libayatana-appindicator3`), supports single-command `sudo dnf install`.
+- **Ubuntu / Debian Native DEB**: Built with native `dpkg-deb` rules, fully compatible with `sudo apt install`.
+- **Linux Universal AppImage**: Self-contained executable for all Linux distributions.
 
-### 🔍 Industrial Find & Replace
-* **Focused Match Highlight**: Real-time match counting and highlight rendering across the entire document.
-* **IDE Controls**: Supports case sensitivity, Regex pattern matching, and single-click global replacements.
+### 🍎 4. macOS & Windows First-Class Support
+- **macOS Native DMG & ZIP**: Provides Retina-ready macOS `.dmg` disk images and `.zip` bundles.
+- **Windows Graphical Installer**: 64-bit Inno Setup installer with desktop integration.
 
----
-
-## 💻 Tech Stack
-
-* **Front-End Engine**: Flutter (Skia / Impeller rendering)
-* **State Manager**: Provider Architecture
-* **Typography**: Google Fonts / JetBrains Mono
-* **Linux Compilers**: native `rpmbuild` & FUSE-free `appimagetool`
-* **Installer Engine**: Inno Setup Compiler (`.iss`)
+### 🌐 5. Full Bilingual i18n & Utility Suite
+- **Complete Localization**: Full English & Chinese translations for all setting tiles and interface elements.
+- **Sync-Scroll Preview**: Real-time GFM preview with synchronized scroll position.
+- **Multi-Format Export**: Export to standalone HTML, copy HTML code snippets, or copy rich text formatting.
 
 ---
 
-## 🛠️ Installation & Build Guide
+## 📦 Downloads & Installation
 
-### Running Locally
-Ensure you have the Flutter SDK (Stable branch) installed:
+Get the latest binaries directly from the [**GitHub Releases v3.3.10**](https://github.com/aimy1/Marka/releases/tag/v3.3.10) page:
+
+| OS / Distribution | Package Format | Binary File | Installation / Usage Command |
+| :--- | :---: | :--- | :--- |
+| **Fedora 44 / RHEL** | RPM | `Marka-Installer-Fedora.rpm` | `sudo dnf install ./Marka-Installer-Fedora.rpm` |
+| **Ubuntu / Debian** | DEB | `Marka-Installer-Ubuntu.deb` | `sudo apt install ./Marka-Installer-Ubuntu.deb` |
+| **Linux Universal** | AppImage | `Marka-Installer-AppImage.AppImage` | `chmod +x Marka-*.AppImage && ./Marka-*.AppImage` |
+| **macOS (Apple / Intel)** | DMG Image | `Marka-Installer-macOS.dmg` | Drag to Applications folder |
+| **macOS (ZIP Bundle)** | ZIP Archive | `Marka-Installer-macOS.zip` | Extract and run `Marka.app` |
+| **Windows 64-bit** | EXE Installer | `Marka-Installer-Windows.exe` | Run installer wizard |
+
+---
+
+## 🛠️ Developer Guide
+
+### Local Development
+
+Prerequisites: [Flutter SDK](https://flutter.dev/) (>=3.0.0)
+
 ```bash
+# 1. Clone the repository
 git clone https://github.com/aimy1/Marka.git
 cd Marka
+
+# 2. Install dependencies
 flutter pub get
-flutter run -d chrome # Or Windows / Linux
+
+# 3. Launch dev build
+flutter run -d windows   # Windows
+flutter run -d linux     # Linux
+flutter run -d macos     # macOS
 ```
 
-### Compiling Release Packages
+### Local Multi-Platform Build
 
-#### 📦 Linux (RPM Package & AppImage)
-We provide an automated compilation script that compiles the Flutter release bundle, builds an unzipped `AppImage` without requiring kernel-level FUSE mount rights, and packages an `RPM` binary:
+To build Linux RPM, DEB, and AppImage packages locally:
 ```bash
-chmod +x build_linux_packages.sh
+flutter build linux --release
+chmod +x ./build_linux_packages.sh
 ./build_linux_packages.sh
 ```
-The output packages will be located in the `dist/` directory:
-- `dist/Marka-3.3.8-x86_64.AppImage`
-- `dist/marka-3.3.8-1.x86_64.rpm`
-
-#### 📦 Windows (Inno Setup Installer)
-1. Build the Flutter release:
-   ```bash
-   flutter build windows --release
-   ```
-2. Compile the installer script located in `windows/runner/marka_installer.iss` using Inno Setup compiler to output `Marka_Setup_3.3.8.exe`.
+All generated packages will be placed in the `dist/` directory.
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## 📄 License
 
-| Category | Shortcut | Description |
-| :--- | :--- | :--- |
-| **System** | `Ctrl + S` | Save current file |
-| | `Ctrl + \` | Toggle Left Sidebar |
-| **Formatting** | `Ctrl + B` | Format Bold (`**text**`) |
-| | `Ctrl + I` | Format Italic (`*text*`) |
-| | `Ctrl + L` | Insert Link (`[text](url)`) |
-| | `Ctrl + Shift + I` | Insert Image (`![alt](url)`) |
-| | `Ctrl + Shift + X` | Insert Strikethrough (`~~text~~`) |
-| | `Ctrl + Q` | Insert Blockquote (`> `) |
-| | `Ctrl + .` | Insert Inline Code (`` `code` ``) |
-| | `Ctrl + Shift + C` | Insert Code Block (`` ```code``` ``) |
-| | `Ctrl + 1 / 2 / 3` | Convert to H1 / H2 / H3 Header |
-| **Editing** | `Ctrl + Z / Y` | Multi-history Undo / Redo |
-| | `Alt + ↑ / ↓` | Move current line up / down |
-| | `Ctrl + Shift + K` | Delete current line |
-| | `Shift + Alt + ↓` | Duplicate current line below |
-| | `Ctrl + /` | Toggle single line comment (`<!-- -->`) |
-| | `Tab / Shift+Tab` | Indent / Outdent selected lines |
-| **Navigation** | `Ctrl + F` | Toggle Search & Replace Overlay |
-| | `Escape` | Close active overlays or dialogs |
-
----
-
-## 🗺️ Release Roadmap
-
-- [x] **v2.9.0**: Kate-style atomic grid alignment engine.
-- [x] **v3.0.0**: Find & Replace overlay, selection metrics rewrite.
-- [x] **v3.1.0**: Undo/Redo historical state controller integration.
-- [x] **v3.3.0**: macOS sliding Segmented Tab controller, color normalizations.
-- [x] **v3.3.8**: AppImage & RPM automated packing pipeline, resizable sidebar/split-screen layout with 60FPS isolation, custom themed scrollbars, pixel-perfect baseline sync.
-- [ ] **v4.0.0**: Modular plug-in ecosystem & themes API (In development).
-
----
-
-## 🤝 Credits & Licensing
-Designed and maintained by the **Marka Team**.
-Special thanks to the **Flutter** and **Catppuccin** developer communities.
-
-*"Simplicity is the ultimate sophistication."*
+This project is licensed under the [MIT License](LICENSE).
