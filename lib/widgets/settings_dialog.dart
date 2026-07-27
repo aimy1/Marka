@@ -5,7 +5,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-/// Marka IDE v4.0.0 - Purified VS Code Settings with Signature Theme Purple & Language Selector
+/// Marka IDE v3.3.11 - Purified VS Code Settings with Signature Theme Purple & Language Selector
 /// Features purified option layout, restored Language selector at top of Commonly Used,
 /// and full Catppuccin Theme Purple color system (#CBA6F7 / #8839EF).
 class SettingsDialog extends StatefulWidget {
@@ -546,7 +546,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Marka IDE v4.0.0',
+                      'Marka IDE v3.3.11',
                       style: GoogleFonts.outfit(fontSize: 19, fontWeight: FontWeight.bold, color: titlePurple),
                     ),
                     Text(
@@ -571,7 +571,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
-              control: _markaBadge('v4.0.0', accentPurple, isDark),
+              control: _markaBadge('v3.3.11', accentPurple, isDark),
             ),
             _markaDivider(isDark),
             _buildMarkaSettingTile(
