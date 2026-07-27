@@ -4,9 +4,9 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-/// Marka IDE v3.6.0 - VS Code Settings Editor Architecture
+/// Marka IDE v3.7.0 - 100% Authentic VS Code Settings Editor Architecture
 /// Engineered after the VS Code Preferences (Settings Editor) UI/UX design specification.
-/// Features Category Tree, Setting IDs (e.g. editor.fontSize), Scope Tabs (User/Workspace), and Search Filtering.
+/// Features 100% Matching VS Code Colors, Tree Categories, Setting ID Tags, Scope Tabs, and Search Filter.
 class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
 
@@ -31,30 +31,32 @@ class _SettingsDialogState extends State<SettingsDialog> {
     final provider = Provider.of<MarkdownProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // VS Code Colors
-    final bgColor = isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF3F3F3);
-    final sidebarBg = isDark ? const Color(0xFF252526) : const Color(0xFFE8E8E8);
+    // Authentic VS Code Color Tokens
+    final bgColor = isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF);
+    final headerBg = isDark ? const Color(0xFF252526) : const Color(0xFFF3F3F3);
+    final sidebarBg = isDark ? const Color(0xFF252526) : const Color(0xFFF3F3F3);
     final contentBg = isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF);
-    final accentColor = isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8);
-    final borderColor = isDark ? const Color(0xFF333333) : const Color(0xFFCCCCCC);
-    final textMuted = isDark ? const Color(0xFFCCCCCC) : const Color(0xFF616161);
+    final accentBlue = isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8);
+    final titleBlue = isDark ? const Color(0xFF4FC1FF) : const Color(0xFF0066B8);
+    final borderColor = isDark ? const Color(0xFF2B2B2B) : const Color(0xFFE5E5E5);
+    final textMuted = isDark ? const Color(0xFFA6A6A6) : const Color(0xFF616161);
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4), // VS Code Crisp 4px
         child: Container(
-          width: 900,
-          height: 640,
+          width: 940,
+          height: 680,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(4),
             border: Border.all(color: borderColor, width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.6 : 0.25),
-                blurRadius: 24,
+                color: Colors.black.withOpacity(isDark ? 0.65 : 0.2),
+                blurRadius: 30,
                 offset: const Offset(0, 10),
               )
             ],
@@ -62,7 +64,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           child: Column(
             children: [
               // ── VS Code Top Header & Search Bar ──
-              _buildVSCodeHeader(provider, isDark, accentColor, borderColor, textMuted),
+              _buildVSCodeHeader(provider, isDark, accentBlue, headerBg, borderColor, textMuted),
               
               Container(height: 1, color: borderColor),
               
@@ -71,7 +73,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 child: Row(
                   children: [
                     // Left VS Code Category Tree
-                    _buildCategoryTree(provider, isDark, accentColor, sidebarBg, borderColor, textMuted),
+                    _buildCategoryTree(provider, isDark, accentBlue, sidebarBg, borderColor, textMuted),
                     
                     Container(width: 1, color: borderColor),
                     
@@ -83,8 +85,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
                           physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
                           child: _searchQuery.isNotEmpty
-                              ? _buildVSCodeSearchResults(provider, isDark, accentColor, textMuted)
-                              : _buildVSCodeCategoryContent(provider, isDark, accentColor, textMuted),
+                              ? _buildVSCodeSearchResults(provider, isDark, accentBlue, titleBlue, textMuted)
+                              : _buildVSCodeCategoryContent(provider, isDark, accentBlue, titleBlue, textMuted),
                         ),
                       ),
                     ),
@@ -93,7 +95,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               ),
 
               // ── Footer Bar ──
-              _buildVSCodeFooter(context, isDark, provider, borderColor),
+              _buildVSCodeFooter(context, isDark, provider, headerBg, borderColor, accentBlue),
             ],
           ),
         ),
@@ -101,11 +103,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  // ── VS Code Top Header & Scope Bar ──
-  Widget _buildVSCodeHeader(MarkdownProvider p, bool isDark, Color accent, Color borderColor, Color textMuted) {
+  // ── VS Code Header & Scope Bar ──
+  Widget _buildVSCodeHeader(MarkdownProvider p, bool isDark, Color accent, Color headerBg, Color borderColor, Color textMuted) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
-      color: isDark ? const Color(0xFF252526) : const Color(0xFFF3F3F3),
+      padding: const EdgeInsets.fromLTRB(20, 14, 16, 10),
+      color: headerBg,
       child: Column(
         children: [
           Row(
@@ -120,7 +122,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               ),
               const SizedBox(width: 20),
               
-              // VS Code Search Input
+              // VS Code Authentic Search Input
               Expanded(
                 child: Container(
                   height: 32,
@@ -128,7 +130,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     color: isDark ? const Color(0xFF3C3C3C) : Colors.white,
                     borderRadius: BorderRadius.circular(2),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8),
+                      color: accent,
                       width: 1,
                     ),
                   ),
@@ -138,7 +140,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     style: GoogleFonts.inter(fontSize: 13, color: isDark ? Colors.white : Colors.black87),
                     decoration: InputDecoration(
                       hintText: 'Search settings (e.g. editor.fontSize, files.autoSave)',
-                      hintStyle: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white38 : Colors.black38),
+                      hintStyle: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
                       prefixIcon: Icon(Icons.search_rounded, size: 16, color: isDark ? Colors.white70 : Colors.black54),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
@@ -170,7 +172,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           Row(
             children: [
               _scopeTab('User', 0, isDark, accent),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
               _scopeTab('Workspace', 1, isDark, accent),
             ],
           ),
@@ -196,7 +198,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           const SizedBox(height: 4),
           Container(
             height: 2,
-            width: 32,
+            width: 36,
             color: isSelected ? accent : Colors.transparent,
           ),
         ],
@@ -238,7 +240,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   Widget _treeCategoryHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, top: 4, bottom: 6),
+      padding: const EdgeInsets.only(left: 10, top: 6, bottom: 6),
       child: Text(
         title,
         style: GoogleFonts.jetBrainsMono(
@@ -265,7 +267,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? (isDark ? const Color(0xFF37373D) : const Color(0xFFD0D0D0)) : Colors.transparent,
+          color: isSelected ? (isDark ? const Color(0xFF37373D) : const Color(0xFFE4E4E4)) : Colors.transparent,
           borderRadius: BorderRadius.circular(2),
         ),
         child: Row(
@@ -291,7 +293,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   // ── VS Code Category Content ──
-  Widget _buildVSCodeCategoryContent(MarkdownProvider p, bool isDark, Color accent, Color textMuted) {
+  Widget _buildVSCodeCategoryContent(MarkdownProvider p, bool isDark, Color accent, Color titleBlue, Color textMuted) {
     switch (_selectedCategory) {
       case 'commonly_used':
         return Column(
@@ -304,6 +306,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls auto save of dirty files. Automatically saves content changes to disk.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -313,6 +316,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls the font size in pixels for the main Markdown editor workspace.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeSizeControls(p, isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -322,15 +326,17 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls the typography font family for code syntax and text editing.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _buildFontDropdown(p, isDark),
             ),
             _vscodeDivider(isDark),
             _buildVSCodeSettingTile(
               settingId: 'workbench.colorTheme',
               title: 'Workbench: Color Theme',
-              description: 'Specifies the color theme used in the workbench (Light / Dark Catppuccin Theme).',
+              description: 'Specifies the color theme used in the workbench (Light / Dark Theme).',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent),
             ),
           ],
@@ -347,6 +353,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls the font family used in text editing canvas.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _buildFontDropdown(p, isDark),
             ),
             _vscodeDivider(isDark),
@@ -356,6 +363,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls font size in pixels (8px - 32px range).',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeSizeControls(p, isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -365,6 +373,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls the line height multiplier for text paragraphs.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _buildLineHeightSlider(p, accent, isDark),
             ),
           ],
@@ -381,6 +390,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls how lines should wrap. Enable soft wrap at viewport boundary.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.isWrapped, (v) => p.toggleWrap(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -390,6 +400,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'The number of spaces a tab is equal to when indenting.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _buildTabDropdown(p, isDark),
             ),
             _vscodeDivider(isDark),
@@ -399,6 +410,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls whether the editor should automatically close quotes and brackets.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.autoPairing, (v) => p.toggleAutoPairing(), isDark, accent),
             ),
           ],
@@ -415,6 +427,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls the display of vertical line numbers in line gutter.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -424,6 +437,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls how the editor renders line highlight on current line.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.showLineHighlight, (v) => p.toggleLineHighlight(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -433,6 +447,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Displays background grid guidelines for layout alignment.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.showGridLines, (v) => p.toggleGridLines(), isDark, accent),
             ),
           ],
@@ -449,6 +464,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Switch between Dark and Light mode workbench theme.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -458,6 +474,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Horizontal padding offset around text editing canvas in pixels.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _buildPaddingSlider(p, accent, isDark),
             ),
             _vscodeDivider(isDark),
@@ -467,6 +484,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls visibility of top editor formatting toolbar.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.showToolbar, (v) => p.toggleToolbar(), isDark, accent),
             ),
           ],
@@ -483,6 +501,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls side-by-side Markdown live preview pane.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -492,6 +511,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls smooth scrolling animation across editor viewports.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.smoothScrolling, (v) => p.toggleSmoothScrolling(), isDark, accent),
             ),
           ],
@@ -508,6 +528,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Controls auto saving of modified documents.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent),
             ),
             _vscodeDivider(isDark),
@@ -517,6 +538,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Synchronize editor scroll position with live Markdown preview.',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: _vscodeCheckbox(p.isSyncScroll, (v) => p.toggleSyncScroll(), isDark, accent),
             ),
           ],
@@ -558,7 +580,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Marka IDE v3.6.0',
+                      'Marka IDE v3.7.0',
                       style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                     ),
                     Text(
@@ -582,7 +604,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Installed platform core version',
               isDark: isDark,
               accent: accent,
-              control: _vscodeBadge('v3.6.0', accent, isDark),
+              titleBlue: titleBlue,
+              control: _vscodeBadge('v3.7.0', accent, isDark),
             ),
             _vscodeDivider(isDark),
             _buildVSCodeSettingTile(
@@ -591,6 +614,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               description: 'Open source software distribution license terms',
               isDark: isDark,
               accent: accent,
+              titleBlue: titleBlue,
               control: Text('MIT License', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
             ),
           ],
@@ -599,7 +623,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   // ── VS Code Search Results Filter ──
-  Widget _buildVSCodeSearchResults(MarkdownProvider p, bool isDark, Color accent, Color textMuted) {
+  Widget _buildVSCodeSearchResults(MarkdownProvider p, bool isDark, Color accent, Color titleBlue, Color textMuted) {
     final List<Widget> results = [];
     final q = _searchQuery.toLowerCase();
 
@@ -612,6 +636,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           description: description,
           isDark: isDark,
           accent: accent,
+          titleBlue: titleBlue,
           control: control,
         ));
       }
@@ -649,7 +674,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _vscodeSectionHeader('Search Results (${results.whereType<InkWell>().length / 2 + 1})'),
+        _vscodeSectionHeader('Search Results (${results.whereType<Column>().length})'),
         ...results,
       ],
     );
@@ -673,17 +698,18 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Divider(
       height: 24,
       thickness: 1,
-      color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE5E5E5),
+      color: isDark ? const Color(0xFF2B2B2B) : const Color(0xFFE5E5E5),
     );
   }
 
-  // ── VS Code Setting Tile Component ──
+  // ── Authentic VS Code Setting Tile Component ──
   Widget _buildVSCodeSettingTile({
     required String settingId,
     required String title,
     required String description,
     required bool isDark,
     required Color accent,
+    required Color titleBlue,
     required Widget control,
   }) {
     return Padding(
@@ -698,29 +724,29 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Setting Main Title
+                    // Setting Main Title (VS Code Signature Blue)
                     Text(
                       title,
                       style: GoogleFonts.inter(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? const Color(0xFF4FC1FF) : const Color(0xFF0066B8),
+                        color: titleBlue,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     
                     // VS Code Setting ID Code Tag
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
+                        color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFECECEC),
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: Text(
                         settingId,
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: 11,
-                          color: isDark ? Colors.white38 : Colors.black45,
+                          color: isDark ? const Color(0xFFCCCCCC) : const Color(0xFF505050),
                         ),
                       ),
                     ),
@@ -772,7 +798,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E5E5),
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(2),
               border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
             ),
             child: Text(
@@ -945,17 +971,17 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  Widget _buildVSCodeFooter(BuildContext context, bool isDark, MarkdownProvider provider, Color borderColor) {
+  Widget _buildVSCodeFooter(BuildContext context, bool isDark, MarkdownProvider provider, Color headerBg, Color borderColor, Color accent) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: isDark ? const Color(0xFF252526) : const Color(0xFFF3F3F3),
+      color: headerBg,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8),
+              backgroundColor: accent,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
