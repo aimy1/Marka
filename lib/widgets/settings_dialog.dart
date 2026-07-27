@@ -5,8 +5,8 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-/// Marka IDE v3.3.11 - Purified VS Code Settings with Signature Theme Purple & Language Selector
-/// Features purified option layout, restored Language selector at top of Commonly Used,
+/// Marka IDE v3.3.11 - Purified & Beautified Settings Canvas
+/// Features purified native language labels, deleted scope bar, exquisite About Hero Card,
 /// and full Catppuccin Theme Purple color system (#CBA6F7 / #8839EF).
 class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
@@ -18,7 +18,6 @@ class SettingsDialog extends StatefulWidget {
 class _SettingsDialogState extends State<SettingsDialog> {
   String _selectedCategory = 'commonly_used';
   String _searchQuery = '';
-  int _scopeIndex = 0; // 0: User, 1: Workspace
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -49,12 +48,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8), // Crisp 8px Marka Radius
+        borderRadius: BorderRadius.circular(8),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             width: 920,
-            height: 660,
+            height: 650,
             decoration: BoxDecoration(
               color: bgColor.withOpacity(isDark ? 0.95 : 0.98),
               borderRadius: BorderRadius.circular(8),
@@ -69,7 +68,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             ),
             child: Column(
               children: [
-                // ── Header Bar ──
+                // ── Purified Header Bar (Scope Bar Removed) ──
                 _buildMarkaHeader(provider, isDark, accentPurple, headerBg, borderColor, textMuted),
                 
                 Container(height: 1, color: borderColor),
@@ -110,116 +109,73 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  // ── Header & Scope Bar ──
+  // ── Header Bar ──
   Widget _buildMarkaHeader(MarkdownProvider p, bool isDark, Color accentPurple, Color headerBg, Color borderColor, Color textMuted) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(22, 14, 16, 10),
+      padding: const EdgeInsets.fromLTRB(22, 14, 16, 14),
       color: headerBg,
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: accentPurple.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Icon(Icons.settings_suggest_rounded, size: 17, color: accentPurple),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                p.t('settings'),
-                style: GoogleFonts.outfit(
-                  fontSize: 16.5,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(width: 20),
-              
-              // Search Input Box
-              Expanded(
-                child: Container(
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isDark ? accentPurple.withOpacity(0.3) : accentPurple.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (v) => setState(() => _searchQuery = v.trim()),
-                    style: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white : Colors.black87),
-                    decoration: InputDecoration(
-                      hintText: '${p.t('find')} (e.g. general.language, editor.fontSize)...',
-                      hintStyle: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
-                      prefixIcon: Icon(Icons.search_rounded, size: 16, color: accentPurple),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 14),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.close_rounded, size: 18, color: textMuted),
-                tooltip: p.t('close'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          
-          // Scope Tabs (User / Workspace)
-          Row(
-            children: [
-              _scopeTab('User (用户设置)', 0, isDark, accentPurple),
-              const SizedBox(width: 20),
-              _scopeTab('Workspace (工作区设置)', 1, isDark, accentPurple),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _scopeTab(String title, int index, bool isDark, Color accentPurple) {
-    final isSelected = _scopeIndex == index;
-    return InkWell(
-      onTap: () => setState(() => _scopeIndex = index),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 12.5,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? accentPurple : (isDark ? Colors.white54 : Colors.black54),
-            ),
-          ),
-          const SizedBox(height: 4),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            height: 2,
-            width: isSelected ? 48 : 0,
+          Container(
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: accentPurple,
-              borderRadius: BorderRadius.circular(1),
+              color: accentPurple.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(6),
             ),
+            child: Icon(Icons.settings_suggest_rounded, size: 18, color: accentPurple),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            p.t('settings'),
+            style: GoogleFonts.outfit(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+          const SizedBox(width: 24),
+          
+          // Search Input Box
+          Expanded(
+            child: Container(
+              height: 36,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isDark ? accentPurple.withOpacity(0.3) : accentPurple.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (v) => setState(() => _searchQuery = v.trim()),
+                style: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  hintText: '${p.t('find')} (e.g. general.language, editor.fontSize)...',
+                  hintStyle: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
+                  prefixIcon: Icon(Icons.search_rounded, size: 16, color: accentPurple),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 14),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.close_rounded, size: 20, color: textMuted),
+            tooltip: p.t('close'),
           ),
         ],
       ),
@@ -233,23 +189,23 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Container(
       width: 220,
       color: sidebarBg,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       child: ListView(
         children: [
           _treeCategoryHeader(isZh ? '常用配置' : 'COMMONLY USED'),
           _treeNode('commonly_used', p.t('general'), Icons.star_outline_rounded, isDark, accentPurple),
           
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           _treeCategoryHeader(isZh ? '文本编辑器' : 'TEXT EDITOR'),
           _treeNode('editor_font', p.t('typography'), Icons.font_download_outlined, isDark, accentPurple),
           _treeNode('editor_formatting', p.t('editor_behavior'), Icons.format_align_left_rounded, isDark, accentPurple),
           
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           _treeCategoryHeader(isZh ? '工作台界面' : 'WORKBENCH'),
           _treeNode('workbench_appearance', p.t('appearance'), Icons.palette_outlined, isDark, accentPurple),
           _treeNode('workbench_layout', p.t('layout_options'), Icons.splitscreen_rounded, isDark, accentPurple),
           
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           _treeCategoryHeader(isZh ? '快捷键与关于' : 'SHORTCUTS & ABOUT'),
           _treeNode('features_shortcuts', p.t('shortcuts'), Icons.keyboard_outlined, isDark, accentPurple),
           _treeNode('features_about', p.t('about'), Icons.info_outline_rounded, isDark, accentPurple),
@@ -286,7 +242,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       borderRadius: BorderRadius.circular(4),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7.5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? accentPurple.withOpacity(isDark ? 0.15 : 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
@@ -337,7 +293,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
           children: [
             _markaSectionHeader(p.t('general')),
             
-            // ── RESTORED LANGUAGE SELECTOR AT TOP ──
             _buildMarkaSettingTile(
               settingId: 'general.language',
               title: p.t('language'),
@@ -529,63 +484,152 @@ class _SettingsDialogState extends State<SettingsDialog> {
           ],
         );
 
-      default: // About
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _markaSectionHeader(p.t('about')),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.asset('markd.logo.jpg', width: 48, height: 48, fit: BoxFit.cover),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Marka IDE v3.3.11',
-                      style: GoogleFonts.outfit(fontSize: 19, fontWeight: FontWeight.bold, color: titlePurple),
-                    ),
-                    Text(
-                      'Industrial-Grade Markdown Editor Engine',
-                      style: GoogleFonts.inter(fontSize: 11.5, color: textMuted),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              p.t('about_desc'),
-              style: GoogleFonts.inter(fontSize: 12, height: 1.5, color: isDark ? Colors.white70 : Colors.black87),
-            ),
-            const SizedBox(height: 16),
-            _markaDivider(isDark),
-            _buildMarkaSettingTile(
-              settingId: 'marka.version',
-              title: p.t('about_version'),
-              description: 'Installed platform core version',
-              isDark: isDark,
-              accentPurple: accentPurple,
-              titlePurple: titlePurple,
-              control: _markaBadge('v3.3.11', accentPurple, isDark),
-            ),
-            _markaDivider(isDark),
-            _buildMarkaSettingTile(
-              settingId: 'marka.license',
-              title: p.t('about_license'),
-              description: 'Open source software distribution license terms',
-              isDark: isDark,
-              accentPurple: accentPurple,
-              titlePurple: titlePurple,
-              control: Text('MIT License', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
-            ),
-          ],
-        );
+      default: // Beautified About Hero Section
+        return _buildBeautifiedAboutHeroCard(p, isDark, accentPurple, titlePurple, textMuted);
     }
+  }
+
+  // ── Beautified "About Marka" Hero Card Component ──
+  Widget _buildBeautifiedAboutHeroCard(MarkdownProvider p, bool isDark, Color accentPurple, Color titlePurple, Color textMuted) {
+    final isZh = p.locale == 'zh';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _markaSectionHeader(p.t('about')),
+        const SizedBox(height: 12),
+        
+        // Brand Hero Box
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.025),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: accentPurple.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accentPurple.withOpacity(0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset('markd.logo.jpg', width: 56, height: 56, fit: BoxFit.cover),
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Marka IDE',
+                            style: GoogleFonts.outfit(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: titlePurple,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          _markaBadge('v3.3.11', accentPurple, isDark),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isZh ? '工业级跨平台 Markdown 专有工作台' : 'Industrial-Grade Workspace Markdown Editor',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                p.t('about_desc'),
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  height: 1.5,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        
+        // Metadata Specification Grid
+        _buildMarkaSettingTile(
+          settingId: 'marka.version',
+          title: p.t('about_version'),
+          description: isZh ? '当前已安装的平台核心引擎版本' : 'Currently installed core platform release version',
+          isDark: isDark,
+          accentPurple: accentPurple,
+          titlePurple: titlePurple,
+          control: _markaBadge('v3.3.11', accentPurple, isDark),
+        ),
+        _markaDivider(isDark),
+        
+        _buildMarkaSettingTile(
+          settingId: 'marka.author',
+          title: p.t('about_author'),
+          description: isZh ? 'Marka 架构与核心平台开发者' : 'Marka platform lead architect and developer',
+          isDark: isDark,
+          accentPurple: accentPurple,
+          titlePurple: titlePurple,
+          control: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: accentPurple.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text('Asniya', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: accentPurple)),
+          ),
+        ),
+        _markaDivider(isDark),
+        
+        _buildMarkaSettingTile(
+          settingId: 'marka.license',
+          title: p.t('about_license'),
+          description: isZh ? '开源软件分发与授权使用条款' : 'Open source software distribution license terms',
+          isDark: isDark,
+          accentPurple: accentPurple,
+          titlePurple: titlePurple,
+          control: Text('MIT License', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
+        ),
+        _markaDivider(isDark),
+        
+        _buildMarkaSettingTile(
+          settingId: 'marka.repository',
+          title: p.t('about_github'),
+          description: isZh ? '官方 GitHub 源代码仓库与 Bug 跟踪' : 'Official GitHub repository and bug tracker',
+          isDark: isDark,
+          accentPurple: accentPurple,
+          titlePurple: titlePurple,
+          control: SelectableText(
+            'github.com/aimy1/Marka',
+            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: accentPurple),
+          ),
+        ),
+      ],
+    );
   }
 
   // ── Search Results Filter ──
@@ -687,7 +731,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Setting Main Title (Theme Purple Accent)
                 Row(
                   children: [
                     Text(
@@ -700,7 +743,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     ),
                     const SizedBox(width: 8),
                     
-                    // Code Tag (Purple Tint)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
@@ -720,7 +762,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 ),
                 const SizedBox(height: 6),
                 
-                // Description
                 Text(
                   description,
                   style: GoogleFonts.inter(
