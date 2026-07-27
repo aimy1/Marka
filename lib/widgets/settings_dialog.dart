@@ -5,9 +5,9 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-/// Marka IDE v3.8.0 - Exquisite Marka Aesthetic VS Code Settings Architecture
-/// Blends VS Code's Category Tree & Setting ID structure with Marka's signature Catppuccin design system,
-/// Outfit typography, glassmorphic backdrop blur, and Raycast/Linear-grade controls.
+/// Marka IDE v3.9.0 - Pixel-Perfect VS Code Settings Architecture
+/// Engineered with breathable row spacing, active indicator pillars, right-aligned controls,
+/// and full i18n localization support.
 class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
 
@@ -50,8 +50,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            width: 920,
-            height: 660,
+            width: 940,
+            height: 670,
             decoration: BoxDecoration(
               color: bgColor.withOpacity(isDark ? 0.95 : 0.98),
               borderRadius: BorderRadius.circular(8),
@@ -126,7 +126,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               ),
               const SizedBox(width: 10),
               Text(
-                'Settings',
+                p.t('settings'),
                 style: GoogleFonts.outfit(
                   fontSize: 16.5,
                   fontWeight: FontWeight.w700,
@@ -152,7 +152,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     onChanged: (v) => setState(() => _searchQuery = v.trim()),
                     style: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white : Colors.black87),
                     decoration: InputDecoration(
-                      hintText: 'Search settings (e.g. editor.fontSize, files.autoSave)',
+                      hintText: '${p.t('find')} (e.g. editor.fontSize, files.autoSave)...',
                       hintStyle: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
                       prefixIcon: Icon(Icons.search_rounded, size: 16, color: isDark ? Colors.white54 : Colors.black45),
                       suffixIcon: _searchQuery.isNotEmpty
@@ -175,7 +175,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               IconButton(
                 onPressed: () => Navigator.pop(context),
                 icon: Icon(Icons.close_rounded, size: 18, color: textMuted),
-                tooltip: 'Close (Esc)',
+                tooltip: p.t('close'),
               ),
             ],
           ),
@@ -184,9 +184,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
           // Scope Tabs (User / Workspace)
           Row(
             children: [
-              _scopeTab('User', 0, isDark, accent),
+              _scopeTab('User (用户设置)', 0, isDark, accent),
               const SizedBox(width: 20),
-              _scopeTab('Workspace', 1, isDark, accent),
+              _scopeTab('Workspace (工作区设置)', 1, isDark, accent),
             ],
           ),
         ],
@@ -212,7 +212,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             height: 2,
-            width: isSelected ? 36 : 0,
+            width: isSelected ? 48 : 0,
             decoration: BoxDecoration(
               color: accent,
               borderRadius: BorderRadius.circular(1),
@@ -225,31 +225,33 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   // ── Category Tree Sidebar ──
   Widget _buildCategoryTree(MarkdownProvider p, bool isDark, Color accent, Color sidebarBg, Color borderColor, Color textMuted) {
+    final isZh = p.locale == 'zh';
+
     return Container(
       width: 220,
       color: sidebarBg,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: ListView(
         children: [
-          _treeCategoryHeader('COMMONLY USED'),
-          _treeNode('commonly_used', 'Commonly Used', Icons.star_outline_rounded, isDark, accent),
+          _treeCategoryHeader(isZh ? '常用配置' : 'COMMONLY USED'),
+          _treeNode('commonly_used', p.t('general'), Icons.star_outline_rounded, isDark, accent),
           
-          const SizedBox(height: 12),
-          _treeCategoryHeader('TEXT EDITOR'),
-          _treeNode('editor_font', 'Font', Icons.font_download_outlined, isDark, accent),
-          _treeNode('editor_formatting', 'Formatting & Line', Icons.format_align_left_rounded, isDark, accent),
-          _treeNode('editor_cursor', 'Cursor & Gutter', Icons.space_bar_rounded, isDark, accent),
+          const SizedBox(height: 14),
+          _treeCategoryHeader(isZh ? '文本编辑器' : 'TEXT EDITOR'),
+          _treeNode('editor_font', p.t('typography'), Icons.font_download_outlined, isDark, accent),
+          _treeNode('editor_formatting', p.t('editor_behavior'), Icons.format_align_left_rounded, isDark, accent),
+          _treeNode('editor_cursor', p.t('show_line_numbers'), Icons.space_bar_rounded, isDark, accent),
           
-          const SizedBox(height: 12),
-          _treeCategoryHeader('WORKBENCH'),
-          _treeNode('workbench_appearance', 'Appearance', Icons.palette_outlined, isDark, accent),
-          _treeNode('workbench_layout', 'Layout & View', Icons.splitscreen_rounded, isDark, accent),
+          const SizedBox(height: 14),
+          _treeCategoryHeader(isZh ? '工作台界面' : 'WORKBENCH'),
+          _treeNode('workbench_appearance', p.t('appearance'), Icons.palette_outlined, isDark, accent),
+          _treeNode('workbench_layout', p.t('layout_options'), Icons.splitscreen_rounded, isDark, accent),
           
-          const SizedBox(height: 12),
-          _treeCategoryHeader('FEATURES'),
-          _treeNode('features_files', 'Files & Auto Save', Icons.save_outlined, isDark, accent),
-          _treeNode('features_shortcuts', 'Keyboard Shortcuts', Icons.keyboard_outlined, isDark, accent),
-          _treeNode('features_about', 'About Marka', Icons.info_outline_rounded, isDark, accent),
+          const SizedBox(height: 14),
+          _treeCategoryHeader(isZh ? '高级与功能' : 'FEATURES'),
+          _treeNode('features_files', p.t('auto_save'), Icons.save_outlined, isDark, accent),
+          _treeNode('features_shortcuts', p.t('shortcuts'), Icons.keyboard_outlined, isDark, accent),
+          _treeNode('features_about', p.t('about'), Icons.info_outline_rounded, isDark, accent),
         ],
       ),
     );
@@ -257,11 +259,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   Widget _treeCategoryHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, top: 6, bottom: 6),
+      padding: const EdgeInsets.only(left: 10, top: 4, bottom: 6),
       child: Text(
         title,
         style: GoogleFonts.outfit(
-          fontSize: 10,
+          fontSize: 10.5,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.1,
           color: Colors.grey.shade500,
@@ -291,18 +293,32 @@ class _SettingsDialogState extends State<SettingsDialog> {
         ),
         child: Row(
           children: [
+            // Active Pillar Bar
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 3,
+              height: 14,
+              decoration: BoxDecoration(
+                color: isSelected ? accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            ),
+            const SizedBox(width: 8),
             Icon(
               icon,
               size: 15,
               color: isSelected ? accent : (isDark ? Colors.white54 : Colors.black54),
             ),
             const SizedBox(width: 9),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12.5,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white70 : Colors.black87),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white70 : Colors.black87),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -318,10 +334,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Commonly Used'),
+            _markaSectionHeader(p.t('general')),
             _buildMarkaSettingTile(
               settingId: 'files.autoSave',
-              title: 'Files: Auto Save',
+              title: p.t('auto_save'),
               description: 'Controls auto save of dirty files. Automatically saves content changes to disk.',
               isDark: isDark,
               accent: accent,
@@ -331,7 +347,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.fontSize',
-              title: 'Editor: Font Size',
+              title: p.t('font_size'),
               description: 'Controls the font size in pixels for the main Markdown editor workspace.',
               isDark: isDark,
               accent: accent,
@@ -341,7 +357,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.fontFamily',
-              title: 'Editor: Font Family',
+              title: p.t('font_family'),
               description: 'Controls the typography font family for code syntax and text editing.',
               isDark: isDark,
               accent: accent,
@@ -351,7 +367,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'workbench.colorTheme',
-              title: 'Workbench: Color Theme',
+              title: p.t('theme'),
               description: 'Specifies the color theme used in the workbench (Light / Dark Theme).',
               isDark: isDark,
               accent: accent,
@@ -365,10 +381,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Text Editor: Font'),
+            _markaSectionHeader(p.t('typography')),
             _buildMarkaSettingTile(
               settingId: 'editor.fontFamily',
-              title: 'Editor: Font Family',
+              title: p.t('font_family'),
               description: 'Controls the font family used in text editing canvas.',
               isDark: isDark,
               accent: accent,
@@ -378,7 +394,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.fontSize',
-              title: 'Editor: Font Size',
+              title: p.t('font_size'),
               description: 'Controls font size in pixels (8px - 32px range).',
               isDark: isDark,
               accent: accent,
@@ -388,7 +404,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.lineHeight',
-              title: 'Editor: Line Height',
+              title: p.t('line_height'),
               description: 'Controls the line height multiplier for text paragraphs.',
               isDark: isDark,
               accent: accent,
@@ -402,10 +418,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Text Editor: Formatting & Line'),
+            _markaSectionHeader(p.t('editor_behavior')),
             _buildMarkaSettingTile(
               settingId: 'editor.wordWrap',
-              title: 'Editor: Word Wrap',
+              title: p.t('word_wrap'),
               description: 'Controls how lines should wrap. Enable soft wrap at viewport boundary.',
               isDark: isDark,
               accent: accent,
@@ -415,7 +431,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.tabSize',
-              title: 'Editor: Tab Size',
+              title: p.t('tab_size'),
               description: 'The number of spaces a tab is equal to when indenting.',
               isDark: isDark,
               accent: accent,
@@ -425,7 +441,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.autoClosingBrackets',
-              title: 'Editor: Auto Closing Brackets',
+              title: p.t('auto_pairing'),
               description: 'Controls whether the editor should automatically close quotes and brackets.',
               isDark: isDark,
               accent: accent,
@@ -439,10 +455,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Text Editor: Cursor & Gutter'),
+            _markaSectionHeader(p.t('show_line_numbers')),
             _buildMarkaSettingTile(
               settingId: 'editor.lineNumbers',
-              title: 'Editor: Line Numbers',
+              title: p.t('show_line_numbers'),
               description: 'Controls the display of vertical line numbers in line gutter.',
               isDark: isDark,
               accent: accent,
@@ -452,7 +468,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.renderLineHighlight',
-              title: 'Editor: Render Line Highlight',
+              title: p.t('line_highlight'),
               description: 'Controls how the editor renders line highlight on current line.',
               isDark: isDark,
               accent: accent,
@@ -462,7 +478,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.gridLines',
-              title: 'Editor: Render Grid Reference Lines',
+              title: p.t('show_grid_lines'),
               description: 'Displays background grid guidelines for layout alignment.',
               isDark: isDark,
               accent: accent,
@@ -476,10 +492,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Workbench: Appearance'),
+            _markaSectionHeader(p.t('appearance')),
             _buildMarkaSettingTile(
               settingId: 'workbench.colorTheme',
-              title: 'Workbench: Color Theme',
+              title: p.t('theme'),
               description: 'Switch between Dark and Light mode workbench theme.',
               isDark: isDark,
               accent: accent,
@@ -489,7 +505,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'workbench.editorPadding',
-              title: 'Workbench: Editor Padding',
+              title: p.t('editor_padding'),
               description: 'Horizontal padding offset around text editing canvas in pixels.',
               isDark: isDark,
               accent: accent,
@@ -499,7 +515,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'workbench.showToolbar',
-              title: 'Workbench: Show Formatting Toolbar',
+              title: p.t('show_toolbar'),
               description: 'Controls visibility of top editor formatting toolbar.',
               isDark: isDark,
               accent: accent,
@@ -513,10 +529,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Workbench: Layout & View'),
+            _markaSectionHeader(p.t('layout_options')),
             _buildMarkaSettingTile(
               settingId: 'workbench.splitScreen',
-              title: 'Workbench: Split Screen Preview',
+              title: p.t('split_screen'),
               description: 'Controls side-by-side Markdown live preview pane.',
               isDark: isDark,
               accent: accent,
@@ -526,7 +542,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'workbench.smoothScrolling',
-              title: 'Workbench: Smooth Scrolling',
+              title: p.t('smooth_scrolling'),
               description: 'Controls smooth scrolling animation across editor viewports.',
               isDark: isDark,
               accent: accent,
@@ -540,10 +556,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Features: Files & Auto Save'),
+            _markaSectionHeader(p.t('auto_save')),
             _buildMarkaSettingTile(
               settingId: 'files.autoSave',
-              title: 'Files: Auto Save',
+              title: p.t('auto_save'),
               description: 'Controls auto saving of modified documents.',
               isDark: isDark,
               accent: accent,
@@ -553,7 +569,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'files.syncScroll',
-              title: 'Files: Sync Scroll Preview',
+              title: p.t('sync_scroll'),
               description: 'Synchronize editor scroll position with live Markdown preview.',
               isDark: isDark,
               accent: accent,
@@ -567,18 +583,18 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('Features: Keyboard Shortcuts'),
-            _buildMarkaShortcutTile('Save Active Document', 'files.save', 'Ctrl', 'S', isDark, accent),
+            _markaSectionHeader(p.t('shortcuts')),
+            _buildMarkaShortcutTile(p.t('shortcut_save'), 'files.save', 'Ctrl', 'S', isDark, accent),
             _markaDivider(isDark),
-            _buildMarkaShortcutTile('Find and Replace', 'editor.find', 'Ctrl', 'F', isDark, accent),
+            _buildMarkaShortcutTile(p.t('shortcut_find'), 'editor.find', 'Ctrl', 'F', isDark, accent),
             _markaDivider(isDark),
-            _buildMarkaShortcutTile('Format Bold Selection', 'editor.formatBold', 'Ctrl', 'B', isDark, accent),
+            _buildMarkaShortcutTile(p.t('shortcut_bold'), 'editor.formatBold', 'Ctrl', 'B', isDark, accent),
             _markaDivider(isDark),
-            _buildMarkaShortcutTile('Format Italic Selection', 'editor.formatItalic', 'Ctrl', 'I', isDark, accent),
+            _buildMarkaShortcutTile(p.t('shortcut_italic'), 'editor.formatItalic', 'Ctrl', 'I', isDark, accent),
             _markaDivider(isDark),
-            _buildMarkaShortcutTile('Insert Link Snippet', 'editor.insertLink', 'Ctrl', 'L', isDark, accent),
+            _buildMarkaShortcutTile(p.t('shortcut_link'), 'editor.insertLink', 'Ctrl', 'L', isDark, accent),
             _markaDivider(isDark),
-            _buildMarkaShortcutTile('Toggle Line Comment', 'editor.toggleComment', 'Ctrl', '/', isDark, accent),
+            _buildMarkaShortcutTile(p.t('shortcut_comment'), 'editor.toggleComment', 'Ctrl', '/', isDark, accent),
           ],
         );
 
@@ -586,7 +602,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _markaSectionHeader('About Marka IDE'),
+            _markaSectionHeader(p.t('about')),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -599,7 +615,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Marka IDE v3.8.0',
+                      'Marka IDE v3.9.0',
                       style: GoogleFonts.outfit(fontSize: 19, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                     ),
                     Text(
@@ -619,17 +635,17 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'marka.version',
-              title: 'Engine Release',
+              title: p.t('about_version'),
               description: 'Installed platform core version',
               isDark: isDark,
               accent: accent,
               titleColor: titleColor,
-              control: _markaBadge('v3.8.0', accent, isDark),
+              control: _markaBadge('v3.9.0', accent, isDark),
             ),
             _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'marka.license',
-              title: 'Distribution License',
+              title: p.t('about_license'),
               description: 'Open source software distribution license terms',
               isDark: isDark,
               accent: accent,
@@ -661,16 +677,16 @@ class _SettingsDialogState extends State<SettingsDialog> {
       }
     }
 
-    addResult('files.autoSave', 'Files: Auto Save', 'Controls auto save of modified files.', _markaSwitch(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent));
-    addResult('editor.fontSize', 'Editor: Font Size', 'Controls the font size in pixels.', _markaSizeControls(p, isDark, accent));
-    addResult('editor.fontFamily', 'Editor: Font Family', 'Controls the font family used in editor.', _buildFontDropdown(p, isDark));
-    addResult('editor.lineHeight', 'Editor: Line Height', 'Controls the line height multiplier for text paragraphs.', _buildLineHeightSlider(p, accent, isDark));
-    addResult('editor.wordWrap', 'Editor: Word Wrap', 'Controls soft wrapping of long lines to viewport bounds.', _markaSwitch(p.isWrapped, (v) => p.toggleWrap(), isDark, accent));
-    addResult('editor.tabSize', 'Editor: Tab Size', 'The number of spaces a tab is equal to when indenting.', _buildTabDropdown(p, isDark));
-    addResult('editor.lineNumbers', 'Editor: Line Numbers', 'Controls vertical line numbers gutter.', _markaSwitch(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accent));
-    addResult('workbench.colorTheme', 'Workbench: Color Theme', 'Controls dark / light workbench color theme.', _markaSwitch(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent));
-    addResult('workbench.editorPadding', 'Workbench: Editor Padding', 'Horizontal padding offset around text editing canvas.', _buildPaddingSlider(p, accent, isDark));
-    addResult('workbench.splitScreen', 'Workbench: Split Screen Preview', 'Controls side-by-side Markdown live preview pane.', _markaSwitch(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accent));
+    addResult('files.autoSave', p.t('auto_save'), 'Controls auto save of modified files.', _markaSwitch(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent));
+    addResult('editor.fontSize', p.t('font_size'), 'Controls the font size in pixels.', _markaSizeControls(p, isDark, accent));
+    addResult('editor.fontFamily', p.t('font_family'), 'Controls the font family used in editor.', _buildFontDropdown(p, isDark));
+    addResult('editor.lineHeight', p.t('line_height'), 'Controls the line height multiplier for text paragraphs.', _buildLineHeightSlider(p, accent, isDark));
+    addResult('editor.wordWrap', p.t('word_wrap'), 'Controls soft wrapping of long lines to viewport bounds.', _markaSwitch(p.isWrapped, (v) => p.toggleWrap(), isDark, accent));
+    addResult('editor.tabSize', p.t('tab_size'), 'The number of spaces a tab is equal to when indenting.', _buildTabDropdown(p, isDark));
+    addResult('editor.lineNumbers', p.t('show_line_numbers'), 'Controls vertical line numbers gutter.', _markaSwitch(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accent));
+    addResult('workbench.colorTheme', p.t('theme'), 'Controls dark / light workbench color theme.', _markaSwitch(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent));
+    addResult('workbench.editorPadding', p.t('editor_padding'), 'Horizontal padding offset around text editing canvas.', _buildPaddingSlider(p, accent, isDark));
+    addResult('workbench.splitScreen', p.t('split_screen'), 'Controls side-by-side Markdown live preview pane.', _markaSwitch(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accent));
 
     if (results.isEmpty) {
       return Center(
@@ -681,7 +697,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               Icon(Icons.search_off_rounded, size: 40, color: isDark ? Colors.white24 : Colors.black26),
               const SizedBox(height: 12),
               Text(
-                'No matching settings found for "$_searchQuery"',
+                '${p.t('no_results')}: "$_searchQuery"',
                 style: GoogleFonts.inter(fontSize: 13, color: textMuted),
               ),
             ],
@@ -693,7 +709,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _markaSectionHeader('Search Results (${results.whereType<Column>().length})'),
+        _markaSectionHeader('${p.t('find')} (${results.whereType<Padding>().length})'),
         ...results,
       ],
     );
@@ -715,7 +731,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   Widget _markaDivider(bool isDark) {
     return Divider(
-      height: 20,
+      height: 24,
       thickness: 1,
       color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
     );
@@ -732,27 +748,26 @@ class _SettingsDialogState extends State<SettingsDialog> {
     required Widget control,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Setting Main Title (Outfit Font)
+                Row(
                   children: [
-                    // Setting Main Title (Outfit Font)
                     Text(
                       title,
                       style: GoogleFonts.outfit(
-                        fontSize: 14,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: titleColor,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(width: 8),
                     
                     // Code Tag
                     Container(
@@ -769,24 +784,24 @@ class _SettingsDialogState extends State<SettingsDialog> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    
-                    // Description
-                    Text(
-                      description,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        height: 1.4,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              control,
-            ],
+                const SizedBox(height: 6),
+                
+                // Description
+                Text(
+                  description,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    height: 1.45,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 20),
+          control,
         ],
       ),
     );
@@ -795,7 +810,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   // ── Marka Shortcut Item ──
   Widget _buildMarkaShortcutTile(String title, String settingId, String mod, String key, bool isDark, Color accent) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Expanded(
@@ -804,8 +819,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.outfit(fontSize: 13.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87),
+                  style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   settingId,
                   style: GoogleFonts.jetBrainsMono(fontSize: 10.5, color: isDark ? Colors.white38 : Colors.black45),
