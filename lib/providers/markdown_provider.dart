@@ -1168,8 +1168,6 @@ $bodyHtml
       'shortcut_link': '插入链接',
       'shortcut_comment': '切换注释',
     },
-      'open_location': '打开文件所在位置',
-    },
   };
 
   static const String _welcomeMarkdown = r'''---
