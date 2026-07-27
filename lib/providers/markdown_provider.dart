@@ -1062,9 +1062,17 @@ $bodyHtml
       'find': 'Find',
 
       'open_location': 'Open File Location',
+      'typography': 'Typography & Font',
+      'editor_behavior': 'Editor Behavior',
+      'layout_options': 'Layout & View',
+      'shortcuts': 'Keyboard Shortcuts',
+      'shortcut_save': 'Save File',
+      'shortcut_find': 'Find Text',
+      'shortcut_bold': 'Bold Text',
+      'shortcut_italic': 'Italic Text',
+      'shortcut_link': 'Insert Link',
+      'shortcut_comment': 'Toggle Comment',
     },
-
-
 
     'zh': {
       'settings': '设置',
@@ -1132,10 +1140,10 @@ $bodyHtml
       'editor_padding': '编辑器左右间距',
       'pro_features': '高级功能',
 
-      'general': '常规',
-      'editor': '编辑器',
-      'appearance': '外观',
-      'advanced': '高级',
+      'general': '常规设置',
+      'editor': '排版与编辑器',
+      'appearance': '外观与布局',
+      'advanced': '高级与快捷键',
       'about': '关于 Marka',
       'smooth_scrolling': '平滑滚动',
       'spaces': '个空格',
@@ -1148,6 +1156,18 @@ $bodyHtml
       'replace_all': '全量替换',
       'no_results': '暂无匹配结果',
       'interface': '界面与交互',
+      'open_location': '打开文件位置',
+      'typography': '文字与排版风格',
+      'editor_behavior': '编辑交互体验',
+      'layout_options': '视图与页面布局',
+      'shortcuts': '快捷键一览',
+      'shortcut_save': '保存文件',
+      'shortcut_find': '查找文本',
+      'shortcut_bold': '文本加粗',
+      'shortcut_italic': '文本斜体',
+      'shortcut_link': '插入链接',
+      'shortcut_comment': '切换注释',
+    },
       'open_location': '打开文件所在位置',
     },
   };
