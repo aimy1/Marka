@@ -40,7 +40,7 @@ class MarkdownProvider with ChangeNotifier {
   bool _showGridLines = false;
   bool _showLineHighlight = true;
   Timer? _backupTimer;
-
+  Timer? _previewTimer;
 
   // Kate-style Cursor Tracking (Debounced)
   int _cursorLine = 1;
@@ -59,6 +59,7 @@ class MarkdownProvider with ChangeNotifier {
   void dispose() {
     _cursorTimer?.cancel();
     _backupTimer?.cancel();
+    _previewTimer?.cancel();
     super.dispose();
   }
 
@@ -146,7 +147,7 @@ class MarkdownProvider with ChangeNotifier {
 
 
   // State Management
-  void updateContent(String newContent) {
+  void updateContent(String newContent, {bool immediatePreview = false}) {
     final session = activeSession;
     if (session != null) {
       session.updateContent(newContent);
@@ -159,10 +160,24 @@ class MarkdownProvider with ChangeNotifier {
       _sessions.add(newSession);
       _activeTabIndex = 0;
     }
-    _previewContent = newContent;
-    if (_autoSave && !kIsWeb) saveFile();
+
     if (_searchQuery.isNotEmpty) _performSearch();
-    notifyListeners();
+    if (_autoSave && !kIsWeb) saveFile();
+
+    if (immediatePreview || newContent.length < 2000) {
+      _previewTimer?.cancel();
+      _previewContent = newContent;
+      notifyListeners();
+    } else {
+      // Debounce markdown preview rebuilding for large documents to keep typing silky smooth (150ms)
+      _previewTimer?.cancel();
+      _previewTimer = Timer(const Duration(milliseconds: 150), () {
+        if (_previewContent != newContent) {
+          _previewContent = newContent;
+          notifyListeners();
+        }
+      });
+    }
   }
 
   // Debounced Cursor Info Performance Optimization

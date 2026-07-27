@@ -29,6 +29,35 @@ class MarkaEditorGutter extends StatelessWidget {
     // Calculate width based on line count digits
     final double width = lineCount.toString().length * (fontSize * 0.6) + 32;
 
+    final String fontFamilyName = GoogleFonts.getFont(p.fontFamily).fontFamily ?? p.fontFamily;
+    final StrutStyle itemStrutStyle = StrutStyle(
+      forceStrutHeight: true,
+      height: p.lineHeight,
+      fontSize: fontSize,
+      fontFamily: fontFamilyName,
+      leadingDistribution: TextLeadingDistribution.even,
+    );
+
+    final TextStyle normalStyle = GoogleFonts.getFont(
+      p.fontFamily,
+      fontSize: fontSize * 0.82,
+      height: lineHeight,
+      color: isDark ? Colors.white10 : Colors.black12,
+      fontWeight: FontWeight.normal,
+    ).copyWith(
+      leadingDistribution: TextLeadingDistribution.even,
+    );
+
+    final TextStyle currentStyle = GoogleFonts.getFont(
+      p.fontFamily,
+      fontSize: fontSize * 0.82,
+      height: lineHeight,
+      color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF),
+      fontWeight: FontWeight.bold,
+    ).copyWith(
+      leadingDistribution: TextLeadingDistribution.even,
+    );
+
     return Container(
       width: width,
       decoration: BoxDecoration(
@@ -53,24 +82,8 @@ class MarkaEditorGutter extends StatelessWidget {
               padding: const EdgeInsets.only(right: 12),
               child: Text(
                 '${index + 1}',
-                strutStyle: StrutStyle(
-                  forceStrutHeight: true,
-                  height: p.lineHeight,
-                  fontSize: fontSize,
-                  fontFamily: GoogleFonts.getFont(p.fontFamily).fontFamily,
-                  leadingDistribution: TextLeadingDistribution.even,
-                ),
-                style: GoogleFonts.getFont(
-                  p.fontFamily,
-                  fontSize: fontSize * 0.82,
-                  height: lineHeight,
-                  color: isCurrent 
-                    ? (isDark ? const Color(0xFFCBA6F7) : const Color(0xFF8839EF))
-                    : (isDark ? Colors.white10 : Colors.black12),
-                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                ).copyWith(
-                  leadingDistribution: TextLeadingDistribution.even,
-                ),
+                strutStyle: itemStrutStyle,
+                style: isCurrent ? currentStyle : normalStyle,
               ),
             );
           },

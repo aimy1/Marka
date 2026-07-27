@@ -33,12 +33,24 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
   static const EdgeInsets _textPadding = EdgeInsets.symmetric(horizontal: 32, vertical: 24);
 
   int _lastTabIndex = -1;
+  int _cachedLineCount = 1;
+
+  int _countLines(String text) {
+    if (text.isEmpty) return 1;
+    int count = 1;
+    final len = text.length;
+    for (int i = 0; i < len; i++) {
+      if (text.codeUnitAt(i) == 10) count++;
+    }
+    return count;
+  }
 
   @override
   void initState() {
     super.initState();
     final provider = Provider.of<MarkdownProvider>(context, listen: false);
     _controller = MarkaEditorController(provider: provider);
+    _cachedLineCount = _countLines(_controller.text);
     _controller.addListener(_onTextChanged);
     provider.addListener(_onProviderChanged);
     _undoController = UndoHistoryController();
@@ -62,9 +74,17 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
 
     final sel = _controller.selection;
     if (sel.start >= 0) {
-      final before = text.substring(0, sel.start.clamp(0, text.length));
-      final lines = before.split('\n');
-      provider.updateCursorInfo(lines.length, lines.last.length + 1, sel.end - sel.start);
+      final offset = sel.start.clamp(0, text.length);
+      int line = 1;
+      int lastLineBreak = -1;
+      for (int i = 0; i < offset; i++) {
+        if (text.codeUnitAt(i) == 10) { // '\n'
+          line++;
+          lastLineBreak = i;
+        }
+      }
+      final col = offset - lastLineBreak;
+      provider.updateCursorInfo(line, col, sel.end - sel.start);
       provider.updateSelection(sel.start, sel.end);
     }
   }
@@ -82,6 +102,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
         text: session.content,
         selection: sessionChanged ? const TextSelection.collapsed(offset: 0) : _controller.selection,
       );
+      _cachedLineCount = _countLines(_controller.text);
       _controller.addListener(_onTextChanged);
       if (sessionChanged && _scrollController.hasClients) _scrollController.jumpTo(0);
     }
@@ -215,7 +236,7 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                           if (provider.showLineNumbers)
                             MarkaEditorGutter(
                               scrollController: _gutterScrollController,
-                              lineCount: _controller.text.split('\n').length,
+                              lineCount: _cachedLineCount,
                               fontSize: provider.fontSize,
                               lineHeight: effectiveLineHeight,
                             ),
@@ -281,7 +302,12 @@ class _MarkdownEditorWidgetState extends State<MarkdownEditorWidget> {
                                         selectionControls: desktopTextSelectionControls,
                                         onChanged: (text) {
                                           _handleAutoPairing(text);
-                                          setState(() {}); // trigger rebuild to update gutter count
+                                          final newLines = _countLines(text);
+                                          if (newLines != _cachedLineCount) {
+                                            setState(() {
+                                              _cachedLineCount = newLines;
+                                            });
+                                          }
                                         },
                                         decoration: InputDecoration(
                                           isDense: true,
