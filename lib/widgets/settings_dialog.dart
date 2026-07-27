@@ -1,12 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-/// Marka IDE v3.5.0 - Strict Native System Settings (Micro-Radius Design)
-/// Built according to strict Windows 11 Fluent (4px/8px micro-radii) & macOS Desktop System Preferences.
+/// Marka IDE v3.6.0 - VS Code Settings Editor Architecture
+/// Engineered after the VS Code Preferences (Settings Editor) UI/UX design specification.
+/// Features Category Tree, Setting IDs (e.g. editor.fontSize), Scope Tabs (User/Workspace), and Search Filtering.
 class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
 
@@ -15,8 +15,9 @@ class SettingsDialog extends StatefulWidget {
 }
 
 class _SettingsDialogState extends State<SettingsDialog> {
-  int _selectedIndex = 0;
+  String _selectedCategory = 'commonly_used';
   String _searchQuery = '';
+  int _scopeIndex = 0; // 0: User, 1: Workspace
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -29,178 +30,70 @@ class _SettingsDialogState extends State<SettingsDialog> {
   Widget build(BuildContext context) {
     final provider = Provider.of<MarkdownProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Strict Native Color Palette
-    final accentColor = isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5);
-    final bgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF8F9FA);
-    final sidebarBg = isDark ? const Color(0xFF181825) : const Color(0xFFF3F4F6);
-    final borderColor = isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08);
+
+    // VS Code Colors
+    final bgColor = isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF3F3F3);
+    final sidebarBg = isDark ? const Color(0xFF252526) : const Color(0xFFE8E8E8);
+    final contentBg = isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF);
+    final accentColor = isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8);
+    final borderColor = isDark ? const Color(0xFF333333) : const Color(0xFFCCCCCC);
+    final textMuted = isDark ? const Color(0xFFCCCCCC) : const Color(0xFF616161);
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8), // Strict 8px window radius
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            width: 840,
-            height: 600,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: borderColor, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.4 : 0.12),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-            child: Row(
-              children: [
-                // ── Native Sidebar ──
-                _buildNativeSidebar(provider, isDark, accentColor, sidebarBg, borderColor),
-                
-                // ── Hairline Divider ──
-                Container(width: 1, color: borderColor),
-                
-                // ── Main Settings Panel ──
-                Expanded(
-                  child: Column(
-                    children: [
-                      _buildNativeHeader(provider, isDark, accentColor),
-                      Container(height: 1, color: borderColor),
-                      Expanded(
+        borderRadius: BorderRadius.circular(4), // VS Code Crisp 4px
+        child: Container(
+          width: 900,
+          height: 640,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: borderColor, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.6 : 0.25),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              )
+            ],
+          ),
+          child: Column(
+            children: [
+              // ── VS Code Top Header & Search Bar ──
+              _buildVSCodeHeader(provider, isDark, accentColor, borderColor, textMuted),
+              
+              Container(height: 1, color: borderColor),
+              
+              // ── Main Body (Sidebar Tree + Setting Canvas) ──
+              Expanded(
+                child: Row(
+                  children: [
+                    // Left VS Code Category Tree
+                    _buildCategoryTree(provider, isDark, accentColor, sidebarBg, borderColor, textMuted),
+                    
+                    Container(width: 1, color: borderColor),
+                    
+                    // Right Settings Item List
+                    Expanded(
+                      child: Container(
+                        color: contentBg,
                         child: SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.all(24),
-                          child: _searchQuery.isNotEmpty 
-                              ? _buildSearchResults(provider, isDark, accentColor)
-                              : _buildCategoryContent(provider, isDark, accentColor),
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                          child: _searchQuery.isNotEmpty
+                              ? _buildVSCodeSearchResults(provider, isDark, accentColor, textMuted)
+                              : _buildVSCodeCategoryContent(provider, isDark, accentColor, textMuted),
                         ),
-                      ),
-                      _buildNativeFooter(context, isDark, provider, borderColor),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Native Sidebar ──
-  Widget _buildNativeSidebar(MarkdownProvider p, bool isDark, Color accentColor, Color sidebarBg, Color borderColor) {
-    return Container(
-      width: 210,
-      color: sidebarBg,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Branding Header
-          Padding(
-            padding: const EdgeInsets.only(left: 10, bottom: 16, top: 4),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(4), // Crisp 4px radius
-                  ),
-                  child: Icon(Icons.settings_suggest_rounded, size: 18, color: accentColor),
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p.t('settings'),
-                      style: GoogleFonts.outfit(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      'Marka Preferences',
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: isDark ? Colors.white38 : Colors.black38,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          
-          _nativeNavItem(0, p.t('general'), Icons.tune_rounded, accentColor, isDark),
-          _nativeNavItem(1, p.t('editor'), Icons.edit_note_rounded, accentColor, isDark),
-          _nativeNavItem(2, p.t('appearance'), Icons.space_dashboard_rounded, accentColor, isDark),
-          _nativeNavItem(3, p.t('advanced'), Icons.terminal_rounded, accentColor, isDark),
-          const Spacer(),
-          _nativeNavItem(4, p.t('about'), Icons.info_outline_rounded, accentColor, isDark),
-        ],
-      ),
-    );
-  }
+              ),
 
-  Widget _nativeNavItem(int index, String label, IconData icon, Color accent, bool isDark) {
-    final isSelected = _selectedIndex == index && _searchQuery.isEmpty;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 1.5),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedIndex = index;
-            _searchQuery = '';
-            _searchController.clear();
-          });
-        },
-        borderRadius: BorderRadius.circular(4), // Micro 4px
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8.5),
-          decoration: BoxDecoration(
-            color: isSelected 
-                ? (isDark ? Colors.white.withOpacity(0.08) : Colors.white)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
-            border: isSelected 
-                ? Border.all(color: isDark ? Colors.white12 : Colors.black12, width: 1)
-                : null,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 3,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: isSelected ? accent : Colors.transparent,
-                  borderRadius: BorderRadius.circular(1.5),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                icon, 
-                size: 16, 
-                color: isSelected ? accent : (isDark ? Colors.white54 : Colors.black54),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white60 : Colors.black54),
-                ),
-              ),
+              // ── Footer Bar ──
+              _buildVSCodeFooter(context, isDark, provider, borderColor),
             ],
           ),
         ),
@@ -208,415 +101,544 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  // ── Native Header & Search Bar ──
-  Widget _buildNativeHeader(MarkdownProvider p, bool isDark, Color accentColor) {
-    final titles = [p.t('general'), p.t('editor'), p.t('appearance'), p.t('advanced'), p.t('about')];
-    final titleText = _searchQuery.isNotEmpty ? '${p.t('find')}: "$_searchQuery"' : titles[_selectedIndex];
-
+  // ── VS Code Top Header & Scope Bar ──
+  Widget _buildVSCodeHeader(MarkdownProvider p, bool isDark, Color accent, Color borderColor, Color textMuted) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 14, 16, 14),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
+      color: isDark ? const Color(0xFF252526) : const Color(0xFFF3F3F3),
+      child: Column(
         children: [
-          Text(
-            titleText, 
-            style: GoogleFonts.outfit(
-              fontSize: 17, 
-              fontWeight: FontWeight.w700, 
-              color: isDark ? Colors.white : Colors.black87,
-            ),
-          ),
-          const Spacer(),
-          
-          // Native Search Input Field
-          Container(
-            width: 210,
-            height: 32,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(4), // Micro 4px
-              border: Border.all(
-                color: isDark ? Colors.white12 : Colors.black12,
+          Row(
+            children: [
+              Text(
+                'Settings',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val.trim()),
-              style: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white : Colors.black87),
-              decoration: InputDecoration(
-                hintText: '${p.t('find')}...',
-                hintStyle: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
-                prefixIcon: Icon(Icons.search_rounded, size: 15, color: isDark ? Colors.white38 : Colors.black38),
-                suffixIcon: _searchQuery.isNotEmpty 
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 13),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 7),
+              const SizedBox(width: 20),
+              
+              // VS Code Search Input
+              Expanded(
+                child: Container(
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF3C3C3C) : Colors.white,
+                    borderRadius: BorderRadius.circular(2),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (v) => setState(() => _searchQuery = v.trim()),
+                    style: GoogleFonts.inter(fontSize: 13, color: isDark ? Colors.white : Colors.black87),
+                    decoration: InputDecoration(
+                      hintText: 'Search settings (e.g. editor.fontSize, files.autoSave)',
+                      hintStyle: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white38 : Colors.black38),
+                      prefixIcon: Icon(Icons.search_rounded, size: 16, color: isDark ? Colors.white70 : Colors.black54),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 14),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 7),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 16),
+              
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close_rounded, size: 18, color: textMuted),
+                tooltip: 'Close (Esc)',
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(height: 10),
           
-          IconButton(
-            onPressed: () => Navigator.pop(context), 
-            icon: Icon(Icons.close_rounded, size: 18, color: isDark ? Colors.white54 : Colors.black54),
-            tooltip: p.t('close'),
+          // VS Code Scope Tabs (User / Workspace)
+          Row(
+            children: [
+              _scopeTab('User', 0, isDark, accent),
+              const SizedBox(width: 16),
+              _scopeTab('Workspace', 1, isDark, accent),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ── Native Category Content ──
-  Widget _buildCategoryContent(MarkdownProvider p, bool isDark, Color accentColor) {
-    switch (_selectedIndex) {
-      case 0: // General
-        return Column(
+  Widget _scopeTab(String title, int index, bool isDark, Color accent) {
+    final isSelected = _scopeIndex == index;
+    return InkWell(
+      onTap: () => setState(() => _scopeIndex = index),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white54 : Colors.black54),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 2,
+            width: 32,
+            color: isSelected ? accent : Colors.transparent,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── VS Code Category Tree Sidebar ──
+  Widget _buildCategoryTree(MarkdownProvider p, bool isDark, Color accent, Color sidebarBg, Color borderColor, Color textMuted) {
+    return Container(
+      width: 230,
+      color: sidebarBg,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: ListView(
+        children: [
+          _treeCategoryHeader('COMMONLY USED'),
+          _treeNode('commonly_used', 'Commonly Used', Icons.star_outline_rounded, isDark, accent),
+          
+          const SizedBox(height: 12),
+          _treeCategoryHeader('TEXT EDITOR'),
+          _treeNode('editor_font', 'Font', Icons.font_download_outlined, isDark, accent),
+          _treeNode('editor_formatting', 'Formatting & Line', Icons.format_align_left_rounded, isDark, accent),
+          _treeNode('editor_cursor', 'Cursor & Gutter', Icons.space_bar_rounded, isDark, accent),
+          
+          const SizedBox(height: 12),
+          _treeCategoryHeader('WORKBENCH'),
+          _treeNode('workbench_appearance', 'Appearance', Icons.palette_outlined, isDark, accent),
+          _treeNode('workbench_layout', 'Layout & View', Icons.splitscreen_rounded, isDark, accent),
+          
+          const SizedBox(height: 12),
+          _treeCategoryHeader('FEATURES'),
+          _treeNode('features_files', 'Files & Auto Save', Icons.save_outlined, isDark, accent),
+          _treeNode('features_shortcuts', 'Keyboard Shortcuts', Icons.keyboard_outlined, isDark, accent),
+          _treeNode('features_about', 'About Marka', Icons.info_outline_rounded, isDark, accent),
+        ],
+      ),
+    );
+  }
+
+  Widget _treeCategoryHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, top: 4, bottom: 6),
+      child: Text(
+        title,
+        style: GoogleFonts.jetBrainsMono(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
+          color: Colors.grey,
+        ),
+      ),
+    );
+  }
+
+  Widget _treeNode(String id, String label, IconData icon, bool isDark, Color accent) {
+    final isSelected = _selectedCategory == id && _searchQuery.isEmpty;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedCategory = id;
+          _searchQuery = '';
+          _searchController.clear();
+        });
+      },
+      borderRadius: BorderRadius.circular(2),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? (isDark ? const Color(0xFF37373D) : const Color(0xFFD0D0D0)) : Colors.transparent,
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: Row(
           children: [
-            _buildNativeSection(
-              title: p.t('general'),
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white54 : Colors.black54),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── VS Code Category Content ──
+  Widget _buildVSCodeCategoryContent(MarkdownProvider p, bool isDark, Color accent, Color textMuted) {
+    switch (_selectedCategory) {
+      case 'commonly_used':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _vscodeSectionHeader('Commonly Used'),
+            _buildVSCodeSettingTile(
+              settingId: 'files.autoSave',
+              title: 'Files: Auto Save',
+              description: 'Controls auto save of dirty files. Automatically saves content changes to disk.',
               isDark: isDark,
-              children: [
-                _buildLanguageDropdown(p, isDark),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('theme'),
-                  subtitle: isDark ? 'Dark mode active' : 'Light mode active',
-                  icon: Icons.palette_outlined,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: isDark,
-                    accentColor: accentColor,
-                    onChanged: (v) => AdaptiveTheme.of(context).toggleThemeMode(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('auto_save'),
-                  subtitle: 'Automatically save modified documents to disk',
-                  icon: Icons.auto_awesome_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.autoSave,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleAutoSave(),
-                  ),
-                ),
-              ],
+              accent: accent,
+              control: _vscodeCheckbox(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.fontSize',
+              title: 'Editor: Font Size',
+              description: 'Controls the font size in pixels for the main Markdown editor workspace.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeSizeControls(p, isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.fontFamily',
+              title: 'Editor: Font Family',
+              description: 'Controls the typography font family for code syntax and text editing.',
+              isDark: isDark,
+              accent: accent,
+              control: _buildFontDropdown(p, isDark),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'workbench.colorTheme',
+              title: 'Workbench: Color Theme',
+              description: 'Specifies the color theme used in the workbench (Light / Dark Catppuccin Theme).',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent),
             ),
           ],
         );
 
-      case 1: // Editor Typography
+      case 'editor_font':
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildNativeSection(
-              title: p.t('typography'),
+            _vscodeSectionHeader('Text Editor: Font'),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.fontFamily',
+              title: 'Editor: Font Family',
+              description: 'Controls the font family used in text editing canvas.',
               isDark: isDark,
-              children: [
-                _buildFontDropdown(p, isDark),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('font_size'),
-                  subtitle: 'Adjust main editor typography font scale',
-                  icon: Icons.format_size_rounded,
-                  isDark: isDark,
-                  action: _buildSizeControls(p, isDark, accentColor),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('line_height'),
-                  subtitle: 'Set editor paragraph vertical line height ratio',
-                  icon: Icons.format_line_spacing_rounded,
-                  isDark: isDark,
-                  action: _buildLineHeightSlider(p, accentColor, isDark),
-                ),
-              ],
+              accent: accent,
+              control: _buildFontDropdown(p, isDark),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.fontSize',
+              title: 'Editor: Font Size',
+              description: 'Controls font size in pixels (8px - 32px range).',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeSizeControls(p, isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.lineHeight',
+              title: 'Editor: Line Height',
+              description: 'Controls the line height multiplier for text paragraphs.',
+              isDark: isDark,
+              accent: accent,
+              control: _buildLineHeightSlider(p, accent, isDark),
             ),
           ],
         );
 
-      case 2: // Appearance & View Options
+      case 'editor_formatting':
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildNativeSection(
-              title: p.t('layout_options'),
+            _vscodeSectionHeader('Text Editor: Formatting & Line'),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.wordWrap',
+              title: 'Editor: Word Wrap',
+              description: 'Controls how lines should wrap. Enable soft wrap at viewport boundary.',
               isDark: isDark,
-              children: [
-                _buildNativeTile(
-                  title: p.t('editor_padding'),
-                  subtitle: 'Horizontal padding around editor canvas',
-                  icon: Icons.horizontal_distribute_rounded,
-                  isDark: isDark,
-                  action: _buildPaddingSlider(p, accentColor, isDark),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('word_wrap'),
-                  subtitle: 'Soft wrap long lines to viewport bounds',
-                  icon: Icons.wrap_text_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.isWrapped,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleWrap(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('split_screen'),
-                  subtitle: 'Display side-by-side Markdown preview',
-                  icon: Icons.splitscreen_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.isSplitScreen,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleSplitScreen(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('show_toolbar'),
-                  subtitle: 'Display formatting shortcut toolbar',
-                  icon: Icons.construction_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.showToolbar,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleToolbar(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('show_line_numbers'),
-                  subtitle: 'Render vertical line numbers gutter',
-                  icon: Icons.format_list_numbered_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.showLineNumbers,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleLineNumbers(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('show_grid_lines'),
-                  subtitle: 'Display subtle background grid reference lines',
-                  icon: Icons.grid_on_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.showGridLines,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleGridLines(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('line_highlight'),
-                  subtitle: 'Highlight active focused line',
-                  icon: Icons.border_horizontal_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.showLineHighlight,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleLineHighlight(),
-                  ),
-                ),
-              ],
+              accent: accent,
+              control: _vscodeCheckbox(p.isWrapped, (v) => p.toggleWrap(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.tabSize',
+              title: 'Editor: Tab Size',
+              description: 'The number of spaces a tab is equal to when indenting.',
+              isDark: isDark,
+              accent: accent,
+              control: _buildTabDropdown(p, isDark),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.autoClosingBrackets',
+              title: 'Editor: Auto Closing Brackets',
+              description: 'Controls whether the editor should automatically close quotes and brackets.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.autoPairing, (v) => p.toggleAutoPairing(), isDark, accent),
             ),
           ],
         );
 
-      case 3: // Advanced & Keyboard Shortcuts
+      case 'editor_cursor':
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildNativeSection(
-              title: p.t('editor_behavior'),
+            _vscodeSectionHeader('Text Editor: Cursor & Gutter'),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.lineNumbers',
+              title: 'Editor: Line Numbers',
+              description: 'Controls the display of vertical line numbers in line gutter.',
               isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.renderLineHighlight',
+              title: 'Editor: Render Line Highlight',
+              description: 'Controls how the editor renders line highlight on current line.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.showLineHighlight, (v) => p.toggleLineHighlight(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'editor.gridLines',
+              title: 'Editor: Render Grid Reference Lines',
+              description: 'Displays background grid guidelines for layout alignment.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.showGridLines, (v) => p.toggleGridLines(), isDark, accent),
+            ),
+          ],
+        );
+
+      case 'workbench_appearance':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _vscodeSectionHeader('Workbench: Appearance'),
+            _buildVSCodeSettingTile(
+              settingId: 'workbench.colorTheme',
+              title: 'Workbench: Color Theme',
+              description: 'Switch between Dark and Light mode workbench theme.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'workbench.editorPadding',
+              title: 'Workbench: Editor Padding',
+              description: 'Horizontal padding offset around text editing canvas in pixels.',
+              isDark: isDark,
+              accent: accent,
+              control: _buildPaddingSlider(p, accent, isDark),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'workbench.showToolbar',
+              title: 'Workbench: Show Formatting Toolbar',
+              description: 'Controls visibility of top editor formatting toolbar.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.showToolbar, (v) => p.toggleToolbar(), isDark, accent),
+            ),
+          ],
+        );
+
+      case 'workbench_layout':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _vscodeSectionHeader('Workbench: Layout & View'),
+            _buildVSCodeSettingTile(
+              settingId: 'workbench.splitScreen',
+              title: 'Workbench: Split Screen Preview',
+              description: 'Controls side-by-side Markdown live preview pane.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'workbench.smoothScrolling',
+              title: 'Workbench: Smooth Scrolling',
+              description: 'Controls smooth scrolling animation across editor viewports.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.smoothScrolling, (v) => p.toggleSmoothScrolling(), isDark, accent),
+            ),
+          ],
+        );
+
+      case 'features_files':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _vscodeSectionHeader('Features: Files & Auto Save'),
+            _buildVSCodeSettingTile(
+              settingId: 'files.autoSave',
+              title: 'Files: Auto Save',
+              description: 'Controls auto saving of modified documents.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'files.syncScroll',
+              title: 'Files: Sync Scroll Preview',
+              description: 'Synchronize editor scroll position with live Markdown preview.',
+              isDark: isDark,
+              accent: accent,
+              control: _vscodeCheckbox(p.isSyncScroll, (v) => p.toggleSyncScroll(), isDark, accent),
+            ),
+          ],
+        );
+
+      case 'features_shortcuts':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _vscodeSectionHeader('Features: Keyboard Shortcuts'),
+            _buildVSCodeShortcutTile('Save Active Document', 'files.save', 'Ctrl', 'S', isDark, accent),
+            _vscodeDivider(isDark),
+            _buildVSCodeShortcutTile('Find and Replace', 'editor.find', 'Ctrl', 'F', isDark, accent),
+            _vscodeDivider(isDark),
+            _buildVSCodeShortcutTile('Format Bold Selection', 'editor.formatBold', 'Ctrl', 'B', isDark, accent),
+            _vscodeDivider(isDark),
+            _buildVSCodeShortcutTile('Format Italic Selection', 'editor.formatItalic', 'Ctrl', 'I', isDark, accent),
+            _vscodeDivider(isDark),
+            _buildVSCodeShortcutTile('Insert Link Snippet', 'editor.insertLink', 'Ctrl', 'L', isDark, accent),
+            _vscodeDivider(isDark),
+            _buildVSCodeShortcutTile('Toggle Line Comment', 'editor.toggleComment', 'Ctrl', '/', isDark, accent),
+          ],
+        );
+
+      default: // About
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _vscodeSectionHeader('About Marka IDE'),
+            const SizedBox(height: 12),
+            Row(
               children: [
-                _buildNativeTile(
-                  title: p.t('tab_size'),
-                  subtitle: 'Spaces inserted for tab indentation',
-                  icon: Icons.keyboard_tab_rounded,
-                  isDark: isDark,
-                  action: _buildTabDropdown(p, isDark),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.asset('markd.logo.jpg', width: 48, height: 48, fit: BoxFit.cover),
                 ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('auto_pairing'),
-                  subtitle: 'Automatically close brackets and quotes',
-                  icon: Icons.code_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.autoPairing,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleAutoPairing(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('sync_scroll'),
-                  subtitle: 'Synchronize editor and preview scroll positions',
-                  icon: Icons.sync_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.isSyncScroll,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleSyncScroll(),
-                  ),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('smooth_scrolling'),
-                  subtitle: 'Enable GPU-accelerated smooth scrolling animation',
-                  icon: Icons.mouse_rounded,
-                  isDark: isDark,
-                  action: _buildNativeSwitch(
-                    value: p.smoothScrolling,
-                    accentColor: accentColor,
-                    onChanged: (v) => p.toggleSmoothScrolling(),
-                  ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Marka IDE v3.6.0',
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+                    ),
+                    Text(
+                      'Industrial-Grade Markdown Editor Engine',
+                      style: GoogleFonts.inter(fontSize: 11.5, color: textMuted),
+                    ),
+                  ],
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            _buildNativeSection(
-              title: p.t('shortcuts'),
-              isDark: isDark,
-              children: [
-                _buildNativeShortcutTile(p.t('shortcut_save'), 'Ctrl', 'S', isDark, accentColor),
-                _nativeDivider(isDark),
-                _buildNativeShortcutTile(p.t('shortcut_find'), 'Ctrl', 'F', isDark, accentColor),
-                _nativeDivider(isDark),
-                _buildNativeShortcutTile(p.t('shortcut_bold'), 'Ctrl', 'B', isDark, accentColor),
-                _nativeDivider(isDark),
-                _buildNativeShortcutTile(p.t('shortcut_italic'), 'Ctrl', 'I', isDark, accentColor),
-                _nativeDivider(isDark),
-                _buildNativeShortcutTile(p.t('shortcut_link'), 'Ctrl', 'L', isDark, accentColor),
-                _nativeDivider(isDark),
-                _buildNativeShortcutTile(p.t('shortcut_comment'), 'Ctrl', '/', isDark, accentColor),
-              ],
+            Text(
+              p.t('about_desc'),
+              style: GoogleFonts.inter(fontSize: 12, height: 1.5, color: isDark ? Colors.white70 : Colors.black87),
             ),
-          ],
-        );
-
-      default: // About Marka
-        return Column(
-          children: [
-            _buildNativeSection(
-              title: p.t('about'),
+            const SizedBox(height: 16),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'marka.version',
+              title: 'Engine Release',
+              description: 'Installed platform core version',
               isDark: isDark,
-              children: [
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6), // Micro 6px
-                      child: Image.asset('markd.logo.jpg', width: 52, height: 52, fit: BoxFit.cover),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Marka IDE',
-                          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black87),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Industrial-Grade Markdown Workstation',
-                          style: GoogleFonts.inter(fontSize: 11.5, color: isDark ? Colors.white54 : Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  p.t('about_desc'),
-                  style: GoogleFonts.inter(fontSize: 12, height: 1.5, color: isDark ? Colors.white70 : Colors.black54),
-                ),
-                const SizedBox(height: 14),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('about_version'),
-                  subtitle: 'Engine release version',
-                  icon: Icons.info_outline_rounded,
-                  isDark: isDark,
-                  action: _nativeBadge('v3.5.0', accentColor, isDark),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('about_author'),
-                  subtitle: 'Core developer',
-                  icon: Icons.person_outline_rounded,
-                  isDark: isDark,
-                  action: Text('Asniya', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('about_license'),
-                  subtitle: 'Software license terms',
-                  icon: Icons.description_outlined,
-                  isDark: isDark,
-                  action: Text('MIT License', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
-                ),
-                _nativeDivider(isDark),
-                _buildNativeTile(
-                  title: p.t('about_github'),
-                  subtitle: 'Repository URL',
-                  icon: Icons.link_rounded,
-                  isDark: isDark,
-                  action: SelectableText('github.com/aimy1/Marka', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: accentColor)),
-                ),
-              ],
+              accent: accent,
+              control: _vscodeBadge('v3.6.0', accent, isDark),
+            ),
+            _vscodeDivider(isDark),
+            _buildVSCodeSettingTile(
+              settingId: 'marka.license',
+              title: 'Distribution License',
+              description: 'Open source software distribution license terms',
+              isDark: isDark,
+              accent: accent,
+              control: Text('MIT License', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black87)),
             ),
           ],
         );
     }
   }
 
-  // ── Search View ──
-  Widget _buildSearchResults(MarkdownProvider p, bool isDark, Color accentColor) {
+  // ── VS Code Search Results Filter ──
+  Widget _buildVSCodeSearchResults(MarkdownProvider p, bool isDark, Color accent, Color textMuted) {
     final List<Widget> results = [];
     final q = _searchQuery.toLowerCase();
 
-    void addResult(String title, String subtitle, IconData icon, Widget action) {
-      if (title.toLowerCase().contains(q) || subtitle.toLowerCase().contains(q)) {
-        if (results.isNotEmpty) results.add(_nativeDivider(isDark));
-        results.add(_buildNativeTile(title: title, subtitle: subtitle, icon: icon, isDark: isDark, action: action));
+    void addResult(String settingId, String title, String description, Widget control) {
+      if (settingId.toLowerCase().contains(q) || title.toLowerCase().contains(q) || description.toLowerCase().contains(q)) {
+        if (results.isNotEmpty) results.add(_vscodeDivider(isDark));
+        results.add(_buildVSCodeSettingTile(
+          settingId: settingId,
+          title: title,
+          description: description,
+          isDark: isDark,
+          accent: accent,
+          control: control,
+        ));
       }
     }
 
-    addResult(p.t('theme'), 'Dark / Light UI theme toggle', Icons.palette_outlined, _buildNativeSwitch(value: isDark, accentColor: accentColor, onChanged: (v) => AdaptiveTheme.of(context).toggleThemeMode()));
-    addResult(p.t('auto_save'), 'Automatically save modified documents to disk', Icons.auto_awesome_rounded, _buildNativeSwitch(value: p.autoSave, accentColor: accentColor, onChanged: (v) => p.toggleAutoSave()));
-    addResult(p.t('font_family'), 'Editor typography font family', Icons.font_download_outlined, _buildFontDropdown(p, isDark));
-    addResult(p.t('font_size'), 'Adjust main editor typography font scale', Icons.format_size_rounded, _buildSizeControls(p, isDark, accentColor));
-    addResult(p.t('line_height'), 'Set editor paragraph vertical line height ratio', Icons.format_line_spacing_rounded, _buildLineHeightSlider(p, accentColor, isDark));
-    addResult(p.t('editor_padding'), 'Horizontal padding around editor canvas', Icons.horizontal_distribute_rounded, _buildPaddingSlider(p, accentColor, isDark));
-    addResult(p.t('word_wrap'), 'Soft wrap long lines to viewport bounds', Icons.wrap_text_rounded, _buildNativeSwitch(value: p.isWrapped, accentColor: accentColor, onChanged: (v) => p.toggleWrap()));
-    addResult(p.t('split_screen'), 'Display side-by-side Markdown preview', Icons.splitscreen_rounded, _buildNativeSwitch(value: p.isSplitScreen, accentColor: accentColor, onChanged: (v) => p.toggleSplitScreen()));
-    addResult(p.t('show_line_numbers'), 'Render vertical line numbers gutter', Icons.format_list_numbered_rounded, _buildNativeSwitch(value: p.showLineNumbers, accentColor: accentColor, onChanged: (v) => p.toggleLineNumbers()));
-    addResult(p.t('tab_size'), 'Spaces inserted for tab indentation', Icons.keyboard_tab_rounded, _buildTabDropdown(p, isDark));
-    addResult(p.t('auto_pairing'), 'Automatically close brackets and quotes', Icons.code_rounded, _buildNativeSwitch(value: p.autoPairing, accentColor: accentColor, onChanged: (v) => p.toggleAutoPairing()));
-    addResult(p.t('sync_scroll'), 'Synchronize editor and preview scroll positions', Icons.sync_rounded, _buildNativeSwitch(value: p.isSyncScroll, accentColor: accentColor, onChanged: (v) => p.toggleSyncScroll()));
+    addResult('files.autoSave', 'Files: Auto Save', 'Controls auto save of modified files.', _vscodeCheckbox(p.autoSave, (v) => p.toggleAutoSave(), isDark, accent));
+    addResult('editor.fontSize', 'Editor: Font Size', 'Controls the font size in pixels.', _vscodeSizeControls(p, isDark, accent));
+    addResult('editor.fontFamily', 'Editor: Font Family', 'Controls the font family used in editor.', _buildFontDropdown(p, isDark));
+    addResult('editor.lineHeight', 'Editor: Line Height', 'Controls the line height multiplier for text paragraphs.', _buildLineHeightSlider(p, accent, isDark));
+    addResult('editor.wordWrap', 'Editor: Word Wrap', 'Controls soft wrapping of long lines to viewport bounds.', _vscodeCheckbox(p.isWrapped, (v) => p.toggleWrap(), isDark, accent));
+    addResult('editor.tabSize', 'Editor: Tab Size', 'The number of spaces a tab is equal to when indenting.', _buildTabDropdown(p, isDark));
+    addResult('editor.lineNumbers', 'Editor: Line Numbers', 'Controls vertical line numbers gutter.', _vscodeCheckbox(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accent));
+    addResult('workbench.colorTheme', 'Workbench: Color Theme', 'Controls dark / light workbench color theme.', _vscodeCheckbox(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accent));
+    addResult('workbench.editorPadding', 'Workbench: Editor Padding', 'Horizontal padding offset around text editing canvas.', _buildPaddingSlider(p, accent, isDark));
+    addResult('workbench.splitScreen', 'Workbench: Split Screen Preview', 'Controls side-by-side Markdown live preview pane.', _vscodeCheckbox(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accent));
 
     if (results.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(40),
           child: Column(
             children: [
               Icon(Icons.search_off_rounded, size: 40, color: isDark ? Colors.white24 : Colors.black26),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
-                '${p.t('no_results')}: "$_searchQuery"',
-                style: GoogleFonts.inter(fontSize: 13, color: isDark ? Colors.white54 : Colors.black54),
+                'No matching settings found for "$_searchQuery"',
+                style: GoogleFonts.inter(fontSize: 13, color: textMuted),
               ),
             ],
           ),
@@ -624,124 +646,100 @@ class _SettingsDialogState extends State<SettingsDialog> {
       );
     }
 
-    return _buildNativeSection(
-      title: '${p.t('find')} (${results.whereType<InkWell>().length})',
-      isDark: isDark,
-      children: results,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _vscodeSectionHeader('Search Results (${results.whereType<InkWell>().length / 2 + 1})'),
+        ...results,
+      ],
     );
   }
 
-  // ── Micro-Radius Section Card ──
-  Widget _buildNativeSection({required String title, required bool isDark, required List<Widget> children}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.025) : Colors.white,
-        borderRadius: BorderRadius.circular(6), // Strict 6px section radius
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.08),
-          width: 1,
+  Widget _vscodeSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Text(
+        title,
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    );
+  }
+
+  Widget _vscodeDivider(bool isDark) {
+    return Divider(
+      height: 24,
+      thickness: 1,
+      color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE5E5E5),
+    );
+  }
+
+  // ── VS Code Setting Tile Component ──
+  Widget _buildVSCodeSettingTile({
+    required String settingId,
+    required String title,
+    required String description,
+    required bool isDark,
+    required Color accent,
+    required Widget control,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 2, bottom: 8),
-            child: Text(
-              title.toUpperCase(),
-              style: GoogleFonts.outfit(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
-                color: isDark ? Colors.white38 : Colors.black38,
-              ),
-            ),
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _nativeDivider(bool isDark) {
-    return Divider(
-      height: 12, 
-      thickness: 1, 
-      color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
-    );
-  }
-
-  // ── Native Tile Component ──
-  Widget _buildNativeTile({
-    required String title, 
-    required String subtitle, 
-    required IconData icon, 
-    required bool isDark, 
-    required Widget action
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(4), // Micro 4px
-            ),
-            child: Icon(icon, size: 15, color: isDark ? Colors.white70 : Colors.black87),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title, 
-                  style: GoogleFonts.inter(
-                    fontSize: 13, 
-                    fontWeight: FontWeight.w600, 
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                Text(
-                  subtitle, 
-                  style: GoogleFonts.inter(
-                    fontSize: 11, 
-                    color: isDark ? Colors.white38 : Colors.black45,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          action,
-        ],
-      ),
-    );
-  }
-
-  // ── Native Keyboard Key Cap Component ──
-  Widget _buildNativeShortcutTile(String label, String modifierKey, String mainKey, bool isDark, Color accent) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.5),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
-          ),
-          const Spacer(),
           Row(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildKeyCap(modifierKey, isDark, accent),
-              const SizedBox(width: 4),
-              Text('+', style: GoogleFonts.inter(fontSize: 10, color: isDark ? Colors.white38 : Colors.black38)),
-              const SizedBox(width: 4),
-              _buildKeyCap(mainKey, isDark, accent),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Setting Main Title
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFF4FC1FF) : const Color(0xFF0066B8),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    
+                    // VS Code Setting ID Code Tag
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Text(
+                        settingId,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 11,
+                          color: isDark ? Colors.white38 : Colors.black45,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    
+                    // Setting Description
+                    Text(
+                      description,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        height: 1.4,
+                        color: isDark ? const Color(0xFFCCCCCC) : const Color(0xFF616161),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              control,
             ],
           ),
         ],
@@ -749,49 +747,72 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  Widget _buildKeyCap(String text, bool isDark, Color accent) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
-        borderRadius: BorderRadius.circular(4), // Micro 4px
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.15),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.jetBrainsMono(
-          fontSize: 10.5, 
-          fontWeight: FontWeight.bold, 
-          color: isDark ? Colors.white : Colors.black87,
-        ),
+  // ── VS Code Shortcut Item ──
+  Widget _buildVSCodeShortcutTile(String title, String settingId, String mod, String key, bool isDark, Color accent) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87),
+                ),
+                Text(
+                  settingId,
+                  style: GoogleFonts.jetBrainsMono(fontSize: 10.5, color: isDark ? Colors.white38 : Colors.black45),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E5E5),
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+            ),
+            child: Text(
+              '$mod + $key',
+              style: GoogleFonts.jetBrainsMono(fontSize: 11, fontWeight: FontWeight.bold, color: accent),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // ── Micro Controls ──
-  Widget _buildNativeSwitch({required bool value, required Color accentColor, required ValueChanged<bool> onChanged}) {
-    return Transform.scale(
-      scale: 0.8,
-      child: Switch(
-        value: value,
-        activeTrackColor: accentColor.withOpacity(0.4),
-        activeThumbColor: accentColor,
-        inactiveThumbColor: Colors.grey.shade400,
-        inactiveTrackColor: Colors.grey.withOpacity(0.2),
-        onChanged: onChanged,
+  // ── VS Code Controls ──
+  Widget _vscodeCheckbox(bool value, ValueChanged<bool> onChanged, bool isDark, Color accent) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      child: Container(
+        width: 18,
+        height: 18,
+        decoration: BoxDecoration(
+          color: value ? accent : (isDark ? const Color(0xFF3C3C3C) : Colors.white),
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(
+            color: value ? accent : (isDark ? const Color(0xFF6B6B6B) : const Color(0xFFCECECE)),
+            width: 1,
+          ),
+        ),
+        child: value
+            ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+            : null,
       ),
     );
   }
 
-  Widget _nativeBadge(String text, Color accent, bool isDark) {
+  Widget _vscodeBadge(String text, Color accent, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(4), // Micro 4px
+        color: accent.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(2),
       ),
       child: Text(
         text,
@@ -800,83 +821,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  Widget _buildNativeFooter(BuildContext context, bool isDark, MarkdownProvider provider, Color borderColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: borderColor)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          OutlinedButton(
-            onPressed: () => Navigator.pop(context), 
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)), // Micro 4px
-              side: BorderSide(color: isDark ? Colors.white24 : Colors.black26),
-            ),
-            child: Text(
-              provider.t('close'), 
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 12, color: isDark ? Colors.white : Colors.black87),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageDropdown(MarkdownProvider provider, bool isDark) {
-    return _buildNativeTile(
-      title: provider.t('language'),
-      subtitle: 'Select interface display language',
-      icon: Icons.translate_rounded,
-      isDark: isDark,
-      action: DropdownButton<String>(
-        value: provider.locale,
-        underline: const SizedBox(),
-        dropdownColor: isDark ? const Color(0xFF181825) : Colors.white,
-        onChanged: (v) => v != null ? provider.updateLocale(v) : null,
-        items: [
-          {'code': 'en', 'label': '🇺🇸 English'},
-          {'code': 'zh', 'label': '🇨🇳 简体中文'},
-        ].map((l) => DropdownMenuItem(
-          value: l['code'],
-          child: Text(l['label']!, style: GoogleFonts.inter(fontSize: 12)),
-        )).toList(),
-      ),
-    );
-  }
-
-  Widget _buildFontDropdown(MarkdownProvider provider, bool isDark) {
-    final availableFonts = ['Inter', 'Fira Code', 'JetBrains Mono', 'Roboto Mono', 'Source Code Pro'];
-    final currentFont = availableFonts.contains(provider.fontFamily) ? provider.fontFamily : 'Inter';
-    return _buildNativeTile(
-      title: provider.t('font_family'),
-      subtitle: 'Choose preferred typography font family for editor',
-      icon: Icons.font_download_outlined,
-      isDark: isDark,
-      action: DropdownButton<String>(
-        value: currentFont,
-        underline: const SizedBox(),
-        dropdownColor: isDark ? const Color(0xFF181825) : Colors.white,
-        onChanged: (v) => v != null ? provider.updateFontFamily(v) : null,
-        items: availableFonts
-            .map((f) => DropdownMenuItem(
-          value: f,
-          child: Text(f, style: GoogleFonts.getFont(f, fontSize: 12)),
-        )).toList(),
-      ),
-    );
-  }
-
-  Widget _buildSizeControls(MarkdownProvider provider, bool isDark, Color accent) {
+  Widget _vscodeSizeControls(MarkdownProvider provider, bool isDark, Color accent) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _miniBtn(Icons.remove_rounded, () => provider.updateFontSize(provider.fontSize - 1), isDark),
         const SizedBox(width: 6),
-        _nativeBadge('${provider.fontSize.toInt()} px', accent, isDark),
+        _vscodeBadge('${provider.fontSize.toInt()} px', accent, isDark),
         const SizedBox(width: 6),
         _miniBtn(Icons.add_rounded, () => provider.updateFontSize(provider.fontSize + 1), isDark),
       ],
@@ -888,24 +839,24 @@ class _SettingsDialogState extends State<SettingsDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 85, 
+          width: 80,
           child: SliderTheme(
             data: const SliderThemeData(
-              trackHeight: 2.5,
-              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+              trackHeight: 2,
+              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 4),
             ),
             child: Slider(
-              value: p.lineHeight, 
-              min: 1.0, 
-              max: 2.5, 
-              divisions: 15, 
-              activeColor: accent, 
+              value: p.lineHeight,
+              min: 1.0,
+              max: 2.5,
+              divisions: 15,
+              activeColor: accent,
               onChanged: (v) => p.updateLineHeight(v),
             ),
           ),
         ),
         const SizedBox(width: 4),
-        _nativeBadge('${p.lineHeight.toStringAsFixed(2)}x', accent, isDark),
+        _vscodeBadge('${p.lineHeight.toStringAsFixed(2)}x', accent, isDark),
       ],
     );
   }
@@ -915,49 +866,107 @@ class _SettingsDialogState extends State<SettingsDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 85, 
+          width: 80,
           child: SliderTheme(
             data: const SliderThemeData(
-              trackHeight: 2.5,
-              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+              trackHeight: 2,
+              thumbShape: RoundSliderThumbShape(enabledThumbRadius: 4),
             ),
             child: Slider(
-              value: p.editorPadding, 
-              min: 16.0, 
-              max: 96.0, 
-              divisions: 20, 
-              activeColor: accent, 
+              value: p.editorPadding,
+              min: 16.0,
+              max: 96.0,
+              divisions: 20,
+              activeColor: accent,
               onChanged: (v) => p.updateEditorPadding(v),
             ),
           ),
         ),
         const SizedBox(width: 4),
-        _nativeBadge('${p.editorPadding.toInt()} px', accent, isDark),
+        _vscodeBadge('${p.editorPadding.toInt()} px', accent, isDark),
       ],
     );
   }
 
+  Widget _buildFontDropdown(MarkdownProvider provider, bool isDark) {
+    final availableFonts = ['Inter', 'Fira Code', 'JetBrains Mono', 'Roboto Mono', 'Source Code Pro'];
+    final currentFont = availableFonts.contains(provider.fontFamily) ? provider.fontFamily : 'Inter';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF3C3C3C) : Colors.white,
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: isDark ? const Color(0xFF555555) : const Color(0xFFCECECE)),
+      ),
+      child: DropdownButton<String>(
+        value: currentFont,
+        underline: const SizedBox(),
+        dropdownColor: isDark ? const Color(0xFF252526) : Colors.white,
+        onChanged: (v) => v != null ? provider.updateFontFamily(v) : null,
+        items: availableFonts
+            .map((f) => DropdownMenuItem(
+          value: f,
+          child: Text(f, style: GoogleFonts.getFont(f, fontSize: 12)),
+        )).toList(),
+      ),
+    );
+  }
+
   Widget _buildTabDropdown(MarkdownProvider p, bool isDark) {
-    return DropdownButton<int>(
-      value: p.tabSize,
-      underline: const SizedBox(),
-      dropdownColor: isDark ? const Color(0xFF181825) : Colors.white,
-      onChanged: (v) => v != null ? p.updateTabSize(v) : null,
-      items: [2, 4].map((s) => DropdownMenuItem(value: s, child: Text('$s ${p.t('spaces')}', style: GoogleFonts.inter(fontSize: 12)))).toList(),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF3C3C3C) : Colors.white,
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: isDark ? const Color(0xFF555555) : const Color(0xFFCECECE)),
+      ),
+      child: DropdownButton<int>(
+        value: p.tabSize,
+        underline: const SizedBox(),
+        dropdownColor: isDark ? const Color(0xFF252526) : Colors.white,
+        onChanged: (v) => v != null ? p.updateTabSize(v) : null,
+        items: [2, 4].map((s) => DropdownMenuItem(value: s, child: Text('$s spaces', style: GoogleFonts.inter(fontSize: 12)))).toList(),
+      ),
     );
   }
 
   Widget _miniBtn(IconData icon, VoidCallback tap, bool isDark) {
     return InkWell(
-      onTap: tap, 
-      borderRadius: BorderRadius.circular(4), // Micro 4px
+      onTap: tap,
+      borderRadius: BorderRadius.circular(2),
       child: Container(
-        padding: const EdgeInsets.all(3), 
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05), 
-          borderRadius: BorderRadius.circular(4),
-        ), 
-        child: Icon(icon, size: 13),
+          color: isDark ? const Color(0xFF3C3C3C) : const Color(0xFFE5E5E5),
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: Icon(icon, size: 12),
+      ),
+    );
+  }
+
+  Widget _buildVSCodeFooter(BuildContext context, bool isDark, MarkdownProvider provider, Color borderColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: isDark ? const Color(0xFF252526) : const Color(0xFFF3F3F3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? const Color(0xFF007ACC) : const Color(0xFF0066B8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+              elevation: 0,
+            ),
+            child: Text(
+              provider.t('close'),
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 12),
+            ),
+          ),
+        ],
       ),
     );
   }
