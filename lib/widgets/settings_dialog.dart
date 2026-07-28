@@ -1,11 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/markdown_provider.dart';
 
-/// Marka IDE v3.3.11 - Purified & Beautified Settings Canvas
+/// Marka IDE v3.3.12-RC - Purified & High Performance Settings Canvas
 /// Features purified native language labels, deleted scope bar, exquisite About Hero Card,
 /// and full Catppuccin Theme Purple color system (#CBA6F7 / #8839EF).
 class SettingsDialog extends StatefulWidget {
@@ -47,48 +46,60 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            width: 920,
-            height: 650,
-            decoration: BoxDecoration(
-              color: bgColor.withOpacity(isDark ? 0.95 : 0.98),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: borderColor, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.45 : 0.12),
-                  blurRadius: 28,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-            child: Column(
-              children: [
-                // ── Purified Header Bar (Scope Bar Removed) ──
-                _buildMarkaHeader(provider, isDark, accentPurple, headerBg, borderColor, textMuted),
-                
-                Container(height: 1, color: borderColor),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: 920,
+        height: 650,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderColor, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.45 : 0.12),
+              blurRadius: 28,
+              offset: const Offset(0, 8),
+            )
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Column(
+            children: [
+              // ── Purified Header Bar ──
+              _buildMarkaHeader(provider, isDark, accentPurple, headerBg, borderColor, textMuted),
+              
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 1,
+                color: borderColor,
+              ),
                 
                 // ── Main Body (Sidebar + Settings Canvas) ──
                 Expanded(
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Left Category Tree Navigation
                       _buildCategoryTree(provider, isDark, accentPurple, sidebarBg, borderColor, textMuted),
                       
-                      Container(width: 1, color: borderColor),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: 1,
+                        color: borderColor,
+                      ),
                       
                       // Right Settings Canvas
                       Expanded(
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
                           color: contentBg,
+                          alignment: Alignment.topLeft,
                           child: SingleChildScrollView(
                             physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                            padding: const EdgeInsets.fromLTRB(32, 20, 32, 24),
                             child: _searchQuery.isNotEmpty
                                 ? _buildMarkaSearchResults(provider, isDark, accentPurple, titlePurple, textMuted)
                                 : _buildMarkaCategoryContent(provider, isDark, accentPurple, titlePurple, textMuted),
@@ -98,20 +109,18 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     ],
                   ),
                 ),
-
-                // ── Footer Bar ──
-                _buildMarkaFooter(context, isDark, provider, headerBg, borderColor, accentPurple),
               ],
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   // ── Header Bar ──
   Widget _buildMarkaHeader(MarkdownProvider p, bool isDark, Color accentPurple, Color headerBg, Color borderColor, Color textMuted) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       padding: const EdgeInsets.fromLTRB(22, 14, 16, 14),
       color: headerBg,
       child: Row(
@@ -152,8 +161,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 onChanged: (v) => setState(() => _searchQuery = v.trim()),
                 style: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white : Colors.black87),
                 decoration: InputDecoration(
-                  hintText: '${p.t('find')} (e.g. general.language, editor.fontSize)...',
-                  hintStyle: GoogleFonts.inter(fontSize: 12, color: isDark ? Colors.white38 : Colors.black38),
+                  hintText: p.t('find'),
+                  hintStyle: GoogleFonts.inter(fontSize: 12.5, color: isDark ? Colors.white38 : Colors.black38),
                   prefixIcon: Icon(Icons.search_rounded, size: 16, color: accentPurple),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -186,7 +195,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
   Widget _buildCategoryTree(MarkdownProvider p, bool isDark, Color accentPurple, Color sidebarBg, Color borderColor, Color textMuted) {
     final isZh = p.locale == 'zh';
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       width: 220,
       color: sidebarBg,
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
@@ -296,29 +307,27 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _buildMarkaSettingTile(
               settingId: 'general.language',
               title: p.t('language'),
-              description: 'Controls the display language of the Marka IDE user interface.',
+              description: p.t('desc_language'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _buildLanguageDropdown(p, isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             
             _buildMarkaSettingTile(
               settingId: 'workbench.colorTheme',
               title: p.t('theme'),
-              description: 'Specifies the color theme used in the workbench (Light / Dark Theme).',
+              description: p.t('desc_theme'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _markaSwitch(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             
             _buildMarkaSettingTile(
               settingId: 'files.autoSave',
               title: p.t('auto_save'),
-              description: 'Controls auto save of dirty files. Automatically saves content changes to disk.',
+              description: p.t('desc_auto_save'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
@@ -335,27 +344,25 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _buildMarkaSettingTile(
               settingId: 'editor.fontFamily',
               title: p.t('font_family'),
-              description: 'Controls the font family used in text editing canvas.',
+              description: p.t('desc_font_family'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _buildFontDropdown(p, isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.fontSize',
               title: p.t('font_size'),
-              description: 'Controls font size in pixels (8px - 32px range).',
+              description: p.t('desc_font_size'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _markaSizeControls(p, isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.lineHeight',
               title: p.t('line_height'),
-              description: 'Controls the line height multiplier for text paragraphs.',
+              description: p.t('desc_line_height'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
@@ -372,27 +379,25 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _buildMarkaSettingTile(
               settingId: 'editor.wordWrap',
               title: p.t('word_wrap'),
-              description: 'Controls how lines should wrap. Enable soft wrap at viewport boundary.',
+              description: p.t('desc_word_wrap'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _markaSwitch(p.isWrapped, (v) => p.toggleWrap(), isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.lineNumbers',
               title: p.t('show_line_numbers'),
-              description: 'Controls the display of vertical line numbers in line gutter.',
+              description: p.t('desc_line_numbers'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _markaSwitch(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'editor.autoClosingBrackets',
               title: p.t('auto_pairing'),
-              description: 'Controls whether the editor should automatically close quotes and brackets.',
+              description: p.t('desc_auto_pairing'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
@@ -409,17 +414,16 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _buildMarkaSettingTile(
               settingId: 'workbench.colorTheme',
               title: p.t('theme'),
-              description: 'Switch between Dark and Light mode workbench theme.',
+              description: p.t('desc_theme'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _markaSwitch(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'workbench.showToolbar',
               title: p.t('show_toolbar'),
-              description: 'Controls visibility of top editor formatting toolbar.',
+              description: p.t('desc_show_toolbar'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
@@ -436,27 +440,25 @@ class _SettingsDialogState extends State<SettingsDialog> {
             _buildMarkaSettingTile(
               settingId: 'workbench.editorPadding',
               title: p.t('editor_padding'),
-              description: 'Horizontal padding offset around text editing canvas in pixels.',
+              description: p.t('desc_editor_padding'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _buildPaddingSlider(p, accentPurple, isDark),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'workbench.splitScreen',
               title: p.t('split_screen'),
-              description: 'Controls side-by-side Markdown live preview pane.',
+              description: p.t('desc_split_screen'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
               control: _markaSwitch(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accentPurple),
             ),
-            _markaDivider(isDark),
             _buildMarkaSettingTile(
               settingId: 'files.syncScroll',
               title: p.t('sync_scroll'),
-              description: 'Synchronize editor scroll position with live Markdown preview.',
+              description: p.t('desc_sync_scroll'),
               isDark: isDark,
               accentPurple: accentPurple,
               titlePurple: titlePurple,
@@ -471,15 +473,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
           children: [
             _markaSectionHeader(p.t('shortcuts')),
             _buildMarkaShortcutTile(p.t('shortcut_save'), 'files.save', 'Ctrl', 'S', isDark, accentPurple),
-            _markaDivider(isDark),
             _buildMarkaShortcutTile(p.t('shortcut_find'), 'editor.find', 'Ctrl', 'F', isDark, accentPurple),
-            _markaDivider(isDark),
             _buildMarkaShortcutTile(p.t('shortcut_bold'), 'editor.formatBold', 'Ctrl', 'B', isDark, accentPurple),
-            _markaDivider(isDark),
             _buildMarkaShortcutTile(p.t('shortcut_italic'), 'editor.formatItalic', 'Ctrl', 'I', isDark, accentPurple),
-            _markaDivider(isDark),
             _buildMarkaShortcutTile(p.t('shortcut_link'), 'editor.insertLink', 'Ctrl', 'L', isDark, accentPurple),
-            _markaDivider(isDark),
             _buildMarkaShortcutTile(p.t('shortcut_comment'), 'editor.toggleComment', 'Ctrl', '/', isDark, accentPurple),
           ],
         );
@@ -546,7 +543,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          _markaBadge('v3.3.11', accentPurple, isDark),
+                          _markaBadge('v3.3.12-RC', accentPurple, isDark),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -579,18 +576,18 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _buildMarkaSettingTile(
           settingId: 'marka.version',
           title: p.t('about_version'),
-          description: isZh ? '当前已安装的平台核心引擎版本' : 'Currently installed core platform release version',
+          description: p.t('about_version_desc'),
           isDark: isDark,
           accentPurple: accentPurple,
           titlePurple: titlePurple,
-          control: _markaBadge('v3.3.11', accentPurple, isDark),
+          control: _markaBadge('v3.3.12-RC', accentPurple, isDark),
         ),
         _markaDivider(isDark),
         
         _buildMarkaSettingTile(
           settingId: 'marka.author',
           title: p.t('about_author'),
-          description: isZh ? 'Marka 架构与核心平台开发者' : 'Marka platform lead architect and developer',
+          description: p.t('about_author_desc'),
           isDark: isDark,
           accentPurple: accentPurple,
           titlePurple: titlePurple,
@@ -608,7 +605,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _buildMarkaSettingTile(
           settingId: 'marka.license',
           title: p.t('about_license'),
-          description: isZh ? '开源软件分发与授权使用条款' : 'Open source software distribution license terms',
+          description: p.t('about_license_desc'),
           isDark: isDark,
           accentPurple: accentPurple,
           titlePurple: titlePurple,
@@ -619,7 +616,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _buildMarkaSettingTile(
           settingId: 'marka.repository',
           title: p.t('about_github'),
-          description: isZh ? '官方 GitHub 源代码仓库与 Bug 跟踪' : 'Official GitHub repository and bug tracker',
+          description: p.t('about_repo_desc'),
           isDark: isDark,
           accentPurple: accentPurple,
           titlePurple: titlePurple,
@@ -636,9 +633,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
   Widget _buildMarkaSearchResults(MarkdownProvider p, bool isDark, Color accentPurple, Color titlePurple, Color textMuted) {
     final List<Widget> results = [];
     final q = _searchQuery.toLowerCase();
+    int matchCount = 0;
 
     void addResult(String settingId, String title, String description, Widget control) {
       if (settingId.toLowerCase().contains(q) || title.toLowerCase().contains(q) || description.toLowerCase().contains(q)) {
+        matchCount++;
         if (results.isNotEmpty) results.add(_markaDivider(isDark));
         results.add(_buildMarkaSettingTile(
           settingId: settingId,
@@ -652,16 +651,16 @@ class _SettingsDialogState extends State<SettingsDialog> {
       }
     }
 
-    addResult('general.language', p.t('language'), 'Controls display language.', _buildLanguageDropdown(p, isDark, accentPurple));
-    addResult('workbench.colorTheme', p.t('theme'), 'Controls dark / light theme.', _markaSwitch(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accentPurple));
-    addResult('files.autoSave', p.t('auto_save'), 'Controls auto save of modified files.', _markaSwitch(p.autoSave, (v) => p.toggleAutoSave(), isDark, accentPurple));
-    addResult('editor.fontSize', p.t('font_size'), 'Controls font size in pixels.', _markaSizeControls(p, isDark, accentPurple));
-    addResult('editor.fontFamily', p.t('font_family'), 'Controls font family.', _buildFontDropdown(p, isDark, accentPurple));
-    addResult('editor.lineHeight', p.t('line_height'), 'Controls line height multiplier.', _buildLineHeightSlider(p, accentPurple, isDark));
-    addResult('editor.wordWrap', p.t('word_wrap'), 'Controls soft wrapping of long lines.', _markaSwitch(p.isWrapped, (v) => p.toggleWrap(), isDark, accentPurple));
-    addResult('editor.lineNumbers', p.t('show_line_numbers'), 'Controls vertical line numbers.', _markaSwitch(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accentPurple));
-    addResult('workbench.editorPadding', p.t('editor_padding'), 'Horizontal padding offset.', _buildPaddingSlider(p, accentPurple, isDark));
-    addResult('workbench.splitScreen', p.t('split_screen'), 'Controls side-by-side preview.', _markaSwitch(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accentPurple));
+    addResult('general.language', p.t('language'), p.t('desc_language'), _buildLanguageDropdown(p, isDark, accentPurple));
+    addResult('workbench.colorTheme', p.t('theme'), p.t('desc_theme'), _markaSwitch(isDark, (v) => AdaptiveTheme.of(context).toggleThemeMode(), isDark, accentPurple));
+    addResult('files.autoSave', p.t('auto_save'), p.t('desc_auto_save'), _markaSwitch(p.autoSave, (v) => p.toggleAutoSave(), isDark, accentPurple));
+    addResult('editor.fontSize', p.t('font_size'), p.t('desc_font_size'), _markaSizeControls(p, isDark, accentPurple));
+    addResult('editor.fontFamily', p.t('font_family'), p.t('desc_font_family'), _buildFontDropdown(p, isDark, accentPurple));
+    addResult('editor.lineHeight', p.t('line_height'), p.t('desc_line_height'), _buildLineHeightSlider(p, accentPurple, isDark));
+    addResult('editor.wordWrap', p.t('word_wrap'), p.t('desc_word_wrap'), _markaSwitch(p.isWrapped, (v) => p.toggleWrap(), isDark, accentPurple));
+    addResult('editor.lineNumbers', p.t('show_line_numbers'), p.t('desc_line_numbers'), _markaSwitch(p.showLineNumbers, (v) => p.toggleLineNumbers(), isDark, accentPurple));
+    addResult('workbench.editorPadding', p.t('editor_padding'), p.t('desc_editor_padding'), _buildPaddingSlider(p, accentPurple, isDark));
+    addResult('workbench.splitScreen', p.t('split_screen'), p.t('desc_split_screen'), _markaSwitch(p.isSplitScreen, (v) => p.toggleSplitScreen(), isDark, accentPurple));
 
     if (results.isEmpty) {
       return Center(
@@ -684,7 +683,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _markaSectionHeader('${p.t('find')} (${results.whereType<Padding>().length})'),
+        _markaSectionHeader('${p.t('find')} ($matchCount)'),
         ...results,
       ],
     );
@@ -722,8 +721,19 @@ class _SettingsDialogState extends State<SettingsDialog> {
     required Color titlePurple,
     required Widget control,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.025) : Colors.black.withOpacity(0.015),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
+          width: 1,
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -731,50 +741,35 @@ class _SettingsDialogState extends State<SettingsDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.outfit(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                        color: titlePurple,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: accentPurple.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        settingId,
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
-                          color: accentPurple,
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    color: titlePurple,
+                  ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 
                 Text(
                   description,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    height: 1.45,
+                    height: 1.4,
                     color: isDark ? Colors.white70 : Colors.black54,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 20),
-          control,
+          const SizedBox(width: 24),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 100),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: control,
+            ),
+          ),
         ],
       ),
     );
@@ -782,36 +777,42 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   // ── Shortcut Item ──
   Widget _buildMarkaShortcutTile(String title, String settingId, String mod, String key, bool isDark, Color accentPurple) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.025) : Colors.black.withOpacity(0.015),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
+          width: 1,
+        ),
+      ),
       child: Row(
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  settingId,
-                  style: GoogleFonts.jetBrainsMono(fontSize: 10.5, color: isDark ? Colors.white38 : Colors.black45),
-                ),
-              ],
+            child: Text(
+              title,
+              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87),
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: accentPurple.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: accentPurple.withOpacity(0.3)),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: accentPurple.withOpacity(0.3), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: accentPurple.withOpacity(0.08),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                )
+              ],
             ),
             child: Text(
               '$mod + $key',
-              style: GoogleFonts.jetBrainsMono(fontSize: 11, fontWeight: FontWeight.bold, color: accentPurple),
+              style: GoogleFonts.jetBrainsMono(fontSize: 11.5, fontWeight: FontWeight.bold, color: accentPurple),
             ),
           ),
         ],
@@ -975,32 +976,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Icon(icon, size: 13, color: accentPurple),
-      ),
-    );
-  }
-
-  Widget _buildMarkaFooter(BuildContext context, bool isDark, MarkdownProvider provider, Color headerBg, Color borderColor, Color accentPurple) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      color: headerBg,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentPurple,
-              foregroundColor: isDark ? const Color(0xFF11111B) : Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-              elevation: 0,
-            ),
-            child: Text(
-              provider.t('close'),
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
-            ),
-          ),
-        ],
       ),
     );
   }

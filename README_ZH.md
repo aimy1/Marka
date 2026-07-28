@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/aimy1/Marka/releases/tag/v3.3.10">
-    <img src="https://img.shields.io/badge/Release-v3.3.10-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
+  <a href="https://github.com/aimy1/Marka/releases/tag/v3.3.12-RC">
+    <img src="https://img.shields.io/badge/Release-v3.3.12--RC-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
   </a>
   <img src="https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
   <img src="https://img.shields.io/badge/Platforms-Linux_|_macOS_|_Windows_|_Web-313244?style=for-the-badge&logo=linux&logoColor=white" alt="Platforms" />
@@ -55,7 +55,7 @@
 
 ## 📦 全平台下载与安装
 
-您可以直接前往 [**GitHub Releases v3.3.10**](https://github.com/aimy1/Marka/releases/tag/v3.3.10) 页面获取对应操作系统的最新安装包：
+您可以直接前往 [**GitHub Releases v3.3.12-RC**](https://github.com/aimy1/Marka/releases/tag/v3.3.12-RC) 页面获取对应操作系统的最新安装包：
 
 | 操作系统 / 发行版 | 安装包类型 | 文件名 | 安装命令 / 使用方式 |
 | :--- | :---: | :--- | :--- |

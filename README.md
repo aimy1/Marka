@@ -2,15 +2,15 @@
   <img src="markd.logo.jpg" width="120" height="120" style="border-radius: 24px;" alt="Marka Logo" />
 </p>
 
-<h1 align="center">Marka IDE v3.3.11</h1>
+<h1 align="center">Marka IDE v3.3.12-RC</h1>
 
 <p align="center">
   <b>Modern Cross-Platform Workspace Markdown Editor Built for Focused Writing & Industrial Aesthetics</b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/aimy1/Marka/releases/tag/v3.3.11">
-    <img src="https://img.shields.io/badge/Release-v3.3.11-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
+  <a href="https://github.com/aimy1/Marka/releases/tag/v3.3.12-RC">
+    <img src="https://img.shields.io/badge/Release-v3.3.12--RC-CBA6F7?style=for-the-badge&logo=markdown&logoColor=white" alt="Marka Release" />
   </a>
   <img src="https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
   <img src="https://img.shields.io/badge/Platforms-Linux_|_macOS_|_Windows_|_Web-313244?style=for-the-badge&logo=linux&logoColor=white" alt="Platforms" />
@@ -27,7 +27,7 @@
 
 ---
 
-## ✨ Key Features (v3.3.11)
+## ✨ Key Features (v3.3.12-RC)
 
 ### 🎨 1. VS Code Settings Editor Architecture & Purified Theme Purple
 - **VS Code Preferences Structure**: Tree category sidebar (`Commonly Used`, `Text Editor`, `Workbench`, `Shortcuts & About`), search filtering, and Setting ID code tags (`files.autoSave`, `editor.fontSize`).
@@ -53,9 +53,9 @@
 
 ---
 
-## 📦 Downloads & Installation (v3.3.11)
+## 📦 Downloads & Installation (v3.3.12-RC)
 
-Get the latest binaries directly from the [**GitHub Releases v3.3.11**](https://github.com/aimy1/Marka/releases/tag/v3.3.11) page:
+Get the latest binaries directly from the [**GitHub Releases v3.3.12-RC**](https://github.com/aimy1/Marka/releases/tag/v3.3.12-RC) page:
 
 | OS / Distribution | Package Format | Binary File | Installation / Usage Command |
 | :--- | :---: | :--- | :--- |

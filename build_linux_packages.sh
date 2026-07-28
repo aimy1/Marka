@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Marka IDE Packaging Runner (v3.3.11) ==="
+echo "=== Marka IDE Packaging Runner (v3.3.12-RC) ==="
 
 # 1. Compile Flutter application
 echo "Building Flutter project for Linux release..."

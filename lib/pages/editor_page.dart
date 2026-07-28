@@ -309,9 +309,24 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void _showSettingsDialog(BuildContext context, MarkdownProvider provider) {
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (context) => SettingsDialog(),
+      barrierDismissible: true,
+      barrierLabel: 'Settings',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 150),
+      pageBuilder: (context, anim1, anim2) => const SettingsDialog(),
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: anim1,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.96, end: 1.0).animate(
+              CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
+            ),
+            child: child,
+          ),
+        );
+      },
     );
   }
 
