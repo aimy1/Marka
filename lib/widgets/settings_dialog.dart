@@ -46,9 +46,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+      child: Container(
         width: 920,
         height: 650,
         decoration: BoxDecoration(
@@ -70,11 +68,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               // ── Purified Header Bar ──
               _buildMarkaHeader(provider, isDark, accentPurple, headerBg, borderColor, textMuted),
               
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 1,
-                color: borderColor,
-              ),
+              Container(height: 1, color: borderColor),
                 
                 // ── Main Body (Sidebar + Settings Canvas) ──
                 Expanded(
@@ -84,17 +78,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
                       // Left Category Tree Navigation
                       _buildCategoryTree(provider, isDark, accentPurple, sidebarBg, borderColor, textMuted),
                       
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: 1,
-                        color: borderColor,
-                      ),
+                      Container(width: 1, color: borderColor),
                       
                       // Right Settings Canvas
                       Expanded(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
+                        child: Container(
                           color: contentBg,
                           alignment: Alignment.topLeft,
                           child: SingleChildScrollView(
@@ -118,9 +106,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   // ── Header Bar ──
   Widget _buildMarkaHeader(MarkdownProvider p, bool isDark, Color accentPurple, Color headerBg, Color borderColor, Color textMuted) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    return Container(
       padding: const EdgeInsets.fromLTRB(22, 14, 16, 14),
       color: headerBg,
       child: Row(
@@ -195,9 +181,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   Widget _buildCategoryTree(MarkdownProvider p, bool isDark, Color accentPurple, Color sidebarBg, Color borderColor, Color textMuted) {
     final isZh = p.locale == 'zh';
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    return Container(
       width: 220,
       color: sidebarBg,
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
@@ -721,9 +705,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     required Color titlePurple,
     required Widget control,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(

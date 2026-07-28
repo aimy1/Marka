@@ -107,25 +107,25 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
 
     return MarkdownStyleSheet(
       // ── Headings Typography Ladder ──
-      h1: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.w800, height: 1.35, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)),
+      h1: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.35, color: isDark ? const Color(0xFFCBA6F7) : const Color(0xFF1E66F5)),
       h1Padding: const EdgeInsets.only(top: 16, bottom: 12),
-      h2: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w700, height: 1.4, color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299)),
+      h2: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.4, color: isDark ? const Color(0xFF89DCEB) : const Color(0xFF179299)),
       h2Padding: const EdgeInsets.only(top: 14, bottom: 10),
-      h3: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600, height: 1.45, color: accentColor),
+      h3: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.45, color: accentColor),
       h3Padding: const EdgeInsets.only(top: 12, bottom: 8),
-      h4: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, height: 1.5, color: textColor),
-      h5: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w500, height: 1.5, color: textColor),
-      h6: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w500, height: 1.5, color: isDark ? Colors.white54 : Colors.black54),
+      h4: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.5, color: textColor),
+      h5: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, height: 1.5, color: textColor),
+      h6: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.5, color: isDark ? Colors.white54 : Colors.black54),
       
       // ── Paragraph & Typography ──
-      p: GoogleFonts.inter(fontSize: 15, height: 1.68, color: textColor),
+      p: TextStyle(fontSize: 15, height: 1.68, color: textColor),
       pPadding: const EdgeInsets.only(bottom: 12),
       strong: const TextStyle(fontWeight: FontWeight.bold),
       em: const TextStyle(fontStyle: FontStyle.italic),
-      a: GoogleFonts.inter(color: linkColor, decoration: TextDecoration.underline, fontWeight: FontWeight.w500),
+      a: TextStyle(color: linkColor, decoration: TextDecoration.underline, fontWeight: FontWeight.w500),
 
       // ── Blockquote (Catppuccin Accent Side Border) ──
-      blockquote: GoogleFonts.inter(
+      blockquote: TextStyle(
         fontSize: 15, 
         height: 1.65, 
         color: isDark ? const Color(0xFFA6ADC8) : const Color(0xFF5C5F77), 
@@ -139,17 +139,17 @@ class _MarkdownPreviewWidgetState extends State<MarkdownPreviewWidget> {
       blockquotePadding: const EdgeInsets.fromLTRB(18, 12, 16, 12),
 
       // ── Lists & Bullet ──
-      listBullet: GoogleFonts.inter(fontSize: 15, color: accentColor, fontWeight: FontWeight.bold),
+      listBullet: TextStyle(fontSize: 15, color: accentColor, fontWeight: FontWeight.bold),
       listIndent: 28.0,
 
       // ── Tables ──
-      tableBody: GoogleFonts.inter(fontSize: 14, height: 1.5, color: textColor),
+      tableBody: TextStyle(fontSize: 14, height: 1.5, color: textColor),
       tableBorder: TableBorder.all(color: borderColor, width: 1.0, style: BorderStyle.solid),
-      tableHead: GoogleFonts.inter(fontWeight: FontWeight.w700, color: accentColor, fontSize: 13.5),
+      tableHead: TextStyle(fontWeight: FontWeight.w700, color: accentColor, fontSize: 13.5),
       tableCellsPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
 
       // ── Code & Codeblock ──
-      code: GoogleFonts.jetBrainsMono(
+      code: TextStyle(
         fontSize: 13.0,
         backgroundColor: codeBg,
         color: codeColor,

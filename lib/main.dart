@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         colorSchemeSeed: const Color(0xFF1E66F5),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
+        fontFamily: 'Inter',
         scaffoldBackgroundColor: const Color(0xFFEFF1F5),
         dividerColor: Colors.black.withOpacity(0.05),
       ),
@@ -73,26 +73,18 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.dark,
         colorSchemeSeed: const Color(0xFFCBA6F7),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+        fontFamily: 'Inter',
         scaffoldBackgroundColor: const Color(0xFF1E1E2E),
         dividerColor: Colors.white.withOpacity(0.05),
       ),
       initial: savedThemeMode ?? AdaptiveThemeMode.light,
-      builder: (theme, darkTheme) {
-        final isDark = theme.brightness == Brightness.dark;
-        return AnimatedTheme(
-          data: isDark ? darkTheme : theme,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: MaterialApp(
-            title: 'Marka',
-            theme: theme,
-            darkTheme: darkTheme,
-            debugShowCheckedModeBanner: false,
-            home: const EditorPage(),
-          ),
-        );
-      },
+      builder: (theme, darkTheme) => MaterialApp(
+        title: 'Marka',
+        theme: theme,
+        darkTheme: darkTheme,
+        debugShowCheckedModeBanner: false,
+        home: const EditorPage(),
+      ),
     );
   }
 }
