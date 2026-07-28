@@ -1,5 +1,5 @@
 Name:           marka
-Version:        3.3.12-RC
+Version:        3.3.12
 Release:        1%{?dist}
 Summary:        Modern workspace Markdown editor.
 License:        MIT

@@ -1,6 +1,6 @@
 ; Inno Setup Script for Marka
 #define MyAppName "Marka"
-#define MyAppVersion "3.3.12-RC"
+#define MyAppVersion "3.3.12"
 
 
 #define MyAppPublisher "Asniya"
